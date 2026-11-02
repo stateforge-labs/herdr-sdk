@@ -5,6 +5,6 @@
     "noEmit": true,
     "lib": ["es2023", "esnext.disposable"]
   },
-  "include": ["src", "bin", "examples", "test/wire", "test/connect", "test/support"],
+  "include": ["src", "bin", "examples", "test/wire", "test/connect", "test/support", "test/integration"],
   "exclude": ["node_modules", "test/gen", "test/scripts", "test/types"]
 }

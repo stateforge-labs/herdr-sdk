@@ -3,14 +3,15 @@
 //
 // Protocol facts this fake relies on, with the source that proves each one (hub test/fakes/fake-herdr-server.ts header):
 //  F1  ping answers {id, result: {type: "pong", protocol, version}}. Source: generated/results.ts Result_pong. Implemented.
-//  F2  events.subscribe acks {id, result: {type: "subscription_started"}} on its own connection. Not implemented until 4a.
+//  F2  events.subscribe acks {id, result: {type: "subscription_started"}} on its own connection. Implemented (P5a).
 //  F3  a refused request answers {id, error: {code, message}}. Source: generated/errors.ts ErrorBody. Implemented (fail).
-//  F4  after the ack, push frames are NDJSON lines {event, data} with no id. Not implemented until 4a.
-//  F5  one events.subscribe per connection; any close means resubscribe. Not implemented until 4a.
+//  F4  after the ack, push frames are NDJSON lines {event, data} with no id. Implemented (push); spec matching is not modelled.
+//  F5  one events.subscribe per connection; any close means resubscribe. Implemented (a subscriber takes no further request).
 //  F6  a method the server has no answer for gets an error envelope. Code "unknown_method" is this fake's own value, not a herdr code. OPEN.
 //
 // Wire facts of HERDR-ADR-0016 that this fake reproduces:
-//  W1  herdr closes after every response; a second request on the same connection is never answered. Implemented (the connection ends after one answer).
+//  W1  herdr closes after every response; a second request on the same connection is never answered. Implemented, except class C (held) connections, which stay open and answer each request (HERDR-ADR-0016).
+//  W2  after the ack, pushes arrive on the same connection as id-less lines. Implemented (splitAck, strayLine, holdPushes are the test switches).
 //  W3  an unparseable request gets {id: "", error} and then a close. The fake's own code and message are the values in constants.ts (not measured). Implemented.
 //
 // Test conveniences, not herdr behaviour: silent (accepted, never answered) and rawReply (a raw line, then a close) exist to drive client timeouts and malformed replies.
@@ -21,6 +22,7 @@ import { serveConnection } from './fake-connection.ts';
 import { advertisedCapabilities } from './fake-pong.ts';
 import { fakeSocketLocation, removeOwnedDir, type FakeSocketLocation } from './fake-socket-path.ts';
 import { FakeScript } from './fake-script.ts';
+import { SubscriptionRegistry } from './fake-subscriptions.ts';
 import { Fake, Lane, WireFact } from '../constants.ts';
 import { notImplemented } from '../not-implemented.ts';
 import type { CreateFakeHerdr, FakeHerdr, FakeHerdrOptions } from './types.ts';
@@ -28,6 +30,7 @@ import type { CreateFakeHerdr, FakeHerdr, FakeHerdrOptions } from './types.ts';
 export const createFakeHerdr: CreateFakeHerdr = async function createFakeHerdr(options: FakeHerdrOptions = {}): Promise<FakeHerdr> {
   const location = fakeSocketLocation(options.socketPath);
   const script = new FakeScript();
+  const registry = new SubscriptionRegistry();
   const pong = {
     protocol: options.protocol ?? PROTOCOL,
     version: options.version ?? Fake.Version,
@@ -39,15 +42,15 @@ export const createFakeHerdr: CreateFakeHerdr = async function createFakeHerdr(o
     socket.on('close', () => {
       sockets.delete(socket);
     });
-    serveConnection(socket, { script, pong });
+    serveConnection(socket, { script, pong, registry });
   });
   await listen(server, location.path);
-  return handleFor(location, script, sockets, server, pong.capabilities);
+  return handleFor(location, { script, registry }, sockets, server, pong.capabilities);
 };
 
 function handleFor(
   location: FakeSocketLocation,
-  script: FakeScript,
+  state: { readonly script: FakeScript; readonly registry: SubscriptionRegistry },
   sockets: ReadonlySet<Socket>,
   server: Server,
   capabilities: FakeHerdr['capabilities'],
@@ -55,36 +58,53 @@ function handleFor(
   return {
     path: location.path,
     capabilities,
-    // W1 and W3 today (header above); P5a adds the rest as it implements them.
-    reproduces: [WireFact.W1CloseAfterResponse, WireFact.W3EmptyIdOnUnparseable],
+    reproduces: [WireFact.W1CloseAfterResponse, WireFact.W2AckThenStream, WireFact.W3EmptyIdOnUnparseable],
     reply(method, result) {
-      script.setReply(method, result);
+      state.script.setReply(method, result);
     },
     fail(method, error) {
-      script.setFailure(method, error);
+      state.script.setFailure(method, error);
     },
     silent(method) {
-      script.setSilent(method);
+      state.script.setSilent(method);
     },
     rawReply(method, line) {
-      script.setRawLine(method, line);
+      state.script.setRawLine(method, line);
     },
     receivedMethods() {
-      return script.methods();
+      return state.script.methods();
     },
     connectionCount() {
       return sockets.size;
     },
     replySequence: () => notImplemented('fake.replySequence', Lane.P5a),
-    requests: () => notImplemented('fake.requests', Lane.P5a),
-    push: () => notImplemented('fake.push', Lane.P5a),
-    closeSubscribers: () => notImplemented('fake.closeSubscribers', Lane.P5a),
-    subscriberCount: () => notImplemented('fake.subscriberCount', Lane.P5a),
-    holdPushes: () => notImplemented('fake.holdPushes', Lane.P5a),
-    splitAck: () => notImplemented('fake.splitAck', Lane.P5a),
-    strayLine: () => notImplemented('fake.strayLine', Lane.P5a),
-    heldCount: () => notImplemented('fake.heldCount', Lane.P5a),
-    closeHeld: () => notImplemented('fake.closeHeld', Lane.P5a),
+    requests() {
+      return state.script.requests();
+    },
+    push(frame) {
+      state.registry.push(frame);
+    },
+    closeSubscribers() {
+      state.registry.closeSubscribers();
+    },
+    subscriberCount() {
+      return state.registry.subscriberCount();
+    },
+    holdPushes() {
+      return state.registry.holdPushes();
+    },
+    splitAck() {
+      state.registry.splitAck();
+    },
+    strayLine(line) {
+      state.registry.strayLine(line);
+    },
+    heldCount() {
+      return state.registry.heldCount();
+    },
+    closeHeld() {
+      state.registry.closeHeld();
+    },
     async stop() {
       for (const socket of sockets) {
         socket.destroy();

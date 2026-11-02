@@ -4,7 +4,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EMPTY_REPLY_ID, ErrorText, Fake, Lane, WireField, WireFact } from '../../src/constants.ts';
 import { NotImplementedError } from '../../src/not-implemented.ts';
-import { Method, PROTOCOL } from '../../src/generated/index.ts';
+import { Method, PROTOCOL, ResultTag } from '../../src/generated/index.ts';
 import { encodeRequest } from '../../src/wire/envelope.ts';
 import { HerdrError } from '../../src/wire/errors.ts';
 import { rpc } from '../../src/wire/rpc.ts';
@@ -56,6 +56,20 @@ describe('fake herdr on the wire', () => {
     });
   });
 
+  test('W3 on a held connection: an unparseable line gets the empty id, then the connection closes', async () => {
+    await withFake({}, async (fake) => {
+      fake.reply(Method.ClientWindowTitleSet, { type: ResultTag.ClientWindowTitle, changed: true, reason: 'set' });
+      const raw = openRawSocket(fake.path);
+      raw.write(encodeRequest(FIRST_ID, Method.ClientWindowTitleSet, { title: 'held' }));
+      await waitUntil(() => fake.heldCount() === 1, WAIT_MS);
+      raw.write('this is not json');
+      const lines = await raw.untilClosed();
+      assert.equal(lines.length, 2);
+      assert.equal(JSON.parse(lines[1] ?? '')[WireField.Id], EMPTY_REPLY_ID);
+      await waitUntil(() => fake.heldCount() === 0, WAIT_MS);
+    });
+  });
+
   test('silent leaves the connection open until the client closes it', async () => {
     await withFake({}, async (fake) => {
       fake.silent(Method.SessionSnapshot);
@@ -84,21 +98,19 @@ describe('fake herdr on the wire', () => {
     });
   });
 
-  test('the fake reproduces exactly W1 and W3 until the 5a members land', async () => {
+  test('the fake reproduces W1, W2 and W3', async () => {
     await withFake({}, async (fake) => {
-      assert.deepEqual([...fake.reproduces], [WireFact.W1CloseAfterResponse, WireFact.W3EmptyIdOnUnparseable]);
+      assert.deepEqual(
+        [...fake.reproduces],
+        [WireFact.W1CloseAfterResponse, WireFact.W2AckThenStream, WireFact.W3EmptyIdOnUnparseable],
+      );
     });
   });
 
-  test('the 5a members are stubs that throw NotImplementedError naming lane P5a', async () => {
+  test('replySequence is still a stub that throws NotImplementedError naming lane P5a', async () => {
     await withFake({}, async (fake) => {
-      assert.throws(() => fake.requests(), NotImplementedError);
-      assert.throws(() => fake.push({ event: 'x', data: null }), NotImplementedError);
-      assert.throws(() => fake.heldCount(), NotImplementedError);
-      assert.throws(() => fake.closeHeld(), NotImplementedError);
-      assert.throws(() => fake.splitAck(), NotImplementedError);
       try {
-        fake.subscriberCount();
+        fake.replySequence(Method.SessionSnapshot, []);
         assert.fail('expected a throw');
       } catch (error) {
         assert.ok(error instanceof NotImplementedError);

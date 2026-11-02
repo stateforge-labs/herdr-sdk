@@ -131,9 +131,10 @@ export const CallOutcome = {
 } as const;
 export type CallOutcome = (typeof CallOutcome)[keyof typeof CallOutcome];
 
-// Result of `typeof x`, used to recognise a JSON object envelope.
+// Results of `typeof x`: a JSON object envelope, and a text value (the fake writes a string line as it is).
 export const TypeofTag = {
   Object: 'object',
+  String: 'string',
 } as const;
 
 // Test-kit facts of the minimal fake (not herdr facts). F6 and W3 values are the fake's own choice, not measured.
@@ -143,6 +144,8 @@ export const Fake = {
   Version: '0.9.5-fake',
   UnknownMethodCode: 'unknown_method',
   InvalidRequestCode: 'invalid_request',
+  // Delay between the two halves of a split subscribe ack (test convenience, splitAck).
+  SplitAckDelayMs: 5,
 } as const;
 
 // Texts the fake puts in its own error envelopes.
@@ -167,6 +170,16 @@ export const AnswerKind = {
   Envelope: 'envelope',
 } as const;
 export type AnswerKind = (typeof AnswerKind)[keyof typeof AnswerKind];
+
+// Where one fake connection stands after its last answer (test-kit only): still open for requests, answered and ended,
+// a subscriber after its ack (pushes flow), or a held connection (class C; answers every request, stays open).
+export const ServedState = {
+  Fresh: 'fresh',
+  Answered: 'answered',
+  Subscriber: 'subscriber',
+  Held: 'held',
+} as const;
+export type ServedState = (typeof ServedState)[keyof typeof ServedState];
 
 // ---------------------------------------------------------------------------------------------
 // Contract constants (HERDR-ADR-0017, docs/architecture/contracts.md). Locked: lanes read them, the architect amends them.
