@@ -1,0 +1,29 @@
+{
+  "protocol": 22,
+  "schema_version": 1,
+  "schemas": {
+    "request": {
+      "oneOf": [
+        { "properties": { "method": { "const": "ping", "type": "string" }, "params": { "$ref": "#/schemas/request/$defs/EmptyParams" } }, "required": ["method", "params"], "type": "object" },
+        { "properties": { "method": { "const": "server.stop", "type": "string" }, "params": { "$ref": "#/schemas/request/$defs/EmptyParams" } }, "required": ["method", "params"], "type": "object" },
+        { "properties": { "method": { "const": "session.snapshot", "type": "string" }, "params": { "$ref": "#/schemas/request/$defs/EmptyParams" } }, "required": ["method", "params"], "type": "object" },
+        { "properties": { "method": { "const": "pane.get", "type": "string" }, "params": { "$ref": "#/schemas/request/$defs/PaneTarget" } }, "required": ["method", "params"], "type": "object" },
+        { "properties": { "method": { "const": "pane.focus", "type": "string" }, "params": { "$ref": "#/schemas/request/$defs/PaneTarget" } }, "required": ["method", "params"], "type": "object" }
+      ],
+      "$defs": {
+        "EmptyParams": { "type": "object" },
+        "PaneTarget": {
+          "properties": { "pane_id": { "type": "string" } },
+          "required": ["pane_id"],
+          "type": "object"
+        },
+        "PopupSize": {
+          "oneOf": [
+            { "maximum": 65535, "minimum": 0, "type": "integer" },
+            { "pattern": "^(100|[1-9][0-9]?)%$", "type": "string" }
+          ]
+        }
+      }
+    }
+  }
+}

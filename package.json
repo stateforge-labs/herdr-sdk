@@ -1,11 +1,32 @@
 {
   "name": "@homelab/herdr",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
+  "description": "Typed client for the herdr socket API (protocol 22), generated from herdr's published schema.",
+  "license": "MIT",
+  "herdr": {
+    "protocol": 22,
+    "schemaVersion": 1,
+    "testedWith": "0.9.5"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "exports": {
+    "./package.json": "./package.json"
+  },
   "scripts": {
-    "study:size": "bash ../../docs/research/studies/2026-11-02-herdr-size-baseline/scripts/measure.sh",
     "gen": "bun gen/index.ts",
-    "test": "bun test"
+    "capture": "bun scripts/capture-schema.ts",
+    "test": "bun test",
+    "test:gen": "bun test test/gen",
+    "check:pins": "bun scripts/check-pins.ts",
+    "typecheck": "tsc --noEmit -p .",
+    "study:size": "bash ../../docs/research/studies/2026-11-02-herdr-size-baseline/scripts/measure.sh"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript": "7.0.2"
   }
 }

@@ -1,0 +1,39 @@
+{
+  "protocol": 22,
+  "schema_version": 1,
+  "schemas": {
+    "request": {
+      "oneOf": [
+        {
+          "properties": {
+            "method": { "const": "pane.report_metadata", "type": "string" },
+            "params": { "$ref": "#/schemas/request/$defs/PaneReportMetadataParams" }
+          },
+          "required": ["method", "params"],
+          "type": "object"
+        }
+      ],
+      "$defs": {
+        "PaneReportMetadataParams": {
+          "properties": {
+            "tokens": {
+              "additionalProperties": { "type": "string" },
+              "propertyNames": { "pattern": "^[A-Za-z0-9_-]{1,32}$" },
+              "type": "object"
+            },
+            "nullable_tokens": {
+              "additionalProperties": { "type": ["string", "null"] },
+              "propertyNames": { "pattern": "^[A-Za-z0-9_-]{1,32}$" },
+              "type": "object"
+            },
+            "plain": {
+              "additionalProperties": { "type": "string" },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        }
+      }
+    }
+  }
+}

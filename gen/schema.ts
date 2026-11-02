@@ -1,14 +1,25 @@
-// Role: generator schema access (read the published herdr schema from a path parameter).
-// Informs HERDR-ADR-0002 (generate the client from herdr's published schema), plan section 3.2.
+// Role: generator schema access (typed view of herdr's published schema; loading takes a path parameter).
+// Informs HERDR-ADR-0002 (generate the client from herdr's published schema), plan section 3.2 and appendix A.1.
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export interface JSONSchema {
+  readonly $ref?: string;
   readonly $defs?: Readonly<Record<string, JSONSchema>>;
+  readonly additionalProperties?: boolean | JSONSchema;
+  readonly allOf?: readonly JSONSchema[];
+  readonly anyOf?: readonly JSONSchema[];
   readonly const?: unknown;
+  readonly default?: unknown;
+  readonly description?: string;
+  readonly enum?: readonly unknown[];
+  readonly format?: string;
+  readonly items?: JSONSchema;
   readonly oneOf?: readonly JSONSchema[];
+  readonly pattern?: string;
   readonly properties?: Readonly<Record<string, JSONSchema>>;
+  readonly propertyNames?: { readonly pattern?: string };
   readonly required?: readonly string[];
   readonly type?: string | readonly string[];
 }
@@ -19,11 +30,25 @@ export interface ApiSchema {
   readonly schemas: Readonly<Record<string, JSONSchema>>;
 }
 
-// Keys of the published schema document that the generator reads.
-export const SCHEMA_KEY = { request: 'request', method: 'method' } as const;
+// Top-level bundles of the published schema document (`schemas.<bundle>`).
+export const SCHEMA_NAMESPACE = {
+  request: 'request',
+  successResponse: 'success_response',
+  errorResponse: 'error_response',
+  event: 'event',
+  subscriptionEvent: 'subscription_event',
+} as const;
+
+// Property names the generator reads inside schema nodes, including the `$ref` keyword.
+export const SCHEMA_KEY = {
+  method: 'method',
+  params: 'params',
+  type: 'type',
+  ref: '$ref',
+} as const;
 
 // JavaScript typeof results, so no string literal is compared in code.
-export const JS_TYPE = { string: 'string' } as const;
+export const JS_TYPE = { string: 'string', object: 'object' } as const;
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -41,24 +66,41 @@ export function loadSchema(path: string): ApiSchema {
   return parseSchema(readFileSync(path, 'utf8'));
 }
 
-export function requestNamespace(schema: ApiSchema): JSONSchema {
-  const found = schema.schemas[SCHEMA_KEY.request];
+export function namespaceOf(schema: ApiSchema, name: string): JSONSchema {
+  const found = schema.schemas[name];
   if (found === undefined) {
-    throw new Error(`the schema carries no '${SCHEMA_KEY.request}' namespace`);
+    throw new Error(`the schema carries no '${name}' namespace`);
   }
   return found;
+}
+
+export function requestNamespace(schema: ApiSchema): JSONSchema {
+  return namespaceOf(schema, SCHEMA_NAMESPACE.request);
+}
+
+export function definitionsOf(namespace: JSONSchema): Readonly<Record<string, JSONSchema>> {
+  return namespace.$defs ?? {};
 }
 
 export function branchesOf(namespace: JSONSchema): readonly JSONSchema[] {
   return namespace.oneOf ?? [];
 }
 
-export function constOf(schema: JSONSchema, property: string): string {
-  const value = schema.properties?.[property]?.const;
-  if (typeof value !== JS_TYPE.string) {
+// Type guard: TypeScript narrows typeof only against a literal, so the check goes through a function.
+export function isString(value: unknown): value is string {
+  return typeof value === JS_TYPE.string;
+}
+
+export function constOf(schema: JSONSchema | undefined, property: string): string {
+  const value = schema?.properties?.[property]?.const;
+  if (!isString(value)) {
     throw new Error(`expected a string const at '${property}'`);
   }
   return value;
+}
+
+export function propertyOf(schema: JSONSchema, property: string): JSONSchema {
+  return schema.properties?.[property] ?? {};
 }
 
 export function header(schema: ApiSchema): string {

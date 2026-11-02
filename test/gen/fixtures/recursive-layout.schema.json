@@ -1,0 +1,48 @@
+{
+  "protocol": 22,
+  "schema_version": 1,
+  "schemas": {
+    "request": {
+      "oneOf": [
+        {
+          "properties": {
+            "method": { "const": "workspace.layout", "type": "string" },
+            "params": { "$ref": "#/schemas/request/$defs/LayoutParams" }
+          },
+          "required": ["method", "params"],
+          "type": "object"
+        }
+      ],
+      "$defs": {
+        "LayoutParams": {
+          "properties": { "layout": { "$ref": "#/schemas/request/$defs/LayoutNode" } },
+          "required": ["layout"],
+          "type": "object"
+        },
+        "LayoutNode": {
+          "oneOf": [
+            {
+              "properties": {
+                "type": { "const": "pane", "type": "string" },
+                "label": { "type": ["string", "null"] }
+              },
+              "required": ["type"],
+              "type": "object"
+            },
+            {
+              "properties": {
+                "type": { "const": "split", "type": "string" },
+                "direction": { "enum": ["horizontal", "vertical"], "type": "string" },
+                "ratio": { "format": "float", "type": "number" },
+                "first": { "$ref": "#/schemas/request/$defs/LayoutNode" },
+                "second": { "$ref": "#/schemas/request/$defs/LayoutNode" }
+              },
+              "required": ["type", "direction", "ratio", "first", "second"],
+              "type": "object"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

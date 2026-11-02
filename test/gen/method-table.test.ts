@@ -9,7 +9,7 @@ import { METHODS } from '../../src/generated/methods.ts';
 import { methodRows, namespaceOf } from '../../gen/emit-method-table.ts';
 import { runGenerator, OUTPUT_FILES } from '../../gen/index.ts';
 import type { ApiSchema } from '../../gen/schema.ts';
-import { branchesOf, constOf, GEN_PATHS, loadSchema, requestNamespace, SCHEMA_KEY } from '../../gen/schema.ts';
+import { branchesOf, constOf, GEN_PATHS, loadSchema, requestNamespace, SCHEMA_KEY, SCHEMA_NAMESPACE } from '../../gen/schema.ts';
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_PATH = join(TEST_DIR, 'fixtures', 'methods-mini.schema.json');
@@ -92,7 +92,7 @@ describe('fixture schema', () => {
     const branches = branchesOf(requestNamespace(fixture));
     const duplicated: ApiSchema = {
       ...fixture,
-      schemas: { [SCHEMA_KEY.request]: { oneOf: [...branches, branches[0]!] } },
+      schemas: { [SCHEMA_NAMESPACE.request]: { oneOf: [...branches, branches[0]!] } },
     };
     expect(() => methodRows(duplicated)).toThrow(DUPLICATE_ERROR);
   });
@@ -104,19 +104,21 @@ describe('fixture schema', () => {
     };
     const broken: ApiSchema = {
       ...fixture,
-      schemas: { [SCHEMA_KEY.request]: { oneOf: [...branches, numeric] } },
+      schemas: { [SCHEMA_NAMESPACE.request]: { oneOf: [...branches, numeric] } },
     };
     expect(() => methodRows(broken)).toThrow(NON_STRING_ERROR);
   });
 });
 
 describe('determinism', () => {
-  test('a fresh run reproduces the committed src/generated/methods.ts byte for byte', () => {
+  test('a fresh run reproduces every committed src/generated file byte for byte', () => {
     const outDir = mkdtempSync(join(tmpdir(), 'herdr-gen-'));
     generatedDirs.push(outDir);
     runGenerator({ schemaPath: GEN_PATHS.schemaPath, outDir });
-    const fresh = readFileSync(join(outDir, OUTPUT_FILES.methods), 'utf8');
-    const committed = readFileSync(join(GEN_PATHS.outDir, OUTPUT_FILES.methods), 'utf8');
-    expect(fresh).toBe(committed);
+    for (const file of Object.values(OUTPUT_FILES)) {
+      const fresh = readFileSync(join(outDir, file), 'utf8');
+      const committed = readFileSync(join(GEN_PATHS.outDir, file), 'utf8');
+      expect(fresh).toBe(committed);
+    }
   });
 });

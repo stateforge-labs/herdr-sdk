@@ -1,0 +1,36 @@
+{
+  "protocol": 22,
+  "schema_version": 1,
+  "schemas": {
+    "request": {
+      "oneOf": [
+        {
+          "properties": {
+            "method": { "const": "nullable.probe", "type": "string" },
+            "params": { "$ref": "#/schemas/request/$defs/NullableProbe" }
+          },
+          "required": ["method", "params"],
+          "type": "object"
+        }
+      ],
+      "$defs": {
+        "NullableProbe": {
+          "properties": {
+            "count": { "type": ["integer", "null"] },
+            "parent": { "oneOf": [{ "$ref": "#/schemas/request/$defs/Parent" }, { "type": "null" }] },
+            "seq": { "format": "uint64", "minimum": 0, "type": "integer" },
+            "retries": { "default": 3, "type": "integer" },
+            "note": { "description": "Ends a comment */ early.", "type": "string" }
+          },
+          "required": ["count"],
+          "type": "object"
+        },
+        "Parent": {
+          "properties": { "id": { "type": "string" } },
+          "required": ["id"],
+          "type": "object"
+        }
+      }
+    }
+  }
+}

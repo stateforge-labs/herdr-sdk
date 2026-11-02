@@ -1,0 +1,73 @@
+{
+  "protocol": 22,
+  "schema_version": 1,
+  "schemas": {
+    "request": {
+      "oneOf": [
+        {
+          "properties": {
+            "method": { "const": "pane.get", "type": "string" },
+            "params": { "$ref": "#/schemas/request/$defs/PaneTarget" }
+          },
+          "required": ["method", "params"],
+          "type": "object"
+        }
+      ],
+      "$defs": {
+        "PaneTarget": {
+          "properties": { "pane_id": { "type": "string" } },
+          "required": ["pane_id"],
+          "type": "object"
+        },
+        "PaneInfo": {
+          "properties": { "pane_id": { "type": "string" } },
+          "required": ["pane_id"],
+          "type": "object"
+        }
+      }
+    },
+    "success_response": {
+      "$defs": {
+        "ResponseResult": {
+          "oneOf": [
+            {
+              "properties": {
+                "type": { "const": "pane_info", "type": "string" },
+                "pane": { "$ref": "#/schemas/success_response/$defs/PaneInfo" }
+              },
+              "required": ["type", "pane"],
+              "type": "object"
+            }
+          ]
+        },
+        "PaneInfo": {
+          "properties": { "label": { "type": ["string", "null"] } },
+          "required": ["label"],
+          "type": "object"
+        }
+      }
+    },
+    "event": {
+      "$defs": {
+        "AgentStatus": { "enum": ["idle", "working"], "type": "string" },
+        "EventKind": { "enum": ["pane_created"], "type": "string" },
+        "EventData": {
+          "properties": { "status": { "$ref": "#/schemas/event/$defs/AgentStatus" } },
+          "required": ["status"],
+          "type": "object"
+        }
+      }
+    },
+    "subscription_event": {
+      "$defs": {
+        "AgentStatus": { "enum": ["idle", "working"], "type": "string" },
+        "SubscriptionEventKind": { "enum": ["pane_output_matched"], "type": "string" },
+        "SubscriptionEventData": {
+          "properties": { "status": { "$ref": "#/schemas/subscription_event/$defs/AgentStatus" } },
+          "required": ["status"],
+          "type": "object"
+        }
+      }
+    }
+  }
+}
