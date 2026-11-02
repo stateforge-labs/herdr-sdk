@@ -386,7 +386,27 @@ export const PANE_LIFECYCLE_SUBSCRIPTION_TYPES = [SubscriptionType.PaneCreated, 
 // --- end P4b ---
 
 // --- lane P5a ---
-
+// Error code the fake returns for params that break the generated shape, or a per-pane spec without pane_id (HERDR-ADR-0016 W6: herdr answers invalid_params).
+export const FakeErrorCode = { InvalidParams: 'invalid_params' } as const;
+// Texts of the fake's invalid_params errors.
+export const FakeCheckText = {
+  NotAnObject: (method: string): string => `${method}: params must be an object`,
+  MissingField: (method: string, field: string): string => `${method}: missing required field ${field}`,
+  WrongKind: (method: string, field: string): string => `${method}: field ${field} has the wrong type`,
+  NotInEnum: (method: string, field: string): string => `${method}: field ${field} is not an allowed value`,
+  KeyNotAllowed: (method: string, field: string): string => `${method}: a key of field ${field} is not allowed`,
+  NeedsPaneId: (type: string): string => `${type} needs pane_id`,
+} as const;
+// JavaScript typeof results the request checker compares a value against (the number and boolean ones; TypeofTag has the rest).
+export const TypeofValue = { Number: 'number', Boolean: 'boolean' } as const;
+// The result herdr gives api.schema over the socket (HERDR-ADR-0016 W4, measured): an empty object.
+export const EMPTY_SCHEMA_RESULT: Readonly<Record<string, never>> = {};
+// Field names of a subscription spec (subscriptions, pane_id) that the fake reads.
+export const SpecField = { Subscriptions: 'subscriptions', PaneId: 'pane_id' } as const;
+// Methods the fake answers that the generated schema does not list (api.schema is not in generated Method; W4).
+export const FakeMethod = { ApiSchema: 'api.schema' } as const;
+// How an event kind is named as a subscription type: pane_created is subscription pane.created; a frame already named as a subscription type (pane.output_matched) keeps its name.
+export const NameSeparator = { Event: '_', Subscription: '.' } as const;
 // --- end P5a ---
 
 // --- lane P5c ---

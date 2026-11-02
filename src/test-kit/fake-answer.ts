@@ -1,9 +1,13 @@
-// Role: decides the answer to one request line: silence, a raw line, or an envelope (scripted, pong, or the unknown-method error).
-// Informs HERDR-ADR-0016 (W3: an unparseable request gets id "" and an error; fake facts F1, F3, F6) and plan 5; test-kit only.
+// Role: decides the answer to one request line: silence, a raw line, or an envelope (the checked params, a scripted step or failure, a scripted reply, the default, or the unknown-method error).
+// Informs HERDR-ADR-0016 (W3: an unparseable request gets id "" and an error; W4: api.schema answers {}; F1, F3, F6) and plan 5; test-kit only.
+// The order is first match wins. Silence and raw lines are test switches that come before herdr's own param check.
 import { AnswerKind, Fake, FakeText, WireField } from '../constants.ts';
-import { Method, type ErrorBody } from '../generated/index.ts';
-import type { FakeScript } from './fake-script.ts';
-import { pongBody, type PongSettings } from './fake-pong.ts';
+import type { ErrorBody } from '../generated/index.ts';
+import type { FakeScript, ScriptedStep } from './fake-script.ts';
+import { defaultResultOf } from './fake-defaults.ts';
+import { checkParams } from './fake-request-check.ts';
+import type { PongSettings } from './fake-pong.ts';
+import type { ReceivedRequest } from './types.ts';
 
 export type Answer =
   | { readonly kind: typeof AnswerKind.Silent }
@@ -12,7 +16,8 @@ export type Answer =
 
 const SILENT: Answer = { kind: AnswerKind.Silent };
 
-export function answerFor(script: FakeScript, method: string, id: string, pong: PongSettings): Answer {
+export function answerFor(script: FakeScript, request: ReceivedRequest, pong: PongSettings): Answer {
+  const { id, method } = request;
   if (script.isSilent(method)) {
     return SILENT;
   }
@@ -20,28 +25,42 @@ export function answerFor(script: FakeScript, method: string, id: string, pong: 
   if (rawLine !== undefined) {
     return { kind: AnswerKind.Raw, line: rawLine };
   }
+  const refusal = checkParams(method, request.params);
+  if (refusal !== undefined) {
+    return errorAnswer(id, refusal);
+  }
+  const step = script.takeStep(method);
+  if (step !== undefined) {
+    return stepAnswer(id, step);
+  }
   const failure = script.failureOf(method);
   if (failure !== undefined) {
-    return errorEnvelope(id, failure);
+    return errorAnswer(id, failure);
   }
   if (script.hasReply(method)) {
-    return resultEnvelope(id, script.replyOf(method));
+    return resultAnswer(id, script.replyOf(method));
   }
-  if (method === Method.Ping) {
-    return resultEnvelope(id, pongBody(pong));
+  const fallback = defaultResultOf(method, pong);
+  if (fallback !== undefined) {
+    return resultAnswer(id, fallback);
   }
-  return errorEnvelope(id, { code: Fake.UnknownMethodCode, message: FakeText.UnknownMethod(method) });
+  return errorAnswer(id, { code: Fake.UnknownMethodCode, message: FakeText.UnknownMethod(method) });
 }
 
-// The answer to a line that is not a JSON object: herdr replies with the empty id and an error (W3).
+// The answer to a line that is not a JSON request: herdr replies with the empty id and an error (W3).
 export function invalidRequestAnswer(): Answer {
-  return errorEnvelope('', { code: Fake.InvalidRequestCode, message: FakeText.InvalidRequest });
+  return errorAnswer('', { code: Fake.InvalidRequestCode, message: FakeText.InvalidRequest });
 }
 
-function resultEnvelope(id: string, result: unknown): Answer {
-  return { kind: AnswerKind.Envelope, body: { [WireField.Id]: id, [WireField.Result]: result } };
-}
-
-function errorEnvelope(id: string, error: ErrorBody): Answer {
+// An envelope with this error.
+export function errorAnswer(id: string, error: ErrorBody): Answer {
   return { kind: AnswerKind.Envelope, body: { [WireField.Id]: id, [WireField.Error]: error } };
+}
+
+function stepAnswer(id: string, step: ScriptedStep): Answer {
+  return WireField.Error in step ? errorAnswer(id, step.error) : resultAnswer(id, step.result);
+}
+
+function resultAnswer(id: string, result: unknown): Answer {
+  return { kind: AnswerKind.Envelope, body: { [WireField.Id]: id, [WireField.Result]: result } };
 }

@@ -41,7 +41,10 @@ export interface FakeHerdr {
   readonly reproduces: readonly WireFact[];
 
   // --- 2a minimum (implemented) ---
-  /** Answers every later call of `method` with a result envelope. */
+  /**
+   * Answers every later call of `method` with a result envelope. For events.subscribe the ack is the answer (F2), so a reply alone is not used there;
+   * use fail, silent, rawReply or replySequence to change a subscribe.
+   */
   reply<M extends Method>(method: M, result: ResultOf<M>): void;
   /** Answers every later call of `method` with an error envelope. */
   fail(method: Method, error: ErrorBody): void;
