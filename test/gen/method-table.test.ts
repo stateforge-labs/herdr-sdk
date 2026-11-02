@@ -3,7 +3,7 @@
 import { afterAll, describe, expect, test } from 'bun:test';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { METHODS } from '../../src/generated/methods.ts';
+import { METHODS } from '../../src/generated/method-table.ts';
 import { methodRows, namespaceOf } from '../../gen/emit-method-table.ts';
 import type { ApiSchema } from '../../gen/schema.ts';
 import { branchesOf, constOf, GEN_PATHS, loadSchema, requestNamespace, SCHEMA_KEY, SCHEMA_NAMESPACE } from '../../gen/schema.ts';

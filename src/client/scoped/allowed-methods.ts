@@ -1,23 +1,14 @@
-// Role: the allow-list of one entry: its generated method set, narrowed to a preset or to a method list (never widened).
-// Informs HERDR-ADR-0005 (runtime allow-list before sending) and plan 3.4 (entries, presets, the methods option); contract in client/types.ts (AllowedMethods).
-import { ENTRY_METHODS, Method, PRESET_METHODS } from '../../generated/index.ts';
-import type { Preset } from '../../constants.ts';
-import type { AllowedMethods, EntryName } from '../types.ts';
+// Role: the allow-list of one scoped client: its base method list (the entry's generated list, or a preset's), narrowed to a method list (never widened).
+// Informs HERDR-ADR-0005 (runtime allow-list before sending), HERDR-ADR-0017 and plan 3.4 and 10.1 step 2 (the caller imports the one list it needs, so nothing else is bundled); contract in client/types.ts (AllowedMethods).
+import type { Method } from '../../generated/index.ts';
+import type { AllowedMethods } from '../types.ts';
 
-export const allowedMethods: AllowedMethods = function allowedMethods(entry, options = {}) {
-  const base = options.preset === undefined ? entrySet(entry) : presetSet(options.preset);
-  return options.methods === undefined ? base : narrow(base, options.methods);
+export const allowedMethods: AllowedMethods = function allowedMethods(base, options = {}) {
+  return options.methods === undefined ? new Set<Method>(base) : narrow(base, options.methods);
 };
 
-function entrySet(entry: EntryName): ReadonlySet<Method> {
-  return new Set<Method>(ENTRY_METHODS[entry]);
-}
-
-function presetSet(preset: Preset): ReadonlySet<Method> {
-  return new Set<Method>(PRESET_METHODS[preset]);
-}
-
-// A method outside the entry is dropped, not added: `methods` can only narrow the entry.
-function narrow(base: ReadonlySet<Method>, methods: readonly Method[]): ReadonlySet<Method> {
-  return new Set<Method>(methods.filter((method) => base.has(method)));
+// A method outside the base list is dropped, not added: `methods` can only narrow the entry.
+function narrow(base: readonly Method[], methods: readonly Method[]): ReadonlySet<Method> {
+  const inBase = new Set<Method>(base);
+  return new Set<Method>(methods.filter((method) => inBase.has(method)));
 }

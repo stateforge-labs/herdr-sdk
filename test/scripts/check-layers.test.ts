@@ -24,6 +24,8 @@ const FIXTURE_RULES = [
   { name: 'no-ts-extension', rules: [RuleId.explicitTs] },
   { name: 'trailing-comment-ok', rules: [] },
   { name: 'block-opener-in-string', rules: [RuleId.layer] },
+  { name: 'method-value-in-client', rules: [RuleId.text, RuleId.text] },
+  { name: 'method-type-only', rules: [] },
 ] as const;
 
 function rulesOf(name: string): readonly string[] {

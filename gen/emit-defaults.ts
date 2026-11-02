@@ -127,7 +127,7 @@ export function defaultsByTag(schema: ApiSchema): Readonly<Record<string, JsonVa
 
 export function emitDefaults(schema: ApiSchema, banner: string): string {
   return `${banner}
-import type { ResultByTag } from './results.ts';
+import type { ResultByTag } from '../results.ts';
 
 /**
  * One schema-valid result per response tag, built from the result schema. Strings with a format or pattern hold the

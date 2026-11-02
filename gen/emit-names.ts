@@ -1,4 +1,4 @@
-// Role: emits names.ts, the runtime name tables (Method, EventKind, ResultTag, AgentStatus and the rest) as as-const objects with same-named types.
+// Role: emits names/, the runtime name tables (Method with one constant per method, EventKind, ResultTag, AgentStatus and the rest) as as-const objects with same-named types.
 // Informs HERDR-ADR-0002 and plan section 3.2 (emit-names.ts; wire.ts `as const satisfies` pattern). Values are checked against the schema.
 import { CapabilityClass, EntryKey, ENTRY_CLASSES, PRESETS, PROMPT_EXTRA_METHODS, classOf } from './capabilities.ts';
 import { assertUniqueKeys, constKey } from './const-key.ts';
@@ -12,12 +12,13 @@ const AGENT_STATUS_CONFLICT = 'AgentStatus differs between bundles';
 const MISSING_ENUM = 'expected a string enum';
 const MISSING_CONST = 'expected a string const';
 
-// One name table: its wire values, and the union type its satisfies clause checks against (absent when none is emitted).
+// One name table: its wire values, the file it is written to under names/, and the union type its satisfies clause checks against.
 interface NameTable {
+  readonly file: string;
   readonly name: string;
   readonly doc: string;
   readonly values: readonly string[];
-  readonly unionType?: string;
+  readonly union?: { readonly type: string; readonly from: string };
 }
 
 // Every `propertyNames.pattern` anywhere in the schema, collected into one set.
@@ -148,44 +149,68 @@ export function presetMethods(schema: ApiSchema): readonly (readonly [string, re
 function renderTable(table: NameTable): string {
   assertUniqueKeys(table.values);
   const pairs = table.values.map((value) => `  ${constKey(value)}: ${JSON.stringify(value)},`).join('\n');
-  const check = table.unionType === undefined ? '' : ` satisfies Record<string, ${table.unionType}>`;
-  const type = table.unionType ?? `(typeof ${table.name})[keyof typeof ${table.name}]`;
+  const check = table.union === undefined ? '' : ` satisfies Record<string, ${table.union.type}>`;
+  const type = table.union?.type ?? `(typeof ${table.name})[keyof typeof ${table.name}]`;
   return `/** ${table.doc} */\nexport const ${table.name} = {\n${pairs}\n} as const${check};\nexport type ${table.name} = ${type};`;
 }
 
-function renderMembers(name: string, lists: readonly (readonly [string, readonly string[]])[]): string {
-  const body = lists.map(([key, methods]) => `  ${JSON.stringify(key)}: ${JSON.stringify(methods)},`).join('\n');
-  return `export const ${name} = {\n${body}\n} as const;`;
+// One standalone constant per method name (`MethodEventsSubscribe`), so library code imports only the names it uses.
+function renderMethodConstants(methods: readonly string[]): string {
+  assertUniqueKeys(methods);
+  return methods.map((name) => `export const Method${constKey(name)} = ${JSON.stringify(name)} as const;`).join('\n');
 }
 
-export function emitNames(schema: ApiSchema, banner: string): string {
-  const tables: readonly NameTable[] = [
-    { name: 'Method', doc: 'Every wire method name.', values: methodNames(schema), unionType: 'MethodName' },
-    { name: 'EventKind', doc: 'Event kinds (lifecycle events and the awaitable kinds).', values: eventKinds(schema), unionType: 'EventKindName' },
-    {
-      name: 'SubscriptionEventKind',
-      doc: 'Kinds carried by a subscription_event frame.',
-      values: subscriptionEventKinds(schema),
-      unionType: 'SubscriptionEventKindName',
-    },
-    { name: 'ResultTag', doc: 'Response tags.', values: responseResultTags(schema), unionType: 'ResultTagName' },
-    { name: 'AgentStatus', doc: 'Agent status values.', values: agentStatusValues(schema), unionType: 'AgentStatusName' },
-    { name: 'SubscriptionType', doc: 'Subscription type names.', values: subscriptionTypes(schema) },
-    { name: 'EventMatchKind', doc: 'EventMatch kind names.', values: eventMatchKinds(schema) },
-    { name: 'CapabilityClass', doc: 'Capability classes (plan 4).', values: Object.values(CapabilityClass) },
-    { name: 'ServerCapability', doc: 'ServerCapabilities keys that gate a method.', values: Object.values(ServerCapability) },
-  ];
-  const blocks = [
-    ...tables.map(renderTable),
-    `/** Token key pattern, shared by every tokens map (plan 3.2). */\nexport const TOKEN_NAME_PATTERN = ${JSON.stringify(tokenNamePattern(schema))} as const;`,
-    `/** Method names per entry point, sorted; the class sets are in gen/capabilities.ts. */\n${renderMembers('ENTRY_METHODS', entryMethods(schema))}`,
-    `/** Method names per named preset. */\n${renderMembers('PRESET_METHODS', presetMethods(schema))}`,
-  ];
+function methodFile(schema: ApiSchema, banner: string): string {
+  const methods = methodNames(schema);
+  const pairs = methods.map((name) => `  ${constKey(name)}: Method${constKey(name)},`).join('\n');
   return `${banner}
-import type { Method as MethodName } from './methods.ts';
-import type { AgentStatus as AgentStatusName, EventKind as EventKindName, SubscriptionEventKind as SubscriptionEventKindName } from './events.ts';
-import type { ResultTag as ResultTagName } from './results.ts';
+import type { MethodName } from '../method-table.ts';
 
-${blocks.join('\n\n')}
+${renderMethodConstants(methods)}
+
+/** Every wire method name. */
+export const Method = {
+${pairs}
+} as const satisfies Record<string, MethodName>;
+export type Method = MethodName;
 `;
+}
+
+// The name tables, one file each under names/ (the method table is separate: see methodFile).
+function nameTables(schema: ApiSchema): readonly NameTable[] {
+  return [
+    { file: 'event-kind.ts', name: 'EventKind', doc: 'Event kinds (lifecycle events and the awaitable kinds).', values: eventKinds(schema), union: { type: 'EventKindName', from: '../events.ts' } },
+    { file: 'subscription-event-kind.ts', name: 'SubscriptionEventKind', doc: 'Kinds carried by a subscription_event frame.', values: subscriptionEventKinds(schema), union: { type: 'SubscriptionEventKindName', from: '../events.ts' } },
+    { file: 'result-tag.ts', name: 'ResultTag', doc: 'Response tags.', values: responseResultTags(schema), union: { type: 'ResultTagName', from: '../results.ts' } },
+    { file: 'agent-status.ts', name: 'AgentStatus', doc: 'Agent status values.', values: agentStatusValues(schema), union: { type: 'AgentStatusName', from: '../events.ts' } },
+    { file: 'subscription-type.ts', name: 'SubscriptionType', doc: 'Subscription type names.', values: subscriptionTypes(schema) },
+    { file: 'event-match-kind.ts', name: 'EventMatchKind', doc: 'EventMatch kind names.', values: eventMatchKinds(schema) },
+    { file: 'capability-class.ts', name: 'CapabilityClass', doc: 'Capability classes (plan 4).', values: Object.values(CapabilityClass) },
+    { file: 'server-capability.ts', name: 'ServerCapability', doc: 'ServerCapabilities keys that gate a method.', values: Object.values(ServerCapability) },
+  ];
+}
+
+// The type imports a name file needs for its satisfies clauses, one line per source module.
+function typeImports(tables: readonly NameTable[]): string {
+  const byFrom = new Map<string, string[]>();
+  for (const table of tables) {
+    if (table.union !== undefined) {
+      byFrom.set(table.union.from, [...(byFrom.get(table.union.from) ?? []), table.union.type]);
+    }
+  }
+  return [...byFrom].map(([from, types]) => `import type { ${types.map((type) => `${type.replace(/Name$/, '')} as ${type}`).join(', ')} } from '${from}';`).join('\n');
+}
+
+// Each name table is its own module under names/, with a barrel that re-exports them all.
+export function emitNameFiles(schema: ApiSchema, banner: string): Readonly<Record<string, string>> {
+  const tables = nameTables(schema);
+  const files: Record<string, string> = { 'names/method.ts': methodFile(schema, banner) };
+  for (const table of tables) {
+    const imports = table.union === undefined ? '' : `${typeImports([table])}\n\n`;
+    files[`names/${table.file}`] = `${banner}\n${imports}${renderTable(table)}\n`;
+  }
+  files['names/token-name-pattern.ts'] = `${banner}\n/** Token key pattern, shared by every tokens map (plan 3.2). */\nexport const TOKEN_NAME_PATTERN = ${JSON.stringify(tokenNamePattern(schema))} as const;\n`;
+  const barrel = ['method.ts', ...tables.map((table) => table.file), 'token-name-pattern.ts'];
+  files['names/index.ts'] = `${banner}\n${barrel.map((file) => `export * from './${file}';`).join('\n')}\n`;
+  return files;
 }

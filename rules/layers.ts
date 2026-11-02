@@ -101,8 +101,25 @@ export const NODE_FORBIDDEN_LAYERS: readonly Layer[] = [Layer.Generated, Layer.M
 // Directories outside src/ that src/ code may never import (named in the violation reason).
 export const FORBIDDEN_TARGET_DIRS: readonly string[] = ['gen', 'test', 'scripts', 'rules', 'examples', 'bin'];
 
-export const FORBIDDEN_TEXT: readonly { readonly id: string; readonly pattern: RegExp; readonly reason: string }[] = [
+// Layers whose code uses the MethodX constants, never the Method object as a value (plan 10.1 step 2): the Method object would carry every name into the bundle.
+export const METHOD_VALUE_LAYERS: readonly Layer[] = [Layer.Client, Layer.Wire, Layer.Effect];
+
+// A text rule applies to every src/ file, or only to the files of `layers` when it is given.
+export const FORBIDDEN_TEXT: readonly { readonly id: string; readonly pattern: RegExp; readonly reason: string; readonly layers?: readonly Layer[] }[] = [
   { id: 'no-bun-global', pattern: /\bBun\./, reason: 'plan 2: no Bun.* in src/' },
+  {
+    id: 'method-value-use',
+    pattern: /\bMethod\.[A-Za-z]/,
+    reason: 'plan 10.1 step 2: use the MethodX constant, not the Method object, in client, wire and effect',
+    layers: METHOD_VALUE_LAYERS,
+  },
+  {
+    // `import type { Method }` and `import { type Method }` are type-only and allowed; a bare `Method` in a value import is not.
+    id: 'method-value-import',
+    pattern: /\bimport\s*\{[^}]*(?<!type\s)\bMethod\b/,
+    reason: 'plan 10.1 step 2: import the MethodX constant, not the Method object, in client, wire and effect',
+    layers: METHOD_VALUE_LAYERS,
+  },
 ];
 
 export const RuleId = {

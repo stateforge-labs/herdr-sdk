@@ -20,6 +20,22 @@ A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22,
 
 Wire types are `export type` only. Raw strings are accepted by the types, but these docs always use the generated constants (`Method`, `EventKind`, `SubscriptionType`, `AgentStatus`, `WatchKind`).
 
+## Install and footprint
+
+The package ships compiled ESM in `dist/` with declarations (no bundle). A bundler or Node loads only the modules a call reaches: `connect()` does not load the streams until `events.subscribe`, `watch()` or `hold()` is first used.
+
+Measured on 2026-11-02, minified (`bun run check:size`, which builds `dist/` and fails on a budget or a leak):
+
+| What a consumer imports | Bytes |
+|---|---|
+| `@homelab/herdr` (every method, `connect()`) | 26,887 |
+| `@homelab/herdr/read-only` | 18,691 |
+| `@homelab/herdr/admin` | 15,561 |
+| a read-only script that narrows to one method | 17,513 |
+| the streams chunk (`events.subscribe`, `watch`, `hold`), loaded on first use | 7,672 |
+
+The declarations use `AbortSignal` and `AsyncDisposable`. Consumers need `@types/node` 22 or later, or a `lib` that has them (`es2023`, `esnext.disposable`, and `DOM` or `@types/node`). `/test-kit` declarations also import `node:net`.
+
 ## 1. A small script (Promise API)
 
 ```ts

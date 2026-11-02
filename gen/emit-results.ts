@@ -46,7 +46,7 @@ export function emitResults(schema: ApiSchema, header: string): string {
   }
   const variants = variantsOf(union);
   return `${header}
-import type { Method } from './methods.ts';
+import type { Method } from './names/method.ts';
 
 ${emitDefs(definitions, new Set([DEF_NAME.responseResult]))}
 

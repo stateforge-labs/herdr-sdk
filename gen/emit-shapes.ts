@@ -65,7 +65,7 @@ export function emitShapes(schema: ApiSchema, banner: string): string {
   const entries = methodNames(schema).map((method) => `  ${JSON.stringify(method)}: ${renderShape(paramsShapeOf(schema, method))},`);
   const kindLines = Object.entries(JSON_KIND).map(([key, kind]) => `  ${constKey(key)}: ${JSON.stringify(kind)},`);
   return `${banner}
-import type { Method } from './methods.ts';
+import type { Method } from '../names/method.ts';
 
 /** JSON kinds a params field may take. */
 export const JsonKind = {

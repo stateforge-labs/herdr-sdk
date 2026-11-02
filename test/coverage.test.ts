@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DEFAULT_RESULT, METHOD_RESULT, METHODS } from '../src/generated/index.ts';
 import { checkResultMap } from '../gen/check-result-map.ts';
-import { DOC_FILES, OUTPUT_FILES, runGenerator } from '../gen/index.ts';
+import { DOC_FILES, renderOutputs, runGenerator } from '../gen/index.ts';
 import { isLoose, methodResultTags, METHOD_RESULT_MAP, RESULT_KIND, RESULT_SOURCE } from '../gen/method-result-map.ts';
 import { GEN_PATHS, loadSchema } from '../gen/schema.ts';
 
@@ -120,7 +120,7 @@ describe('coverage of the committed schema', () => {
       const outDir = join(scratch, 'generated');
       const docsDir = join(scratch, 'api');
       runGenerator({ schemaPath: GEN_PATHS.schemaPath, outDir, docsDir });
-      for (const file of Object.values(OUTPUT_FILES)) {
+      for (const file of Object.keys(renderOutputs(loadSchema(GEN_PATHS.schemaPath)))) {
         expect(readFileSync(join(outDir, file), 'utf8')).toBe(readFileSync(join(GEN_PATHS.outDir, file), 'utf8'));
       }
       for (const file of Object.values(DOC_FILES)) {

@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const DRIFT_BIN = fileURLToPath(new URL('../../bin/herdr-drift.ts', import.meta.url));
+const DRIFT_BIN = fileURLToPath(new URL('../../bin/herdr-drift.js', import.meta.url));
 const EXIT_NOT_COVERED = 3;
 
 describe('herdr-drift with no herdr on PATH', () => {

@@ -42,7 +42,7 @@ function valueLines(entries: readonly OverrideEntry[], pick: (override: Override
 
 export function emitOverrides(banner: string): string {
   return `${banner}
-import type { Method } from './methods.ts';
+import type { Method } from './names/method.ts';
 
 interface LongPollRow {
   readonly timeoutPath: readonly string[];

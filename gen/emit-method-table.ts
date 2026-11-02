@@ -1,4 +1,4 @@
-// Role: emits the one runtime METHODS table (name, class, result tag, namespace path, long-poll flag); no second method list.
+// Role: emits method-table.ts, the one METHODS table (name, class, result tag, namespace path, long-poll flag) and the MethodName union; no second method list.
 // Informs HERDR-ADR-0002 and plan section 3.2 (emit-method-table.ts: one table). Result tags come from METHOD_RESULT_MAP (null for a LOOSE row).
 import { classOf, type CapabilityClass } from './capabilities.ts';
 import { METHOD_RESULT_MAP, RESULT_KIND } from './method-result-map.ts';
@@ -68,13 +68,14 @@ function renderRow(row: MethodRow): string {
 export function emitMethodTable(schema: ApiSchema, banner: string): string {
   const rows = methodRows(schema);
   return `${banner}
-import type { CapabilityClass } from './names.ts';
+import type { CapabilityClass } from './names/capability-class.ts';
 import type { ResultTag } from './results.ts';
 
 export const METHODS = [
 ${rows.map(renderRow).join('\n')}
 ] as const satisfies readonly ${ROW_TYPE}[];
 
-export type Method = (typeof METHODS)[number]["name"];
+/** Every wire method name, as the METHODS table spells it. Method (names/method.ts) is this union. */
+export type MethodName = (typeof METHODS)[number]["name"];
 `;
 }

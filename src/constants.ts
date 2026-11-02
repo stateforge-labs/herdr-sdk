@@ -3,7 +3,7 @@
 import { ServerCapability, SubscriptionType } from './generated/index.ts';
 import type { ServerCapabilities } from './generated/results.ts';
 
-export { TOKEN_NAME_PATTERN } from './generated/names.ts';
+export { TOKEN_NAME_PATTERN } from './generated/names/token-name-pattern.ts';
 
 // Environment variable names and the default socket location (hub constants.ts:59; atalaya socket-path.ts).
 export const HerdrEnv = {
@@ -304,58 +304,10 @@ export const TreeKey = {
   Subscribe: 'subscribe',
 } as const;
 
-// Size gate (plan 10.1; scripts/check-size.ts): the entries, their source files, and the budgets set from the measurement.
-export const SizeEntry = {
-  Core: '.',
-  ReadOnly: '/read-only',
-  Effect: '/effect',
-  Admin: '/admin',
-  TestKit: '/test-kit',
-  Mcp: '/mcp',
-} as const;
-
-export const SizeSource = {
-  Core: 'src/index.ts',
-  ReadOnly: 'src/read-only.ts',
-  Effect: 'src/effect.ts',
-  Admin: 'src/admin.ts',
-  TestKit: 'src/test-kit.ts',
-  Mcp: 'src/mcp.ts',
-} as const;
-
-// Bytes per budgeted entry (measured + 10 %, HERDR-ADR-0015). Entries not listed are measured and printed only.
-export const SizeBudget: Readonly<Partial<Record<string, number>>> = {
-  [SizeEntry.Core]: 33647, // measured 30588 B
-  [SizeEntry.ReadOnly]: 31197, // measured 28360 B
-  [SizeEntry.Effect]: 3370, // measured 3063 B, provisional until P6a
-};
-
-// Inputs /read-only must never bundle (HERDR-ADR-0005: the read-only entry does not pull /admin or /effect).
-export const SizeForbiddenInput = {
-  Admin: 'src/admin.ts',
-  ConnectAdmin: 'src/client/scoped/connect-admin.ts',
-  EffectPrefix: 'src/effect',
-} as const;
-
-// Arguments of `bun build` for the size gate: the library runs on Node, and effect stays external.
-export const SizeBuildArg = {
-  Build: 'build',
-  Target: '--target=node',
-  Minify: '--minify',
-  External: '--external',
-  Metafile: '--metafile=',
-  Effect: 'effect',
-} as const;
-
 // Results of `typeof` that the namespace tree tells a branch from a leaf by.
 export const TypeofKind = {
   Function: 'function',
   Object: 'object',
-} as const;
-
-// Note printed beside an entry whose code is still a stub.
-export const SizeNote = {
-  Provisional: 'provisional until P6a re-measures',
 } as const;
 
 // --- end P2b ---

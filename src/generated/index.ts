@@ -8,7 +8,7 @@ export * as params from './params.ts';
 export * as results from './results.ts';
 export * as errors from './errors.ts';
 export * as events from './events.ts';
-export { METHODS } from './methods.ts';
+export { METHODS } from './method-table.ts';
 export { METHOD_RESULT } from './results.ts';
 export type { MethodParams, Subscription } from './params.ts';
 export type { ResponseResult, ResultByTag } from './results.ts';
@@ -25,12 +25,12 @@ export {
   CapabilityClass,
   ServerCapability,
   TOKEN_NAME_PATTERN,
-  ENTRY_METHODS,
-  PRESET_METHODS,
-} from './names.ts';
-export { DEFAULT_RESULT } from './defaults.ts';
-export { JsonKind, PARAMS_SHAPE } from './shapes.ts';
-export type { FieldShape, ParamsShape } from './shapes.ts';
+} from './names/index.ts';
+export { ENTRY_METHODS } from './entry-methods.ts';
+export { PRESET_METHODS } from './preset-methods.ts';
+export { DEFAULT_RESULT } from './test-data/defaults.ts';
+export { JsonKind, PARAMS_SHAPE } from './test-data/shapes.ts';
+export type { FieldShape, ParamsShape } from './test-data/shapes.ts';
 export { CAPABILITY_GATE, LONG_POLL, STREAM_RETURNS } from './overrides.ts';
 export type * from './namespaces.ts';
 export const PROTOCOL = 22 as const;

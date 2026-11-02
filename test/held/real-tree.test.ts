@@ -1,25 +1,16 @@
-// Role: hold() over P2b's real buildNamespaceTree and allowedMethods('held'): only the class C leaves exist on a held connection.
-// Informs HERDR-ADR-0005 (capability-scoped clients) and plan 3.6; waits for slice P2b-1 (these throw NotImplementedError until it lands, so the test is skipped until then).
+// Role: hold() over the real buildNamespaceTree and allowedMethods(ENTRY_METHODS.held): only the class C leaves exist on a held connection.
+// Informs HERDR-ADR-0005 (capability-scoped clients) and plan 3.6; runs on the real builders (P2b-1 has landed).
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
+import { ENTRY_METHODS } from '../../src/generated/index.ts';
 import { allowedMethods } from '../../src/client/scoped/allowed-methods.ts';
 import { buildNamespaceTree } from '../../src/client/scoped/namespace-tree.ts';
 import { createHold } from '../../src/client/held/hold.ts';
 import { DEFAULT_CAPABILITIES } from '../../src/constants.ts';
 import { memoryDedicated } from './support/memory-dedicated.ts';
 
-// True once P2b-1 has landed: the stubs throw until then.
-function p2bLanded(): boolean {
-  try {
-    allowedMethods('held');
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 describe('held tree over the real builders', () => {
-  test('only the class C leaves exist on a held connection', { skip: !p2bLanded() }, async () => {
+  test('only the class C leaves exist on a held connection', async () => {
     const dedicated = memoryDedicated();
     const clientClosed = new AbortController();
     const held = await createHold({

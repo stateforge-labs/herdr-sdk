@@ -1,12 +1,14 @@
 // Role: composes one scoped client: its namespace tree plus only the members its entry has (call, streams, hold) on top of the core's own members.
-// Informs HERDR-ADR-0005 (members per class set), plan 3.3 (one tree builder, close is local) and plan 3.4 (entries); the composed object is typed as the generated client type by the cast at the end of composeClient.
-import { EntryKey, TreeKey } from '../../constants.ts';
-import { Method } from '../../generated/index.ts';
+// Informs HERDR-ADR-0005 (members per class set), plan 3.3 (one tree builder, close is local), plan 3.4 (entries) and plan 10.1 step 3 (streams load lazily); the composed object is typed as the generated client type by the cast at the end of composeClient.
+import { ErrorText, EntryKey, TreeKey } from '../../constants.ts';
+import { MethodEventsSubscribe, MethodSessionSnapshot } from '../../generated/names/method.ts';
+import type { Method } from '../../generated/index.ts';
+import { HerdrTransportError } from '../../wire/errors.ts';
 import type { ParamsOf, ResultOf } from '../../wire/types.ts';
-import type { CallOptions, Caller, CoreClient, Invoke, NamespaceTree } from '../types.ts';
+import type { CallOptions, Caller, CoreClient, Invoke, NamespaceTree, StreamMembers } from '../types.ts';
 import { buildNamespaceTree } from './namespace-tree.ts';
 import { createInvoke } from './invoke.ts';
-import { holdFor, subscribeFor, watchFor } from './streams.ts';
+import { lazyStreams } from './lazy-streams.ts';
 
 /** Which members beyond the namespace tree an entry has. */
 export interface Members {
@@ -32,11 +34,17 @@ export const ENTRY_MEMBERS = {
 export const PRESET_MEMBERS: Members = NO_MEMBERS;
 
 /**
- * Builds a public client of type T from the core and the allow-list. The tree is built from METHODS for exactly `allowed`;
+ * Builds a public client of type T from the core and the allow-list. The tree is built from exactly `allowed`;
  * T is the generated type of the same entry. The runtime object is assembled from the tree and the members, so its static
  * type is asserted to T by the final cast; the contract type tests (test/types) check the members of each T.
+ * `streams` is the lazy loader of the stream members (lazy-streams.ts); tests pass their own.
  */
-export function composeClient<T>(core: CoreClient, allowed: ReadonlySet<Method>, members: Members): T {
+export function composeClient<T>(
+  core: CoreClient,
+  allowed: ReadonlySet<Method>,
+  members: Members,
+  streams: StreamMembers = lazyStreams(core),
+): T {
   const invoke = createInvoke(core, allowed);
   const tree = buildNamespaceTree(allowed, invoke);
   const client: Record<string, unknown> = {
@@ -51,26 +59,38 @@ export function composeClient<T>(core: CoreClient, allowed: ReadonlySet<Method>,
     client.call = callWith(invoke);
   }
   if (members.streams) {
-    const subscribe = subscribeFor(core.transport);
-    // watchFor refuses unless events.subscribe is allowed, so the composed subscribe is attached only for an allowed method.
-    if (allowed.has(Method.EventsSubscribe)) {
-      client.events = eventsWith(tree, subscribe);
+    // The refusals are synchronous, before anything is sent or loaded: watch() is built on events.subscribe and session.snapshot.
+    if (allowed.has(MethodEventsSubscribe)) {
+      client.events = eventsWith(tree, streams.subscribe);
     }
-    client.watch = watchFor(subscribe, allowed);
+    requireAllowed(MethodEventsSubscribe, allowed);
+    requireAllowed(MethodSessionSnapshot, allowed);
+    client.watch = streams.watch;
   }
   if (members.hold) {
-    client.hold = holdFor(core);
+    client.hold = streams.hold;
   }
   return Object.freeze(client) as T;
+}
+
+function requireAllowed(method: Method, allowed: ReadonlySet<Method>): void {
+  if (!allowed.has(method)) {
+    throw new HerdrTransportError(ErrorText.NotAllowed(method));
+  }
 }
 
 /**
  * composeClient, but closes the core when composition refuses (a watch on a method list without its methods), so the
  * connection the core opened is not left live. Every connect function composes through this.
  */
-export function composeOrClose<T>(core: CoreClient, allowed: ReadonlySet<Method>, members: Members): T {
+export function composeOrClose<T>(
+  core: CoreClient,
+  allowed: ReadonlySet<Method>,
+  members: Members,
+  streams: StreamMembers = lazyStreams(core),
+): T {
   try {
-    return composeClient<T>(core, allowed, members);
+    return composeClient<T>(core, allowed, members, streams);
   } catch (error) {
     core.close();
     throw error;
@@ -85,7 +105,7 @@ function callWith(invoke: Invoke): Caller<Method>['call'] {
 }
 
 // The generated events branch (every event leaf except subscribe) plus the composed subscribe.
-function eventsWith(tree: NamespaceTree, subscribe: ReturnType<typeof subscribeFor>): NamespaceTree {
+function eventsWith(tree: NamespaceTree, subscribe: StreamMembers['subscribe']): NamespaceTree {
   const branch = tree[TreeKey.Events] as NamespaceTree | undefined;
   return Object.freeze({ ...branch, [TreeKey.Subscribe]: subscribe }) as NamespaceTree;
 }

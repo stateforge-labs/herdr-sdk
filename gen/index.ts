@@ -1,16 +1,17 @@
-// Role: generator entry, `bun gen/index.ts`; writes the src/generated/ modules and the docs/api/ references.
+// Role: generator entry, `bun gen/index.ts`; writes the src/generated/ modules (nested per kind) and the docs/api/ references.
 // Informs HERDR-ADR-0002 and plan section 3.2. Output must be reproducible (git diff clean after a rerun).
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { assertClassified } from './capabilities.ts';
 import { checkResultMap } from './check-result-map.ts';
 import { emitDefaults } from './emit-defaults.ts';
 import { emitEventsDoc, emitMethodsDoc } from './emit-docs.ts';
 import { emitErrors } from './emit-errors.ts';
+import { emitEntryFiles, emitEntryMethods, emitPresetMethods } from './emit-entries.ts';
 import { emitEvents } from './emit-events.ts';
 import { emitIndex } from './emit-index.ts';
 import { emitMethodTable, methodNames } from './emit-method-table.ts';
-import { emitNames } from './emit-names.ts';
+import { emitNameFiles } from './emit-names.ts';
 import { emitNamespaces } from './emit-namespaces.ts';
 import { emitOverrides } from './emit-overrides.ts';
 import { emitParams } from './emit-params.ts';
@@ -21,28 +22,12 @@ import { assertOverrides } from './overrides.ts';
 import type { ApiSchema } from './schema.ts';
 import { GEN_PATHS, header, loadSchema } from './schema.ts';
 
-// File names written into the output directory.
-export const OUTPUT_FILES = {
-  methods: 'methods.ts',
-  params: 'params.ts',
-  results: 'results.ts',
-  errors: 'errors.ts',
-  events: 'events.ts',
-  names: 'names.ts',
-  namespaces: 'namespaces.ts',
-  defaults: 'defaults.ts',
-  shapes: 'shapes.ts',
-  overrides: 'overrides.ts',
-  index: 'index.ts',
-} as const;
-
 // File names written into the docs directory.
 export const DOC_FILES = {
   methods: 'methods.md',
   events: 'events.md',
 } as const;
 
-type OutputKey = keyof typeof OUTPUT_FILES;
 type DocKey = keyof typeof DOC_FILES;
 
 // Printed after a CLI run; mirrors GEN_PATHS relative to the package.
@@ -66,22 +51,25 @@ function assertCoverage(schema: ApiSchema): void {
   }
 }
 
-// The body of every output module, keyed like OUTPUT_FILES.
-export function renderOutputs(schema: ApiSchema): Readonly<Record<OutputKey, string>> {
+// The body of every output module, keyed by its path under src/generated/ (nested folders for names/, entries/, presets/, test-data/).
+export function renderOutputs(schema: ApiSchema): Readonly<Record<string, string>> {
   assertCoverage(schema);
   const banner = header(schema);
   return {
-    methods: emitMethodTable(schema, banner),
-    params: emitParams(schema, banner),
-    results: emitResults(schema, banner),
-    errors: emitErrors(schema, banner),
-    events: emitEvents(schema, banner),
-    names: emitNames(schema, banner),
-    namespaces: emitNamespaces(schema, banner),
-    defaults: emitDefaults(schema, banner),
-    shapes: emitShapes(schema, banner),
-    overrides: emitOverrides(banner),
-    index: emitIndex(schema, banner),
+    ...emitNameFiles(schema, banner),
+    ...emitEntryFiles(schema, banner),
+    'entry-methods.ts': emitEntryMethods(schema, banner),
+    'preset-methods.ts': emitPresetMethods(schema, banner),
+    'method-table.ts': emitMethodTable(schema, banner),
+    'params.ts': emitParams(schema, banner),
+    'results.ts': emitResults(schema, banner),
+    'errors.ts': emitErrors(schema, banner),
+    'events.ts': emitEvents(schema, banner),
+    'namespaces.ts': emitNamespaces(schema, banner),
+    'test-data/defaults.ts': emitDefaults(schema, banner),
+    'test-data/shapes.ts': emitShapes(schema, banner),
+    'overrides.ts': emitOverrides(banner),
+    'index.ts': emitIndex(schema, banner),
   };
 }
 
@@ -91,14 +79,17 @@ export function renderDocs(schema: ApiSchema): Readonly<Record<DocKey, string>> 
   return { methods: emitMethodsDoc(schema), events: emitEventsDoc(schema) };
 }
 
+// Writes every module from a clean outDir, so a file the generator no longer emits cannot linger.
 export function runGenerator({ schemaPath, outDir, docsDir }: GenOptions): void {
   const schema = loadSchema(schemaPath);
   const outputs = renderOutputs(schema);
   const docs = renderDocs(schema);
+  rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
   mkdirSync(docsDir, { recursive: true });
-  for (const key of Object.keys(OUTPUT_FILES) as OutputKey[]) {
-    writeFileSync(join(outDir, OUTPUT_FILES[key]), outputs[key]);
+  for (const [path, body] of Object.entries(outputs)) {
+    mkdirSync(dirname(join(outDir, path)), { recursive: true });
+    writeFileSync(join(outDir, path), body);
   }
   for (const key of Object.keys(DOC_FILES) as DocKey[]) {
     writeFileSync(join(docsDir, DOC_FILES[key]), docs[key]);
@@ -107,7 +98,7 @@ export function runGenerator({ schemaPath, outDir, docsDir }: GenOptions): void 
 
 if (import.meta.main) {
   runGenerator(GEN_PATHS);
-  const outputCount = Object.keys(OUTPUT_FILES).length;
+  const outputCount = Object.keys(renderOutputs(loadSchema(GEN_PATHS.schemaPath))).length;
   const docCount = Object.keys(DOC_FILES).length;
   process.stdout.write(`generated ${outputCount} files -> ${DISPLAY_OUT_DIR}, ${docCount} docs -> ${DISPLAY_DOCS_DIR}\n`);
 }

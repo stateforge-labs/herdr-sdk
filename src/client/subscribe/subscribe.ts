@@ -1,7 +1,8 @@
 // Role: events.subscribe over its own dedicated connection: open, register the push listener, send the request, wait for the id-matched ack, then stream until a close source ends it.
 // Informs HERDR-ADR-0007, HERDR-ADR-0016 (W2 ack then stream, pushes carry no id, W6 invalid_params as a HerdrError) and plan 3.6; contract in client/subscribe/types.ts (CreateSubscribe).
 import { UNKNOWN_EVENT } from '../../constants.ts';
-import { Method, type Subscription } from '../../generated/index.ts';
+import { MethodEventsSubscribe } from '../../generated/names/method.ts';
+import type { Subscription } from '../../generated/index.ts';
 import { HerdrTransportError, SubscriptionEnded } from '../../wire/errors.ts';
 import { decodePush } from '../../wire/push-decoder.ts';
 import type { DecodedFrame, DedicatedConnection, DedicatedEnd, UnknownFrame } from '../../wire/types.ts';
@@ -43,7 +44,7 @@ async function openSubscription(
   });
   try {
     await connection.request(
-      Method.EventsSubscribe,
+      MethodEventsSubscribe,
       { subscriptions: [...specs] },
       { timeoutMs: options.ackTimeoutMs ?? deps.timeoutMs },
     );
@@ -87,7 +88,7 @@ function settleEnd(end: DedicatedEnd, queue: FrameQueue<DecodedFrame>, scope: Co
     return;
   }
   if (end.byServer) {
-    queue.fail(new SubscriptionEnded(Method.EventsSubscribe));
+    queue.fail(new SubscriptionEnded(MethodEventsSubscribe));
     return;
   }
   queue.end();

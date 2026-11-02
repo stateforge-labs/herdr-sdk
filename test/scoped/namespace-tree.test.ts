@@ -4,7 +4,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { types } from 'node:util';
 import { EntryKey, METHOD_SEPARATOR, TypeofKind } from '../../src/constants.ts';
-import { METHODS, Method } from '../../src/generated/index.ts';
+import { ENTRY_METHODS, METHODS, Method } from '../../src/generated/index.ts';
 import { allowedMethods } from '../../src/client/scoped/allowed-methods.ts';
 import { buildNamespaceTree } from '../../src/client/scoped/namespace-tree.ts';
 import type { Invoke, NamespaceTree } from '../../src/client/types.ts';
@@ -37,14 +37,14 @@ function leafAt(tree: NamespaceTree, method: string): unknown {
 
 describe('buildNamespaceTree', () => {
   test('tree.pane.list and tree.agent.view.set are functions for the client entry', () => {
-    const tree = buildNamespaceTree(allowedMethods(EntryKey.client), recordingInvoke().invoke);
+    const tree = buildNamespaceTree(allowedMethods(ENTRY_METHODS[EntryKey.client]), recordingInvoke().invoke);
     assert.equal(typeof leafAt(tree, Method.PaneList), 'function');
     assert.equal(typeof leafAt(tree, Method.AgentViewSet), 'function');
   });
 
   test('a leaf calls invoke with the dotted method name and the given params and options', async () => {
     const { invoke, calls } = recordingInvoke();
-    const tree = buildNamespaceTree(allowedMethods(EntryKey.client), invoke);
+    const tree = buildNamespaceTree(allowedMethods(ENTRY_METHODS[EntryKey.client]), invoke);
     const leaf = leafAt(tree, Method.AgentGet) as (params?: unknown, options?: object) => Promise<unknown>;
     await leaf({ target: 'a' }, { timeoutMs: 5 });
     assert.deepEqual(calls, [{ method: Method.AgentGet, params: { target: 'a' } }]);
@@ -52,28 +52,28 @@ describe('buildNamespaceTree', () => {
 
   test('a leaf called without params sends an empty object', async () => {
     const { invoke, calls } = recordingInvoke();
-    const tree = buildNamespaceTree(allowedMethods(EntryKey.client), invoke);
+    const tree = buildNamespaceTree(allowedMethods(ENTRY_METHODS[EntryKey.client]), invoke);
     const leaf = leafAt(tree, Method.PaneList) as () => Promise<unknown>;
     await leaf();
     assert.deepEqual(calls, [{ method: Method.PaneList, params: {} }]);
   });
 
   test('disallowed methods are absent from the client entry', () => {
-    const tree = buildNamespaceTree(allowedMethods(EntryKey.client), recordingInvoke().invoke);
+    const tree = buildNamespaceTree(allowedMethods(ENTRY_METHODS[EntryKey.client]), recordingInvoke().invoke);
     assert.equal(Object.hasOwn(tree, 'server'), true, 'client has server.agent_manifests, so the server branch exists');
     assert.equal(leafAt(tree, Method.ServerStop), undefined);
     assert.equal(leafAt(tree, Method.PaneClose), undefined);
   });
 
   test('events.subscribe is never a leaf, even when it is allowed', () => {
-    const tree = buildNamespaceTree(allowedMethods(EntryKey.client), recordingInvoke().invoke);
+    const tree = buildNamespaceTree(allowedMethods(ENTRY_METHODS[EntryKey.client]), recordingInvoke().invoke);
     assert.equal(leafAt(tree, Method.EventsSubscribe), undefined);
     assert.equal(typeof leafAt(tree, Method.EventsWait), 'function');
   });
 
   test('every allowed method is a leaf, and the leaf count is the allow-list size minus events.subscribe', () => {
     for (const entry of Object.values(EntryKey)) {
-      const allowed = allowedMethods(entry);
+      const allowed = allowedMethods(ENTRY_METHODS[entry]);
       const expected = [...allowed].filter((method) => method !== Method.EventsSubscribe).sort();
       const tree = buildNamespaceTree(allowed, recordingInvoke().invoke);
       assert.deepEqual(leafNames(tree).sort(), expected, entry);
@@ -91,14 +91,14 @@ describe('buildNamespaceTree', () => {
   });
 
   test('the tree is plain frozen objects, not a Proxy', () => {
-    const tree = buildNamespaceTree(allowedMethods(EntryKey.client), recordingInvoke().invoke);
+    const tree = buildNamespaceTree(allowedMethods(ENTRY_METHODS[EntryKey.client]), recordingInvoke().invoke);
     assert.equal(types.isProxy(tree), false);
     assert.equal(Object.isFrozen(tree), true);
     assert.equal(Object.isFrozen(tree.agent), true);
   });
 
   test('the held tree has client.window_title.set', () => {
-    const tree = buildNamespaceTree(allowedMethods(EntryKey.held), recordingInvoke().invoke);
+    const tree = buildNamespaceTree(allowedMethods(ENTRY_METHODS[EntryKey.held]), recordingInvoke().invoke);
     assert.equal(typeof leafAt(tree, Method.ClientWindowTitleSet), 'function');
   });
 });

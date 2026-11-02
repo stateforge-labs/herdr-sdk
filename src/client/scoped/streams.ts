@@ -1,8 +1,6 @@
-// Role: builds the stream members of one client from its transport: events.subscribe, watch() and hold(), each with the client's resolved settings.
-// Informs plan 3.3 (the transport is resolved once), plan 3.4 (watch fails at construction without session.keep snapshot) and plan 3.6; contracts in subscribe/watch/held types.
-import { ErrorText } from '../../constants.ts';
-import { Method } from '../../generated/index.ts';
-import { HerdrTransportError } from '../../wire/errors.ts';
+// Role: builds the stream members of one client from its transport: events.subscribe, the watch factory and hold, each with the client's resolved settings.
+// This module is the heavy half: it is loaded through a dynamic import by lazy-streams.ts, so it stays out of a client that never streams (plan 10.1 step 3).
+// Informs plan 3.3 (the transport is resolved once), plan 3.6 and HERDR-ADR-0015; contracts in subscribe, watch and held types.
 import { openDedicated } from '../../wire/dedicated.ts';
 import type { CreateHold, Hold } from '../held/types.ts';
 import { createHold as defaultCreateHold } from '../held/hold.ts';
@@ -10,7 +8,7 @@ import { createSubscribe as defaultCreateSubscribe } from '../subscribe/subscrib
 import type { CreateSubscribe, Subscribe } from '../subscribe/types.ts';
 import { createWatch as defaultCreateWatch } from '../watch/watch.ts';
 import type { CreateWatch, WatchFn } from '../watch/types.ts';
-import type { ClientTransport, CoreClient } from '../types.ts';
+import type { ClientTransport, CoreClient, StreamMembers } from '../types.ts';
 import { buildNamespaceTree } from './namespace-tree.ts';
 import { allowedMethods } from './allowed-methods.ts';
 
@@ -26,22 +24,9 @@ export function subscribeFor(transport: ClientTransport, create: CreateSubscribe
   });
 }
 
-// watch() is built on events.subscribe and reads the present with session.snapshot; without either, the watch cannot
-// run, so construction fails here (plan 3.4). Both checks run before anything is sent.
-export function watchFor(
-  subscribe: Subscribe,
-  allowed: ReadonlySet<Method>,
-  create: CreateWatch = defaultCreateWatch,
-): WatchFn {
-  requireAllowed(Method.EventsSubscribe, allowed);
-  requireAllowed(Method.SessionSnapshot, allowed);
+// watch() is built on events.subscribe and session.snapshot. Whether the client may use both is checked by compose.ts before this runs (synchronously, plan 3.4).
+export function watchFor(subscribe: Subscribe, create: CreateWatch = defaultCreateWatch): WatchFn {
   return create(subscribe);
-}
-
-function requireAllowed(method: Method, allowed: ReadonlySet<Method>): void {
-  if (!allowed.has(method)) {
-    throw new HerdrTransportError(ErrorText.NotAllowed(method));
-  }
 }
 
 export function holdFor(core: CoreClient, create: CreateHold = defaultCreateHold): Hold {
@@ -55,4 +40,10 @@ export function holdFor(core: CoreClient, create: CreateHold = defaultCreateHold
     buildTree: buildNamespaceTree,
     allowedMethods,
   });
+}
+
+/** The three stream members of one client, built from its core. Called once, by the lazy loader, on first use. */
+export function createStreamMembers(core: CoreClient): StreamMembers {
+  const subscribe = subscribeFor(core.transport);
+  return { subscribe, watch: watchFor(subscribe), hold: holdFor(core) };
 }

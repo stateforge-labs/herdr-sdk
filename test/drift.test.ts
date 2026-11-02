@@ -12,7 +12,7 @@ import { ReasonText } from '../src/drift/constants.ts';
 import { committedDirectory, committedSchemaText, committedVersionText } from './drift/support/real-schema.ts';
 import { miniSchema } from './drift/support/mini-schema.ts';
 
-const BIN = fileURLToPath(new URL('../bin/herdr-drift.ts', import.meta.url));
+const BIN = fileURLToPath(new URL('../bin/herdr-drift.js', import.meta.url));
 // The committed schema lists 102 methods and METHOD_RESULT maps 25 of them (77 unmapped). P3 regenerates the table and this pin changes with it.
 const KNOWN_UNMAPPED_METHODS = 55;
 const UNMAPPED_LINE = 'methods without a METHOD_RESULT row: ';

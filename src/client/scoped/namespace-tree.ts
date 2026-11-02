@@ -1,7 +1,8 @@
-// Role: builds the nested method tree once, eagerly, from the generated METHODS table for exactly the allowed methods (no Proxy, no getters).
-// Informs HERDR-ADR-0005 (capability-scoped clients), plan 3.3 (one tree builder, shared with held connections) and plan 3.4; contract in client/types.ts (BuildNamespaceTree).
-import { METHODS, Method } from '../../generated/index.ts';
+// Role: builds the nested method tree once, eagerly, from exactly the allowed methods (no Proxy, no getters, no generated METHODS table).
+// Informs HERDR-ADR-0005 (capability-scoped clients), plan 3.3 (one tree builder, shared with held connections), plan 3.4 and 10.1 step 2; contract in client/types.ts (BuildNamespaceTree).
 import { METHOD_SEPARATOR, TypeofKind } from '../../constants.ts';
+import { MethodEventsSubscribe } from '../../generated/names/method.ts';
+import type { Method } from '../../generated/index.ts';
 import type { BuildNamespaceTree, CallOptions, Invoke, NamespaceTree } from '../types.ts';
 
 type MutableTree = { [segment: string]: MutableTree | Leaf };
@@ -9,15 +10,16 @@ type Leaf = (params?: unknown, options?: CallOptions) => Promise<unknown>;
 
 export const buildNamespaceTree: BuildNamespaceTree = function buildNamespaceTree(allowed, invoke) {
   const root: MutableTree = {};
-  for (const spec of METHODS) {
-    if (allowed.has(spec.name) && spec.name !== Method.EventsSubscribe) {
-      addLeaf(root, spec.name, invoke);
+  for (const method of allowed) {
+    // events.subscribe is never a leaf: the composer adds the real Subscribe in its place.
+    if (method !== MethodEventsSubscribe) {
+      addLeaf(root, method, invoke);
     }
   }
   return freezeTree(root);
 };
 
-// `agent.view.set` becomes root.agent.view.set; the composer adds events.subscribe, so it is never a leaf here.
+// `agent.view.set` becomes root.agent.view.set; the names come from the allow-list itself, so no generated table is needed.
 function addLeaf(root: MutableTree, method: Method, invoke: Invoke): void {
   const path = method.split(METHOD_SEPARATOR);
   const leafName = path.pop();

@@ -3,7 +3,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EntryKey, ErrorText, Presets } from '../../src/constants.ts';
-import { Method, ServerCapability } from '../../src/generated/index.ts';
+import { ENTRY_METHODS, Method, PRESET_METHODS, ServerCapability } from '../../src/generated/index.ts';
 import { HerdrTransportError } from '../../src/wire/errors.ts';
 import { allowedMethods } from '../../src/client/scoped/allowed-methods.ts';
 import { composeClient, composeOrClose, ENTRY_MEMBERS, PRESET_MEMBERS } from '../../src/client/scoped/compose.ts';
@@ -22,7 +22,7 @@ function membersOf(client: object): Record<string, boolean> {
 }
 
 function compose(core: CoreClient, entry: EntryKey): object {
-  return composeClient<object>(core, allowedMethods(entry), ENTRY_MEMBERS[entry]);
+  return composeClient<object>(core, allowedMethods(ENTRY_METHODS[entry]), ENTRY_MEMBERS[entry]);
 }
 
 describe('composeClient members', () => {
@@ -53,7 +53,7 @@ describe('composeClient members', () => {
   test('the preset form has no streams and no call()', () => {
     const client = composeClient<object>(
       stubCore().core,
-      allowedMethods(EntryKey.readOnly, { preset: Presets.SessionsReader }),
+      allowedMethods(PRESET_METHODS[Presets.SessionsReader]),
       PRESET_MEMBERS,
     );
     assert.deepEqual(membersOf(client), { call: false, events: false, watch: false, hold: false });
@@ -92,29 +92,43 @@ describe('composeClient members', () => {
 
   test('a watch on a list without session.snapshot fails at construction', async () => {
     const { core } = stubCore();
-    const narrow = allowedMethods(EntryKey.readOnly, { methods: [Method.AgentList] });
+    const narrow = allowedMethods(ENTRY_METHODS[EntryKey.readOnly], { methods: [Method.AgentList] });
     const error = await rejectionOf(Promise.resolve().then(() => composeClient<object>(core, narrow, ENTRY_MEMBERS[EntryKey.readOnly])));
     assert.ok(error instanceof HerdrTransportError);
   });
 
   test('a method list without events.subscribe has no events.subscribe and fails at construction (watch is built on it)', async () => {
     const { core } = stubCore();
-    const narrow = allowedMethods(EntryKey.readOnly, { methods: [Method.AgentList, Method.SessionSnapshot, Method.EventsWait] });
+    const narrow = allowedMethods(ENTRY_METHODS[EntryKey.readOnly], { methods: [Method.AgentList, Method.SessionSnapshot, Method.EventsWait] });
     const error = await rejectionOf(Promise.resolve().then(() => composeClient<object>(core, narrow, ENTRY_MEMBERS[EntryKey.readOnly])));
     assert.ok(error instanceof HerdrTransportError);
     assert.equal(error.message, ErrorText.NotAllowed(Method.EventsSubscribe));
   });
 
+  test('a watch on a list with events.subscribe but without session.snapshot fails at construction, naming session.snapshot', async () => {
+    const { core } = stubCore();
+    const narrow = allowedMethods(ENTRY_METHODS[EntryKey.readOnly], { methods: [Method.EventsSubscribe] });
+    const error = await rejectionOf(Promise.resolve().then(() => composeClient<object>(core, narrow, ENTRY_MEMBERS[EntryKey.readOnly])));
+    assert.ok(error instanceof HerdrTransportError);
+    assert.equal(error.message, ErrorText.NotAllowed(Method.SessionSnapshot));
+  });
+
+  test('a refused watch is refused before any stream is loaded: the call returns synchronously with the error', () => {
+    const { core } = stubCore();
+    const narrow = allowedMethods(ENTRY_METHODS[EntryKey.readOnly], { methods: [Method.AgentList] });
+    assert.throws(() => composeClient<object>(core, narrow, ENTRY_MEMBERS[EntryKey.readOnly]), HerdrTransportError);
+  });
+
   test('a method list with events.subscribe and session.snapshot composes the subscribe member', () => {
     const { core } = stubCore();
-    const narrow = allowedMethods(EntryKey.readOnly, { methods: [Method.EventsSubscribe, Method.SessionSnapshot] });
+    const narrow = allowedMethods(ENTRY_METHODS[EntryKey.readOnly], { methods: [Method.EventsSubscribe, Method.SessionSnapshot] });
     const client = composeClient<object>(core, narrow, ENTRY_MEMBERS[EntryKey.readOnly]) as { events: { subscribe: unknown } };
     assert.equal(typeof client.events.subscribe, 'function');
   });
 
   test('composeOrClose closes the core when composition refuses, so its transport is aborted', async () => {
     const { core, controller } = stubCore();
-    const narrow = allowedMethods(EntryKey.readOnly, { methods: [Method.AgentList] });
+    const narrow = allowedMethods(ENTRY_METHODS[EntryKey.readOnly], { methods: [Method.AgentList] });
     const error = await rejectionOf(Promise.resolve().then(() => composeOrClose<object>(core, narrow, ENTRY_MEMBERS[EntryKey.readOnly])));
     assert.ok(error instanceof HerdrTransportError);
     assert.equal(controller.signal.aborted, true);

@@ -16,7 +16,7 @@ export function emitParams(schema: ApiSchema, header: string): string {
     params: tsType(propertyOf(branch, SCHEMA_KEY.params)),
   }));
   return `${header}
-import type { Method } from './methods.ts';
+import type { Method } from './names/method.ts';
 
 ${emitDefs(definitionsOf(request))}
 

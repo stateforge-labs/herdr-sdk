@@ -2,6 +2,7 @@
 // Informs HERDR-ADR-0017 (locked seam; read-only for every lane), HERDR-ADR-0007, HERDR-ADR-0016 (W5 snapshot first, W6 per-pane) and plan 3.6.
 import type { PaneSetKind, WatchKind } from '../../constants.ts';
 import type { Method, Subscription } from '../../generated/index.ts';
+import type { MethodPaneList } from '../../generated/names/method.ts';
 import type { DecodedFrame, ParamsOf, ResultOf, UnknownFrame } from '../../wire/types.ts';
 import type { EventSubscription, QueueOptions, Subscribe } from '../subscribe/types.ts';
 
@@ -61,7 +62,7 @@ export type PaneSetChange =
 
 /** The smallest client watchPaneSet needs; every ReadOnlyClient, Client and AdminClient satisfies it. */
 export interface PaneSetSource {
-  readonly pane: { list(params?: ParamsOf<typeof Method.PaneList>): Promise<ResultOf<typeof Method.PaneList>> };
+  readonly pane: { list(params?: ParamsOf<typeof MethodPaneList>): Promise<ResultOf<typeof MethodPaneList>> };
   readonly events: { subscribe: Subscribe };
 }
 

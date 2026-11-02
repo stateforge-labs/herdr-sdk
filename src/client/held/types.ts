@@ -25,7 +25,7 @@ export type Hold = (options?: HoldOptions) => Promise<HeldConnection>;
 
 /**
  * What the client hands the hold factory. The held tree is built with the same builder and allow-list as every
- * client (P2b's buildNamespaceTree and allowedMethods('held')); they are injected so P4b's unit tests can pass a tiny
+ * client (P2b's buildNamespaceTree and allowedMethods over HELD_METHODS); they are injected so P4b's unit tests can pass a tiny
  * builder, and P2b passes the real ones. Each leaf is an Invoke that applies the capability gate, then sends on the
  * dedicated connection.
  */

@@ -3,7 +3,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LONG_POLL, Method } from '../../src/generated/index.ts';
-import { ENTRY_METHODS } from '../../src/generated/names.ts';
+import { ENTRY_METHODS } from '../../src/generated/entry-methods.ts';
 import { toolNameOf } from '../../src/mcp/tool-name.ts';
 import type { ReadOnlyToolMethod } from '../../src/mcp/types.ts';
 

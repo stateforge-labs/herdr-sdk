@@ -2,7 +2,7 @@
 // Informs HERDR-ADR-0016 (W6) and generated/shapes.ts (PARAMS_SHAPE); test-kit only.
 import { FakeCheckText, FakeErrorCode, TypeofValue } from '../constants.ts';
 import type { ErrorBody } from '../generated/index.ts';
-import { JsonKind, PARAMS_SHAPE, type FieldShape, type ParamsShape } from '../generated/shapes.ts';
+import { JsonKind, PARAMS_SHAPE, type FieldShape, type ParamsShape } from '../generated/test-data/shapes.ts';
 import { isObject } from '../wire/envelope.ts';
 import { fieldOf, isText } from './fake-values.ts';
 

@@ -93,12 +93,12 @@ packages/herdr/
     drift/                 inventory, drift, schema-source (pure)
     test-kit/              createFakeHerdr (node:net), default replies, request checker
     mcp/                   read-only toolkit, bearer guard, token file, toolResult
-    index.ts read-only.ts admin.ts effect.ts drift.ts test-kit.ts mcp.ts   (one file per subpath export)
-  bin/herdr-drift.ts
+    index.ts read-only.ts admin.ts effect.ts drift.ts test-kit.ts mcp.ts   (one file per subpath export; dist/ is their compiled tree, plan 10.1)
+  bin/herdr-drift.js        Node-run shim: spawns the herdr CLI, calls dist/drift/cli.js
   contract/herdr-22/       recorded goldens (confirm generated defaults)
   examples/*.ts            source of the README snippets (section 8)
   rules/                   dependency-cruiser + ast-grep templates (layers; consumer-single-adapter.dependency-cruiser.cjs: only one consumer adapter file imports @homelab/herdr, HERDR-ADR-0016 P7)
-  scripts/                 check-pins.ts, check-size.ts, check-readme.ts, check-layers.ts (+ import-specifiers.ts)
+  scripts/                 check-pins.ts, check-size.ts (+ size-constants.ts, size-measure.ts), rewrite-dts.ts (build), check-readme.ts, check-layers.ts (+ import-specifiers.ts)
   test/  test/types/       bun:test (also node --test over dist); negative type fixtures
   docs/architecture/       this plan, README, c4/
   docs/decisions/          HERDR-ADR-0001..
@@ -134,7 +134,7 @@ Wire shapes are **plain TS types** (erased). Runtime validation in the core is l
 
 `connect(options?)` → `Client`: namespace tree for classes R-meta, R-content, W, I, H, L, C (section 4), `call(method, params)`, `events.subscribe`, `watch`, `hold`, `capabilities`, `close()`. Options: `socketPath`, `timeoutMs` (10 s from `constants.ts`), `protocolPolicy`, `onCall` hook (`{ method, durationMs, outcome }`).
 
-The namespace tree is built **once, eagerly, from `METHODS`** by a small loop (no Proxy, no getters). This is honest about size: every client carries the name table once. A tree-shakeable path is not offered in 1.0; if phase 2b measurement shows the table matters for a consumer, standalone functions (`@homelab/herdr/methods`) are added as a minor.
+The namespace tree is built **once, eagerly, from the allow-list** by a small loop (no Proxy, no getters); the library does not import the generated `METHODS` table (plan 10.1 step 2). This is honest about size: every client carries the name table once. A tree-shakeable path is not offered in 1.0; if phase 2b measurement shows the table matters for a consumer, standalone functions (`@homelab/herdr/methods`) are added as a minor.
 
 ### 3.4 Capability-scoped clients
 
@@ -346,7 +346,7 @@ Gate for every lane, in addition to its row: `bun run typecheck && bun run typec
 | 1a Schema + gen port | package.json/tsconfig/LICENSE/NOTICE, 0.9.5 capture, ported gen with path params, construct fixtures | `bun gen/index.ts && git diff --exit-code`; `bun test test/gen`; `bun scripts/check-pins.ts` |
 | 1b New emitters | method table, names, namespaces types, defaults, shapes, docs, `constants.ts`, layer rule | `bun gen/index.ts && git diff --exit-code`; `bun run lint:layers` (layers + consumer-single-adapter template self-test); every file in `src/generated` starts with the generated banner (P2); `scripts/check-entries.ts`: each `package.json` export maps to a named consumer (P8) |
 | 2a Wire + rpc + fake | wire/, `rpc`, `connect()` with capabilities, minimal node:net fake (reply/fail/silent/rawReply/receivedMethods), ported hub rpc/connect tests | `bun test test/wire test/connect` (incl. connection reuse fails, `id:""` rejects without hanging, no `child_process` import) and `node --test "dist-test/test/wire/**/*.test.js" "dist-test/test/connect/**/*.test.js"` green (Node 22 does not take a directory argument; the compiled tree keeps `test/` under `dist-test/`) |
-| 2b Namespaces + scoped clients | namespace tree, `/read-only`, `/admin`, `connectPrompt`, classes, examples 1 and 3 | `bun test test/scoped`; `tsc -p test/types`; `bun scripts/check-size.ts` (budgets set here) |
+| 2b Namespaces + scoped clients | namespace tree, `/read-only`, `/admin`, `connectPrompt`, classes, examples 1 and 3 | `bun test test/scoped`; `tsc -p test/types`; `bun run check:size` (budgets set here; the no-leak rows pass after plan 10.1 steps 2 and 3) |
 | 3 Result map | complete mapping (4.2), coverage test, `docs/api/*.md` | `bun test test/coverage.test.ts` |
 | 4a Subscribe + long-poll | subscribe, push frames, overrides, long-poll typing; ported hub subscribe tests | `bun test test/subscribe test/long-poll` (incl. unknown-kind frame → `UnknownFrame`); `tsc -p test/types` |
 | 4b Watch + held | watch with replay rule and backoff, `hold()` for class C | `bun test test/watch test/held` (incl. snapshot removal fails the suite, `watchPaneSet` follows created/closed panes, frames between ack and snapshot, overflow policy, held connection stays open then closes) |
@@ -361,20 +361,39 @@ Gate for every lane, in addition to its row: `bun run typecheck && bun run typec
 
 ### 10.1 Size table
 
-Filled from phase 0 (baseline) and phase 2b (budget); enforced by `scripts/check-size.ts` in the gate. Command for library entries: `bun build --minify --external effect <entry> | wc -c`.
+The library ships compiled, unbundled ESM with declarations (`dist/`, built by `tsc -p tsconfig.build.json`; HERDR-ADR-0012). A consumer's bundler or Node loads only the modules it reaches. Sizes are measured on `dist/`, never on `src/`. The gate is `bun run check:size`: it runs `bun run build`, then `scripts/check-size.ts`, which measures each row and fails when a row is over its budget or contains a forbidden input (the no-leak check, HERDR-ADR-0015).
 
-| Entry | Baseline (phase 0) | Budget (set in 2b) | Command |
-|---|---|---|---|
-| `.` core | — | measured + 10 % | as above |
-| `/read-only` | — | measured + 10 %; must not pull `/admin` or `effect` | as above |
-| `/admin` | — | — | as above |
-| `/effect` (herdr code only) | — | measured + 10 % | as above |
-| `/test-kit`, `/mcp` | — | not budgeted (dev / add-on) | as above |
-| hub herdr code | 6723 B ([study](../../../../docs/research/studies/2026-11-02-herdr-size-baseline/README.md)) | **strictly smaller** than baseline | `bun run study:size` (vendored rpc + `infra/herdr/*`); later `bun build --minify hub/src/apps/voice-hub/main.ts` diff |
-| hub installed | — | `du -sb node_modules/@homelab/herdr` after `bun install --production` | reported |
-| atalaya herdr code | 10257 B ([study](../../../../docs/research/studies/2026-11-02-herdr-size-baseline/README.md)) | strictly smaller (phase 7) | `bun run study:size` (atalaya `src/herdr-client.ts` at 097adfd) |
+Command per row (bun 1.4.4): `bun build <file> --minify --target node --external effect --splitting --metafile <meta>`. The static closure of the entry counts toward the row; chunks reached only through a dynamic `import()` count toward the lazy row. Scenarios import `@homelab/herdr/...` through a temporary `node_modules` symlink to the package, so they measure what a consumer gets.
 
-Baseline measured 2026-11-02 by R-2026-11-02-04; reproduce with `bun run study:size` in packages/herdr. Library-entry rows stay `—` until phase 2b.
+Bytes, minified. "Before (src)" is the study baseline (2026-11-02, package exports still pointing at `src/`). "After part 1" is `dist/` after the build change (steps 5 to 7). "Now" is `dist/` after steps 2 and 3 (the client slice) and the lazy-streams chunk. "Budget" is measured plus about 10 %, rounded up to 100 B, and never above the owner's ceiling (the last column). Step 4 (the `constants/` split) is deferred, see HERDR-ADR-0015.
+
+| Row | Before (src) | After part 1 (dist) | Now (dist) | Budget | Owner ceiling | Status |
+|---|---|---|---|---|---|---|
+| dist `.` (all exports) | 42,247 | 42,078 | 26,887 | 29,600 | 36,000 | ok |
+| dist `/read-only` | 37,809 | 37,640 | 18,691 | 20,600 | 24,000 | ok |
+| dist `/admin` | 37,291 | 37,122 | 15,561 | 17,200 | 26,000 | ok |
+| dist `/effect` | 4,358 | 4,198 | 4,198 | 4,700 | — | ok |
+| dist `/mcp` (add-on, not budgeted) | 3,021 | 2,859 | 2,859 | — | — | ok |
+| lazy chunks of `.` (the streams chunk) | none | 0 | 7,672 | 8,500 | 9,000 | ok |
+| scenario a (read-only, 1 method) | 37,572 | 37,403 | 17,513 | 19,000 | 19,000 | ok |
+| scenario a-preset (read-only preset, no `Method`) | 37,612 | 37,443 | 14,221 | 15,000 | 15,000 | ok |
+| scenario b (fleet: snapshot, watchPaneSet, toTaggedError) | 40,908 | 40,739 | 22,158 | 24,400 | 30,000 | ok |
+| scenario c (script: connect, 2 methods) | 37,410 | 37,241 | 15,091 | 16,600 | 22,000 | ok |
+
+Targets (owner requirement, 2026-11-02): all owner ceilings are met by "Now". The largest removed parts were `generated/method-table.js` (the `METHODS` table, no longer imported by the library), the entry lists that were not the connect function's own, and the streams code, which now loads on first use. `Method` stays public API, so the `names/method.js` object (about 5 KB in the full entry) is still in `.` and `/read-only`. The budgets are a regression guard: a budget moves down when the code shrinks, and an increase needs a HERDR-ADR-0015 note.
+
+No-leak check (`scripts/check-size.ts`): fails a production row or a scenario that contains test-kit (`/test-kit`), generated test data (`/generated/test-data/`), drift data (`/generated/drift/`), `METHODS` (`/generated/method-table`), the entry lists (`/generated/entry-methods`) or `child_process`. `/read-only` and the read-only scenarios also refuse `/admin.js`, `connect-admin` and `/effect`. The `.` entry is held to the same rule: `src/index.ts` does not export `METHODS`.
+
+Known gaps of the build as shipped: `dist/generated/test-data/*.js` ships in the tarball, because `generated/index.ts` re-exports `DEFAULT_RESULT` and `PARAMS_SHAPE`; no production row or scenario contains it (tree-shaken, checked by the no-leak test). Step 4 (`constants/` split) is deferred (HERDR-ADR-0015). The emitted `.js` keeps its comments (`removeComments: false`, so the JSDoc reaches the `.d.ts` files): about 25 % more text in `dist/*.js` than with the comments removed (247,559 B against 197,071 B). The pre-existing `bin/herdr-drift.ts` moved to `bin/herdr-drift.js`; the drift tests need `dist/`: `bun run test` builds it first (`pretest`); a bare `bun test` needs `bun run build` before it.
+
+Working commands:
+
+- `bun run build` (dist, then the `.d.ts` specifiers)
+- `bun run check:size` (build, then the gate; exit 1 on an over-budget row or a leak)
+- `bun scripts/check-size.ts --measure` (print the rows without enforcing; needs `dist/`)
+- `bun run study:size` (hub and atalaya herdr code, unchanged)
+
+Hub and atalaya rows are unchanged from the 2026-11-02 study (`docs/research/studies/2026-11-02-herdr-size-baseline`).
 
 No-leak test (phase 6c): the minified hub bundle contains none of `createFakeHerdr`, `readOnlyToolkit`'s test strings, or `test-kit` paths.
 

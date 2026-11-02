@@ -69,8 +69,12 @@ describe('token key pattern', () => {
   });
 });
 
-describe('determinism of the names module', () => {
-  test('renderOutputs names.ts is the committed file', () => {
-    expect(renderOutputs(schema).names).toBe(readFileSync(join(GEN_PATHS.outDir, 'names.ts'), 'utf8'));
+describe('determinism of the names modules', () => {
+  test('every renderOutputs names/ file is the committed file', () => {
+    const nameFiles = Object.keys(renderOutputs(schema)).filter((path) => path.startsWith('names/'));
+    expect(nameFiles.length).toBeGreaterThan(0);
+    for (const path of nameFiles) {
+      expect(renderOutputs(schema)[path]).toBe(readFileSync(join(GEN_PATHS.outDir, path), 'utf8'));
+    }
   });
 });

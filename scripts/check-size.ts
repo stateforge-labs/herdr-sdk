@@ -1,116 +1,105 @@
-// Role: the size gate (`bun scripts/check-size.ts`): bundles each library entry minified with effect external, prints the sizes against
-// their budgets, and exits 1 when one is over budget or /read-only bundles an admin or effect input. `--measure` prints without enforcing.
-// Informs plan 10.1 (size table; budgets set in phase 2b), HERDR-ADR-0015 (size budget) and HERDR-ADR-0005 (read-only never pulls admin).
-// Build flags: `--target=node` (SizeBuildArg.Target) is a deliberate deviation from the bare `bun build --minify --external effect <entry>`
-// of plan 10.1. The bare command targets the browser and cannot resolve node:net, so it fails on this package. The study baseline
-// (docs/research/studies/2026-11-02-herdr-size-baseline) also measures with --target node, so the budgets compare like with like.
-// Integration should update the plan 10.1 command to `bun build --minify --target node --external effect <entry>`.
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+// Role: the size gate (`bun run check:size`, which builds dist/ first): measures each compiled entry of dist/ and each consumer scenario, prints them against their budgets,
+// and exits 1 when a row is over budget or a production row or scenario contains a forbidden input (plan 10.1 no-leak check). `--measure` prints without enforcing.
+// Informs plan 10.1 (size table), HERDR-ADR-0015 (budgets per consumer scenario) and HERDR-ADR-0005 (read-only never pulls admin or effect).
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { type Measurement, ALWAYS_FORBIDDEN, leakedInputs, leakedText, measureEntry } from './size-measure.ts';
 import {
   SizeBudget,
-  SizeBuildArg,
-  SizeEntry,
-  SizeForbiddenInput,
+  SizeDistFile,
+  SizeFlag,
+  SizeForbidden,
+  SizeForbiddenReadOnly,
   SizeNote,
-  SizeSource,
-} from '../src/constants.ts';
+  SizePackage,
+  SizeRow,
+  SizeScenarioFile,
+  SizeTemp,
+} from './size-constants.ts';
 
-export interface SizeRow {
-  readonly entry: string;
+export interface SizeRowResult {
+  readonly row: SizeRow;
   readonly bytes: number;
   readonly budget: number | undefined;
-  readonly note: string | undefined;
+  readonly leaks: readonly string[];
 }
-
-export const MEASURE_FLAG = '--measure';
-
-const PACKAGE_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-const METAFILE_NAME = 'meta.json';
-const BUILD_DIR_PREFIX = 'herdr-size-';
-const MAX_BUNDLE_BYTES = 64 * 1024 * 1024;
-const PROVISIONAL: readonly string[] = [SizeEntry.Effect];
 
 // Pure: true when a budget exists and the measured size is above it.
-export function isOverBudget(row: SizeRow): boolean {
-  return row.budget !== undefined && row.bytes > row.budget;
+export function isOverBudget(bytes: number, budget: number | undefined): boolean {
+  return budget !== undefined && bytes > budget;
 }
 
-// Pure: the inputs of a bundle that /read-only must not have.
-export function forbiddenInputs(inputs: readonly string[]): string[] {
-  const forbidden = [SizeForbiddenInput.Admin, SizeForbiddenInput.ConnectAdmin, SizeForbiddenInput.EffectPrefix];
-  return inputs.filter((input) => forbidden.some((pattern) => input.includes(pattern)));
+// Pure: the forbidden fragments a row contains: the always-forbidden list, plus the read-only extras when the row is /read-only or a read-only scenario.
+export function rowLeaks(measured: Measurement, readOnlyRule: boolean): string[] {
+  const extra = readOnlyRule ? Object.values(SizeForbiddenReadOnly) : [];
+  const fromInputs = leakedInputs(measured.inputs, [...ALWAYS_FORBIDDEN, ...extra]);
+  const fromText = leakedText(measured.emitted, [SizeForbidden.ChildProcess]);
+  return [...fromInputs, ...fromText];
 }
 
-// Pure: one printed line per entry.
-export function formatRow(row: SizeRow): string {
-  const budget = row.budget === undefined ? 'not budgeted' : `budget ${row.budget}`;
-  const status = isOverBudget(row) ? 'OVER' : 'ok';
-  const note = row.note === undefined ? '' : `  (${row.note})`;
-  return `${row.entry.padEnd(14)} ${String(row.bytes).padStart(8)} B  ${budget.padEnd(16)} ${status}${note}`;
+// Pure: one printed line per row.
+export function formatRow(result: SizeRowResult): string {
+  const budget = result.budget === undefined ? SizeNote.NoBudget : `budget ${result.budget}`;
+  const status = result.leaks.length > 0 ? SizeNote.Leak : isOverBudget(result.bytes, result.budget) ? SizeNote.Over : SizeNote.Ok;
+  const leaks = result.leaks.length === 0 ? '' : `  forbidden: ${result.leaks.join(', ')}`;
+  return `${result.row.padEnd(22)} ${String(result.bytes).padStart(8)} B  ${budget.padEnd(16)} ${status}${leaks}`;
 }
 
-function bundle(source: string): { bytes: number; inputs: string[] } {
-  const dir = mkdtempSync(join(tmpdir(), BUILD_DIR_PREFIX));
+// Pure: true when a row fails the gate: over budget, or it contains a forbidden input.
+export function rowFails(result: SizeRowResult): boolean {
+  return isOverBudget(result.bytes, result.budget) || result.leaks.length > 0;
+}
+
+const PACKAGE_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+
+function resultOf(row: SizeRow, measured: Measurement, readOnlyRule: boolean): SizeRowResult {
+  return { row, bytes: measured.bytes, budget: SizeBudget[row], leaks: rowLeaks(measured, readOnlyRule) };
+}
+
+// A scenario is copied next to a node_modules symlink to the package, so `@homelab/herdr/...` resolves through the package exports, as for a consumer.
+function measureScenario(source: string): Measurement {
+  const dir = mkdtempSync(join(tmpdir(), SizeTemp.DirPrefix));
   try {
-    const metafile = join(dir, METAFILE_NAME);
-    const output = execFileSync(
-      process.execPath,
-      [
-        SizeBuildArg.Build,
-        SizeBuildArg.Target,
-        SizeBuildArg.Minify,
-        SizeBuildArg.External,
-        SizeBuildArg.Effect,
-        source,
-        `${SizeBuildArg.Metafile}${metafile}`,
-      ],
-      { cwd: PACKAGE_ROOT, maxBuffer: MAX_BUNDLE_BYTES },
-    );
-    const meta = JSON.parse(readFileSync(metafile, 'utf8')) as { inputs: Record<string, unknown> };
-    return { bytes: output.byteLength, inputs: Object.keys(meta.inputs) };
+    const scope = join(dir, SizePackage.NodeModules, SizePackage.Scope);
+    mkdirSync(scope, { recursive: true });
+    symlinkSync(PACKAGE_ROOT, join(scope, SizePackage.PackageDir), 'dir');
+    const entry = join(dir, SizePackage.Scenario);
+    copyFileSync(join(PACKAGE_ROOT, source), entry);
+    return measureEntry(entry, process.execPath);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 }
 
-const MEASURED: readonly { readonly entry: string; readonly source: string }[] = [
-  { entry: SizeEntry.Core, source: SizeSource.Core },
-  { entry: SizeEntry.ReadOnly, source: SizeSource.ReadOnly },
-  { entry: SizeEntry.Effect, source: SizeSource.Effect },
-  { entry: SizeEntry.Admin, source: SizeSource.Admin },
-  { entry: SizeEntry.TestKit, source: SizeSource.TestKit },
-  { entry: SizeEntry.Mcp, source: SizeSource.Mcp },
-];
-
-function run(measureOnly: boolean): number {
-  let failed = false;
-  for (const { entry, source } of MEASURED) {
-    const built = bundle(join(PACKAGE_ROOT, source));
-    const row: SizeRow = {
-      entry,
-      bytes: built.bytes,
-      budget: SizeBudget[entry],
-      note: PROVISIONAL.includes(entry) ? SizeNote.Provisional : undefined,
-    };
-    console.log(formatRow(row));
-    if (entry === SizeEntry.ReadOnly) {
-      const leaked = forbiddenInputs(built.inputs);
-      if (leaked.length > 0) {
-        console.log(`  /read-only bundles forbidden inputs: ${leaked.join(', ')}`);
-        failed = true;
-      }
-    }
-    if (!measureOnly && isOverBudget(row)) {
-      failed = true;
-    }
+function requireDist(): void {
+  if (!existsSync(join(PACKAGE_ROOT, SizeDistFile.Core))) {
+    throw new Error(`${SizeDistFile.Core} is missing: run \`bun run build\` (or \`bun run check:size\`) first`);
   }
+}
+
+export function run(measureOnly: boolean): number {
+  requireDist();
+  const results: SizeRowResult[] = [];
+  const core = measureEntry(join(PACKAGE_ROOT, SizeDistFile.Core), process.execPath);
+  results.push(resultOf(SizeRow.Core, core, false));
+  results.push(resultOf(SizeRow.ReadOnly, measureEntry(join(PACKAGE_ROOT, SizeDistFile.ReadOnly), process.execPath), true));
+  results.push(resultOf(SizeRow.Admin, measureEntry(join(PACKAGE_ROOT, SizeDistFile.Admin), process.execPath), false));
+  results.push(resultOf(SizeRow.Effect, measureEntry(join(PACKAGE_ROOT, SizeDistFile.Effect), process.execPath), false));
+  results.push(resultOf(SizeRow.Mcp, measureEntry(join(PACKAGE_ROOT, SizeDistFile.Mcp), process.execPath), false));
+  results.push({ row: SizeRow.Lazy, bytes: core.lazyBytes, budget: SizeBudget[SizeRow.Lazy], leaks: [] });
+  results.push(resultOf(SizeRow.ScenarioA, measureScenario(SizeScenarioFile.A), true));
+  results.push(resultOf(SizeRow.ScenarioAPreset, measureScenario(SizeScenarioFile.APreset), true));
+  results.push(resultOf(SizeRow.ScenarioB, measureScenario(SizeScenarioFile.B), false));
+  results.push(resultOf(SizeRow.ScenarioC, measureScenario(SizeScenarioFile.C), false));
+  for (const result of results) {
+    console.log(formatRow(result));
+  }
+  const failed = results.some(rowFails);
   return failed && !measureOnly ? 1 : 0;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  process.exitCode = run(process.argv.includes(MEASURE_FLAG));
+  process.exitCode = run(process.argv.includes(SizeFlag.Measure));
 }

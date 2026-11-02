@@ -1,7 +1,9 @@
 // Role: connectCore(): finds the socket, checks it is a socket, pings once, applies the protocol policy and returns the CoreClient that gates methods by capability.
 // Informs plan 3.3 (connect steps and options), plan 3.1 (capabilities from pong), HERDR-ADR-0004 (Promise core) and HERDR-ADR-0016 (P1: never spawns herdr); ports the hub checkProtocol and request.
 import { ErrorText, ProtocolPolicy, Timeout } from '../constants.ts';
-import { Method, PROTOCOL } from '../generated/index.ts';
+import { PROTOCOL } from '../generated/index.ts';
+import { MethodPing } from '../generated/names/method.ts';
+import type { Method } from '../generated/index.ts';
 import type { Result_pong } from '../generated/results.ts';
 import type { ParamsOf, ResultOf } from '../wire/typed.ts';
 import { HerdrTransportError, ProtocolMismatchError } from '../wire/errors.ts';
@@ -23,7 +25,7 @@ export const connectCore: ConnectCore = async function connectCore(options: Conn
   const socketPath = resolveSocketPath({ socketPath: options.socketPath, env: options.env });
   assertSocketExists(socketPath);
   const rpcOptions = requestOptions(options, socketPath);
-  const pong = await rpc(rpcOptions, Method.Ping, {});
+  const pong = await rpc(rpcOptions, MethodPing, {});
   checkProtocol(pong, options.protocolPolicy ?? ProtocolPolicy.Exact);
   return createClient(rpcOptions, pong, options);
 };

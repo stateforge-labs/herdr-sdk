@@ -157,12 +157,26 @@ export type Invoke = (method: Method, params: unknown, options?: CallOptions) =>
 export type NamespaceTree = { readonly [segment: string]: NamespaceTree | ((params?: unknown, options?: CallOptions) => Promise<unknown>) };
 
 /**
- * Builds the nested tree once, eagerly, from METHODS for exactly `allowed` (no Proxy, no getters; plan 3.3).
+ * Builds the nested tree once, eagerly, from exactly `allowed` (no Proxy, no getters; plan 3.3).
  * `events.subscribe` is NOT a leaf of the tree; the composer adds Subscribe. Implemented by client/scoped/namespace-tree.ts (P2b).
- * Also the builder of held connections: P4b calls it with allowedMethods('held') and an Invoke over the dedicated
- * connection. There is no second tree builder. P2b lands namespace-tree.ts and allowed-methods.ts first (slice P2b-1).
+ * Also the builder of held connections: hold() calls it with the held list and an Invoke over the dedicated
+ * connection. There is no second tree builder.
  */
 export type BuildNamespaceTree = (allowed: ReadonlySet<Method>, invoke: Invoke) => NamespaceTree;
 
-/** The allow-list of one entry (ENTRY_METHODS / PRESET_METHODS, narrowed by `methods`). Implemented by client/scoped/allowed-methods.ts (P2b). */
-export type AllowedMethods = (entry: EntryName, options?: { readonly preset?: Preset; readonly methods?: readonly Method[] }) => ReadonlySet<Method>;
+/**
+ * The allow-list of one scoped client: `base` is the entry's list (ENTRY_METHODS[entry], or a preset's list), narrowed by
+ * `methods`. The caller passes the list it needs, so this module never imports the table of every entry (plan 10.1 step 2).
+ * Implemented by client/scoped/allowed-methods.ts.
+ */
+export type AllowedMethods = (base: readonly Method[], options?: { readonly methods?: readonly Method[] }) => ReadonlySet<Method>;
+
+/**
+ * The stream members of one client: events.subscribe, the watch factory and hold. They are loaded on first use
+ * (client/scoped/lazy-streams.ts), so a client that never streams does not carry their code.
+ */
+export interface StreamMembers {
+  readonly subscribe: Subscribe;
+  readonly watch: WatchFn;
+  readonly hold: Hold;
+}

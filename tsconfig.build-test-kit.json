@@ -1,0 +1,6 @@
+{
+  "//": "Test-kit build (`bun run build`, after tsconfig.build.json): the test-kit entry and its generated test data, emitted to dist/ beside the production modules so the layout matches src/.",
+  "extends": "./tsconfig.build.json",
+  "include": ["src/test-kit.ts", "src/test-kit/*.ts", "src/generated/test-data/*.ts"],
+  "exclude": []
+}

@@ -4,8 +4,8 @@ import { afterAll, describe, expect, test } from 'bun:test';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { DOC_FILES, OUTPUT_FILES, runGenerator } from '../../gen/index.ts';
-import { GEN_PATHS } from '../../gen/schema.ts';
+import { DOC_FILES, renderOutputs, runGenerator } from '../../gen/index.ts';
+import { GEN_PATHS, loadSchema } from '../../gen/schema.ts';
 
 const scratch: string[] = [];
 
@@ -27,7 +27,7 @@ describe('regeneration', () => {
   runGenerator({ schemaPath: GEN_PATHS.schemaPath, outDir, docsDir });
 
   test('every src/generated file equals the committed file byte for byte', () => {
-    for (const file of Object.values(OUTPUT_FILES)) {
+    for (const file of Object.keys(renderOutputs(loadSchema(GEN_PATHS.schemaPath)))) {
       expect(readFileSync(join(outDir, file), 'utf8')).toBe(readFileSync(join(GEN_PATHS.outDir, file), 'utf8'));
     }
   });
@@ -42,7 +42,7 @@ describe('regeneration', () => {
     const again = freshDir('herdr-gen-again-');
     const againDocs = freshDir('herdr-docs-again-');
     runGenerator({ schemaPath: GEN_PATHS.schemaPath, outDir: again, docsDir: againDocs });
-    for (const file of Object.values(OUTPUT_FILES)) {
+    for (const file of Object.keys(renderOutputs(loadSchema(GEN_PATHS.schemaPath)))) {
       expect(readFileSync(join(again, file), 'utf8')).toBe(readFileSync(join(outDir, file), 'utf8'));
     }
   });

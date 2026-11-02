@@ -2,9 +2,8 @@
 // Informs plan 3.3 (never re-resolve the socket or timeout) and plan 3.6; slice P2b. The factories are spied on, so no stream is opened.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Method } from '../../src/generated/index.ts';
+import { ENTRY_METHODS, Method } from '../../src/generated/index.ts';
 import { openDedicated } from '../../src/wire/dedicated.ts';
-import { HerdrTransportError } from '../../src/wire/errors.ts';
 import type { CreateHold, HoldDeps } from '../../src/client/held/types.ts';
 import type { CreateSubscribe, Subscribe, SubscribeDeps } from '../../src/client/subscribe/types.ts';
 import type { CreateWatch, WatchFn } from '../../src/client/watch/types.ts';
@@ -40,16 +39,10 @@ describe('watchFor', () => {
       received = subscribe;
       return (() => undefined) as unknown as WatchFn;
     };
-    watchFor(unusedSubscribe, allowedMethods('readOnly'), spy);
+    watchFor(unusedSubscribe, spy);
     assert.equal(received, unusedSubscribe);
   });
-
-  test('throws HerdrTransportError at construction when session.snapshot is not allowed', () => {
-    assert.throws(
-      () => watchFor(unusedSubscribe, allowedMethods('readOnly', { methods: [Method.AgentList] })),
-      HerdrTransportError,
-    );
-  });
+  // The synchronous refusal of a watch without events.subscribe or session.snapshot is in compose.test.ts (compose.ts checks it before anything loads).
 });
 
 describe('holdFor', () => {

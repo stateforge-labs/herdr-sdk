@@ -15,15 +15,44 @@
     "node": ">=22.18"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./read-only": "./src/read-only.ts",
-    "./admin": "./src/admin.ts",
-    "./effect": "./src/effect.ts",
-    "./mcp": "./src/mcp.ts",
-    "./drift": "./src/drift.ts",
-    "./test-kit": "./src/test-kit.ts",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./read-only": {
+      "types": "./dist/read-only.d.ts",
+      "default": "./dist/read-only.js"
+    },
+    "./admin": {
+      "types": "./dist/admin.d.ts",
+      "default": "./dist/admin.js"
+    },
+    "./effect": {
+      "types": "./dist/effect.d.ts",
+      "default": "./dist/effect.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp.d.ts",
+      "default": "./dist/mcp.js"
+    },
+    "./drift": {
+      "types": "./dist/drift.d.ts",
+      "default": "./dist/drift.js"
+    },
+    "./test-kit": {
+      "types": "./dist/test-kit.d.ts",
+      "default": "./dist/test-kit.js"
+    },
     "./package.json": "./package.json"
   },
+  "files": [
+    "dist",
+    "bin",
+    "schema",
+    "README.md",
+    "LICENSE",
+    "NOTICE.md"
+  ],
   "scripts": {
     "gen": "bun gen/index.ts",
     "capture": "bun scripts/capture-schema.ts",
@@ -36,13 +65,17 @@
     "study:size": "bash ../../docs/research/studies/2026-11-02-herdr-size-baseline/scripts/measure.sh",
     "build:test": "tsc -p tsconfig.dist-test.json",
     "test:node": "bun run build:test && node --test \"dist-test/test/wire/**/*.test.js\" \"dist-test/test/connect/**/*.test.js\"",
-    "test:wire": "bun test test/wire test/connect"
+    "test:wire": "bun test test/wire test/connect",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && tsc -p tsconfig.build-test-kit.json && bun scripts/rewrite-dts.ts",
+    "prepack": "bun run build",
+    "check:size": "bun run build && bun scripts/check-size.ts",
+    "pretest": "bun run build"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
     "typescript": "7.0.2"
   },
   "bin": {
-    "herdr-drift": "./bin/herdr-drift.ts"
+    "herdr-drift": "./bin/herdr-drift.js"
   }
 }

@@ -1,0 +1,17 @@
+{
+  "//": "Production build (`bun run build`): unbundled per-module ESM and .d.ts into dist/ (HERDR-ADR-0012). No declaration maps: they point at src/, which is not shipped. The test-kit and its generated test data are emitted by tsconfig.build-test-kit.json.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "rewriteRelativeImportExtensions": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "declaration": true,
+    "declarationMap": false,
+    "sourceMap": false,
+    "removeComments": false
+  },
+  "include": ["src"],
+  "exclude": ["src/test-kit.ts", "src/test-kit/*.ts", "src/generated/test-data/*.ts"]
+}

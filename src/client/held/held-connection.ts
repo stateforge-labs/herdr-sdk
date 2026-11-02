@@ -25,7 +25,7 @@ export function trackEnd(conn: DedicatedConnection): EndState {
 }
 
 // The single NamespaceTree -> HeldNamespaces assertion. The tree is built by the same builder and allow-list as every client
-// (buildNamespaceTree with allowedMethods('held')), so its leaves have exactly the shape HeldNamespaces declares.
+// (buildNamespaceTree with the held list, HELD_METHODS), so its leaves have exactly the shape HeldNamespaces declares.
 export function toHeldConnection(
   tree: NamespaceTree,
   conn: DedicatedConnection,

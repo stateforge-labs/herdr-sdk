@@ -19,6 +19,8 @@ The hub runs on Bun (hub ADR-0001/0028); atalaya pins Node >= 24. Node refuses t
 
 Source is TypeScript with `erasableSyntaxOnly`; `tsc` 7.0.2 (same pin as the hub) emits `dist/*.js` + `.d.ts`; no bundler. `src/` uses only `node:*` modules, no `Bun.*`. The suite runs on Bun and on Node (`node --test` over `dist`) in CI. Exact dev pins, each at least two weeks old ([HERDR-ADR-0015](HERDR-ADR-0015-dependency-policy-and-size-budget.md)).
 
+**2026-11-02 (build details, owner requirement: low footprint).** `tsconfig.build.json` emits unbundled per-module ESM and `.d.ts` into `dist/` (`rootDir` `src`, `removeComments` false so the JSDoc reaches the `.d.ts` files, `declarationMap` false because `src/` is not shipped). `tsconfig.build-test-kit.json` emits the test-kit and its generated test data beside them. `scripts/rewrite-dts.ts` runs last: tsc 7.0.2 leaves the relative `.ts` specifiers of the declarations unchanged, and consumers cannot resolve them. The package has no per-entry bundles: a bundle would duplicate the core in each entry, and the consumer's bundler takes only the modules it reaches. Exports use the `types` and `default` conditions, with no `bun` condition, so Bun also loads the artefact that the size gate measures. `bin/herdr-drift.js` is the only Node-run file; it spawns the herdr CLI and calls `dist/drift/cli.js`. `prepack` runs the build.
+
 ## Consequences
 
 - Good: one artefact for both runtimes.
