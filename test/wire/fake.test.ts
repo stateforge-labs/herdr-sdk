@@ -2,8 +2,7 @@
 // Informs HERDR-ADR-0016 (W1, W3, fake facts F1, F3, F6) and plan 5 (the fake's 2a behaviour); new test.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { EMPTY_REPLY_ID, ErrorText, Fake, Lane, WireField, WireFact } from '../../src/constants.ts';
-import { NotImplementedError } from '../../src/not-implemented.ts';
+import { EMPTY_REPLY_ID, ErrorText, Fake, WireField, WireFact } from '../../src/constants.ts';
 import { Method, PROTOCOL, ResultTag } from '../../src/generated/index.ts';
 import { encodeRequest } from '../../src/wire/envelope.ts';
 import { HerdrError } from '../../src/wire/errors.ts';
@@ -98,24 +97,19 @@ describe('fake herdr on the wire', () => {
     });
   });
 
-  test('the fake reproduces W1, W2 and W3', async () => {
+  test('the fake reproduces W1 to W6', async () => {
     await withFake({}, async (fake) => {
       assert.deepEqual(
         [...fake.reproduces],
-        [WireFact.W1CloseAfterResponse, WireFact.W2AckThenStream, WireFact.W3EmptyIdOnUnparseable],
+        [
+          WireFact.W1CloseAfterResponse,
+          WireFact.W2AckThenStream,
+          WireFact.W3EmptyIdOnUnparseable,
+          WireFact.W4SchemaOverSocketIsEmpty,
+          WireFact.W5NoHistoryReplay,
+          WireFact.W6PerPaneNeedsPaneId,
+        ],
       );
-    });
-  });
-
-  test('replySequence is still a stub that throws NotImplementedError naming lane P5a', async () => {
-    await withFake({}, async (fake) => {
-      try {
-        fake.replySequence(Method.SessionSnapshot, []);
-        assert.fail('expected a throw');
-      } catch (error) {
-        assert.ok(error instanceof NotImplementedError);
-        assert.equal(error.lane, Lane.P5a);
-      }
     });
   });
 
