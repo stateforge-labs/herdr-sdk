@@ -21,8 +21,9 @@ describe('methods.md', () => {
     expect(methodsDoc).toContain('| W | 34 |');
   });
 
-  test('marks the unmapped results', () => {
-    expect(methodsDoc).toContain('unmapped (phase 3)');
+  test('shows the source of every result and no unmapped marker', () => {
+    expect(methodsDoc).toContain('| Result tag | Source |');
+    expect(methodsDoc).not.toContain('unmapped (phase 3)');
   });
 
   test('renders the same bytes twice', () => {

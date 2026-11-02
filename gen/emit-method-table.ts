@@ -1,7 +1,7 @@
 // Role: emits the one runtime METHODS table (name, class, result tag, namespace path, long-poll flag); no second method list.
-// Informs HERDR-ADR-0002 and plan section 3.2 (emit-method-table.ts: one table). Result tags come from the seed until phase 3.
+// Informs HERDR-ADR-0002 and plan section 3.2 (emit-method-table.ts: one table). Result tags come from METHOD_RESULT_MAP (null for a LOOSE row).
 import { classOf, type CapabilityClass } from './capabilities.ts';
-import { METHOD_RESULT_SEED } from './method-result-map.ts';
+import { METHOD_RESULT_MAP, RESULT_KIND } from './method-result-map.ts';
 import { isLongPoll } from './overrides.ts';
 import type { ApiSchema, JSONSchema } from './schema.ts';
 import { branchesOf, constOf, requestNamespace, SCHEMA_KEY } from './schema.ts';
@@ -38,9 +38,10 @@ export function methodNames(schema: ApiSchema): readonly string[] {
   return names;
 }
 
-// Result tag from the seed; null when the seed has no row (unmapped until phase 3).
+// Result tag from the map; null for a LOOSE row (a method that answers several tags).
 function resultOf(name: string): string | null {
-  return Object.hasOwn(METHOD_RESULT_SEED, name) ? (METHOD_RESULT_SEED[name]?.tag ?? null) : null;
+  const row = Object.hasOwn(METHOD_RESULT_MAP, name) ? METHOD_RESULT_MAP[name] : undefined;
+  return row?.kind === RESULT_KIND.typed ? row.tag : null;
 }
 
 export function methodRows(schema: ApiSchema): readonly MethodRow[] {

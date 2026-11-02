@@ -9,7 +9,7 @@ import type { ApiSchema } from '../../gen/schema.ts';
 import { branchesOf, constOf, GEN_PATHS, loadSchema, requestNamespace, SCHEMA_KEY, SCHEMA_NAMESPACE } from '../../gen/schema.ts';
 import { methodRows as tableRows } from '../../gen/emit-method-table.ts';
 import { METHOD_CLASS } from '../../gen/capabilities.ts';
-import { METHOD_RESULT_SEED } from '../../gen/method-result-map.ts';
+import { isLoose, METHOD_RESULT_MAP, RESULT_KIND } from '../../gen/method-result-map.ts';
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_PATH = join(TEST_DIR, 'fixtures', 'methods-mini.schema.json');
@@ -88,7 +88,7 @@ describe('fixture schema', () => {
     ]);
   });
 
-  test('each fixture row carries its class, seeded result and long-poll flag', () => {
+  test('each fixture row carries its class, mapped result and long-poll flag', () => {
     expect(tableRows(fixture)).toEqual([
       { name: FIXTURE_METHOD.ping, class: 'R-meta', result: 'pong', ns: [], longPoll: false },
       { name: FIXTURE_METHOD.paneList, class: 'R-meta', result: 'pane_list', ns: ['pane'], longPoll: false },
@@ -135,9 +135,17 @@ describe('full table of the committed schema', () => {
     ]);
   });
 
-  test('result is null exactly for methods outside the seed', () => {
+  test('result is null exactly for the LOOSE rows of the map', () => {
     for (const row of rows) {
-      expect(row.result === null).toBe(!Object.hasOwn(METHOD_RESULT_SEED, row.name));
+      const mapped = METHOD_RESULT_MAP[row.name];
+      expect(row.result === null).toBe(mapped !== undefined && isLoose(mapped));
+    }
+  });
+
+  test('every result is the tag of its typed row', () => {
+    for (const row of rows) {
+      const mapped = METHOD_RESULT_MAP[row.name];
+      expect(row.result).toBe(mapped?.kind === RESULT_KIND.typed ? mapped.tag : null);
     }
   });
 });

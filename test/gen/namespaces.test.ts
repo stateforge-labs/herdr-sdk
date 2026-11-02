@@ -91,8 +91,8 @@ describe('member signatures', () => {
     expect(readOnlyContent.get('agent.read')).toContain('params: P.AgentReadParams');
   });
 
-  test('an unmapped result is unknown and a mapped one is its tag', () => {
-    expect(readOnly.get('agent.explain')).toContain('Promise<unknown>');
+  test('every mapped result is its tag', () => {
+    expect(readOnly.get('agent.explain')).toContain('Promise<ResultByTag["agent_explain"]>');
     expect(readOnly.get('agent.get')).toContain('Promise<ResultByTag["agent_info"]>');
   });
 });
