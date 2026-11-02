@@ -33,3 +33,6 @@ c4/
 - `3 · Components / Effect client` (`effectComponents`): Herdr service, layers, tagged errors, Stream subscribe, watchPaneSet.
 
 Validate: `cd packages/herdr/docs/architecture/c4 && npx -y likec4@1.60.0 validate .`
+
+Query: the `likec4-herdr` MCP server in the repo's `.mcp.json` serves this folder (`bunx likec4@1.60.0 mcp --stdio`); use `read-view`, `find-relationships`, `query-graph` instead of grepping `.c4` files.
+One server serves one folder, so the voice engine's model is the separate `likec4` server.
