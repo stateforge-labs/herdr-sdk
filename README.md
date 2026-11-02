@@ -2,7 +2,7 @@
 
 A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22, herdr 0.9.5: 102 methods, 26 event kinds, 27 subscription types), for Bun and Node.
 
-> **Status: planned API.** Nothing below is built yet. This README is written first so the code is shaped by how it is used. When the code lands, every snippet comes from `examples/*.ts` (checked by `scripts/check-readme.ts`), compiles in CI, and the ones marked "runs" execute against the fake herdr ([HERDR-ADR-0014](docs/decisions/HERDR-ADR-0014-executable-docs.md)). Plan: [docs/architecture/plan.md](docs/architecture/plan.md) · decisions: [docs/decisions/](docs/decisions/README.md).
+> **Status: lanes P2a to P6c integrated on feat/herdr-lib (interfaces locked, HERDR-ADR-0017). `/effect` and `/mcp` expose only the effect-free contract until amendment A1 (effect pin); the full fake (P5a) and executable README snippets are not yet done. Treat the API below as the target.** This README is written first so the code is shaped by how it is used. When the code lands, every snippet comes from `examples/*.ts` (checked by `scripts/check-readme.ts`), compiles in CI, and the ones marked "runs" execute against the fake herdr ([HERDR-ADR-0014](docs/decisions/HERDR-ADR-0014-executable-docs.md)). Plan: [docs/architecture/plan.md](docs/architecture/plan.md) · decisions: [docs/decisions/](docs/decisions/README.md).
 
 ## Entry points
 

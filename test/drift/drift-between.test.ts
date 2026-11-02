@@ -12,7 +12,7 @@ import { committedSchemaDocument } from './support/real-schema.ts';
 const VERSION = '0.9.5';
 
 // The committed schema lists 102 methods and METHOD_RESULT maps 25 of them (77 unmapped). P3 regenerates the table and this pin changes with it.
-const KNOWN_UNMAPPED_METHODS = 77;
+const KNOWN_UNMAPPED_METHODS = 55;
 
 // A copy of the mini schema whose Params property `description` has the given type (a property named like the schema keyword).
 function withDescriptionProperty(type: string): SchemaDocument {
