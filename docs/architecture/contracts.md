@@ -125,6 +125,8 @@ Kept as built: wire files, errors, envelope, rpc (now annotated `: Rpc`), socket
 6. **No README snippet for `/effect` compiles yet** (no `effect` installed). The contract test for the Effect entry covers only `toTaggedError` and the error shapes; A1 adds sections 4 and 6.
 8. **`pane.output_matched` needs `match` and `source`**, not only `pane_id`. `watchPaneSet`'s default `types` (all three) cannot build that spec without them. P4b reports how it handles it; the likely amendment is default `[PaneAgentStatusChanged, PaneScrollChanged]` plus an `outputMatch` option.
 7. `src/not-implemented.ts` is registered as a constants-layer file in `rules/layers.ts`. Phase 8 deletes it once no stub is left.
+9. **`watchPaneSet` cannot yet replace the hub fleet (hub S8, 2026-11-02).** The hub needs (a) a first-Live marker (`FleetChange.Live` gates the link as connected), (b) silent adoption of the initial pane set (ADR-0010), and (c) the full pane rows at first sight (cwd and agent, ADR-0006), since `Added` carries only a pane id. Proposed: a `snapshot` option returning the full pane rows plus a first-Live marker. Until then the hub keeps its generation loop over `events.subscribe` and `session.snapshot`.
+10. **`SubscriptionEventKind` is not exported from `.`** (`/read-only` neither). The hub compares a `pane.agent_status_changed` frame with `SubscriptionType.PaneAgentStatusChanged`, which has the same value. Export the kind from `.` to make the comparison exact.
 
 ## Contract review log (2026-11-02)
 
@@ -161,3 +163,8 @@ The owner's requirement: the library is compiled, and a consumer's bundle carrie
 - **No-leak rule (`scripts/check-size.ts`):** no production row or scenario may contain test-kit, `generated/test-data/`, `generated/drift/`, `generated/method-table`, `generated/entry-methods`, or `child_process`. `/read-only` and the read-only scenarios also refuse `/admin.js`, `connect-admin` and `/effect` (HERDR-ADR-0005).
 - **Tests:** `test/scoped/lazy-streams.test.ts` checks the eager and the lazy stream members over the fake; `test/types/contract/connect-result-types.ts` checks the result type of each connect function.
 - **Not done:** the `constants/` split (plan 10.1 step 4) is deferred (HERDR-ADR-0015).
+
+## Open library slices from the hub's S8 review (2026-11-02)
+
+- **LIB-S8-1 (footprint, open, blocks the hub's footprint claim).** The hub's herdr-only entry is 38,178 B unsplit (15,442 B with the vendored client). The hub already imports the narrowest names (`.`, 3,683 B) and connect (`/read-only`, `connectReadOnly` + `Presets`, 25,318 B). The ~22 KB is the connect composition: `client/scoped/compose.ts` builds every namespace and reaches held, long-poll and watch. Target: a preset-only connect that builds only the members its preset needs (SessionsReader: session, agent.list/get, pane.get/list; fleet: session.snapshot and events.subscribe), and a smaller name table. Done when the herdr-only row of the hub's STATUS.md is no larger than 15,442 B unsplit, or the owner waives it in writing.
+- **LIB-S8-2 (packaging, open).** `dist/generated/test-data/*.js` ships in the tarball and the production entry re-exports it (`generated/index.js`). Target: the entry stops re-exporting the test data, so the hub image can drop it like `dist/test-kit*` (the Containerfile already prunes the test kit).
