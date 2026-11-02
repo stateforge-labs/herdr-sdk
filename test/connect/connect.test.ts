@@ -15,6 +15,8 @@ import { withFake } from '../support/fake.ts';
 import { rejectionOf } from '../support/rejection.ts';
 
 const SHORT_MS = 150;
+const CLIENT_DEFAULT_MS = 5000;
+const CALL_MS = 50;
 const OLDER = PROTOCOL - 1;
 const NEWER = PROTOCOL + 1;
 // A partial snapshot: these tests check transport, not the snapshot shape (fake.reply is typed per method since HERDR-ADR-0017).
@@ -124,6 +126,19 @@ describe('connect', () => {
           [Method.PaneGet, CallOutcome.Refused],
         ],
       );
+      client.close();
+    });
+  });
+
+  test('a per-call timeoutMs overrides the client default', async () => {
+    await withFake({}, async (fake) => {
+      fake.silent(Method.SessionSnapshot);
+      const client = await connect({ socketPath: fake.path, timeoutMs: CLIENT_DEFAULT_MS });
+      const started = performance.now();
+      const error = await rejectionOf(client.call(Method.SessionSnapshot, {}, { timeoutMs: CALL_MS }));
+      assert.ok(error instanceof HerdrTransportError);
+      assert.equal(error.isTimeout, true);
+      assert.ok(performance.now() - started < CLIENT_DEFAULT_MS, 'the call used its own timeout, not the client default');
       client.close();
     });
   });

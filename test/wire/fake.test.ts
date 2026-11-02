@@ -2,7 +2,8 @@
 // Informs HERDR-ADR-0016 (W1, W3, fake facts F1, F3, F6) and plan 5 (the fake's 2a behaviour); new test.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ErrorText, Fake, WireField } from '../../src/constants.ts';
+import { EMPTY_REPLY_ID, ErrorText, Fake, Lane, WireField, WireFact } from '../../src/constants.ts';
+import { NotImplementedError } from '../../src/not-implemented.ts';
 import { Method, PROTOCOL } from '../../src/generated/index.ts';
 import { encodeRequest } from '../../src/wire/envelope.ts';
 import { HerdrError } from '../../src/wire/errors.ts';
@@ -37,7 +38,7 @@ describe('fake herdr on the wire', () => {
       const lines = await raw.untilClosed();
       assert.equal(lines.length, 1);
       const reply = JSON.parse(lines[0] ?? '') as Record<string, unknown>;
-      assert.equal(reply[WireField.Id], '');
+      assert.equal(reply[WireField.Id], EMPTY_REPLY_ID);
       assert.deepEqual(reply[WireField.Error], {
         [WireField.Code]: Fake.InvalidRequestCode,
         [WireField.Message]: 'unparseable request',
@@ -51,7 +52,7 @@ describe('fake herdr on the wire', () => {
       raw.write('[1,2,3]');
       const lines = await raw.untilClosed();
       assert.equal(lines.length, 1);
-      assert.equal(JSON.parse(lines[0] ?? '')[WireField.Id], '');
+      assert.equal(JSON.parse(lines[0] ?? '')[WireField.Id], EMPTY_REPLY_ID);
     });
   });
 
@@ -80,6 +81,36 @@ describe('fake herdr on the wire', () => {
     await withFake({ capabilities: null }, async (fake) => {
       const pong = await rpc({ socketPath: fake.path, timeoutMs: SHORT_MS }, Method.Ping, {});
       assert.equal(WireField.Capabilities in pong, false);
+    });
+  });
+
+  test('the fake reproduces exactly W1 and W3 until the 5a members land', async () => {
+    await withFake({}, async (fake) => {
+      assert.deepEqual([...fake.reproduces], [WireFact.W1CloseAfterResponse, WireFact.W3EmptyIdOnUnparseable]);
+    });
+  });
+
+  test('the 5a members are stubs that throw NotImplementedError naming lane P5a', async () => {
+    await withFake({}, async (fake) => {
+      assert.throws(() => fake.requests(), NotImplementedError);
+      assert.throws(() => fake.push({ event: 'x', data: null }), NotImplementedError);
+      assert.throws(() => fake.heldCount(), NotImplementedError);
+      assert.throws(() => fake.closeHeld(), NotImplementedError);
+      assert.throws(() => fake.splitAck(), NotImplementedError);
+      try {
+        fake.subscriberCount();
+        assert.fail('expected a throw');
+      } catch (error) {
+        assert.ok(error instanceof NotImplementedError);
+        assert.equal(error.lane, Lane.P5a);
+      }
+    });
+  });
+
+  test('the version option shows in the pong', async () => {
+    await withFake({ version: '9.9.9-test' }, async (fake) => {
+      const pong = await rpc({ socketPath: fake.path, timeoutMs: SHORT_MS }, Method.Ping, {});
+      assert.equal(pong.version, '9.9.9-test');
     });
   });
 

@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import { CallOutcome, ErrorText, Fake, WireField } from '../../src/constants.ts';
 import { Method, ResultTag } from '../../src/generated/index.ts';
 import type { ResultOf } from '../../src/wire/types.ts';
@@ -14,6 +15,7 @@ import { rpc } from '../../src/wire/rpc.ts';
 import { withFake } from '../support/fake.ts';
 import { rejectionOf } from '../support/rejection.ts';
 import { waitUntil } from '../support/wait.ts';
+import { startRawServer } from './support/raw-server.ts';
 
 const SHORT_MS = 150;
 const WAIT_MS = 1000;
@@ -155,6 +157,78 @@ describe('rpc', () => {
       await rpc({ socketPath: fake.path, timeoutMs: SHORT_MS }, Method.Ping, {});
       await waitUntil(() => fake.connectionCount() === 0, WAIT_MS);
       assert.equal(fake.receivedMethods().length, 2);
+    });
+  });
+
+  // W1 at the rpc level: the server answers once and ends the connection, as herdr does. Two sequential calls must open two
+  // connections, each carrying exactly one request; a reused connection would show one connection with two requests.
+  test('two sequential calls open two connections, one request each (W1: no reuse)', async () => {
+    const requestsPerConnection: number[] = [];
+    const server = await startRawServer((socket) => {
+      const index = requestsPerConnection.push(0) - 1;
+      socket.setEncoding('utf8');
+      socket.on('data', (chunk: string) => {
+        requestsPerConnection[index] = (requestsPerConnection[index] ?? 0) + 1;
+        const id = String((JSON.parse(chunk.trim()) as Record<string, unknown>)[WireField.Id]);
+        socket.end(`${JSON.stringify({ [WireField.Id]: id, [WireField.Result]: PONG_REPLY })}\n`);
+      });
+    });
+    try {
+      await rpc({ socketPath: server.path, timeoutMs: WAIT_MS }, Method.Ping, {});
+      await rpc({ socketPath: server.path, timeoutMs: WAIT_MS }, Method.Ping, {});
+      assert.deepEqual(requestsPerConnection, [1, 1]);
+    } finally {
+      await server.close();
+    }
+  });
+
+  test('two concurrent calls open two connections, one each', async () => {
+    await withFake({}, async (fake) => {
+      fake.silent(Method.SessionSnapshot);
+      const first = rejectionOf(rpc({ socketPath: fake.path, timeoutMs: WAIT_MS }, Method.SessionSnapshot, {}));
+      const second = rejectionOf(rpc({ socketPath: fake.path, timeoutMs: WAIT_MS }, Method.SessionSnapshot, {}));
+      await waitUntil(() => fake.connectionCount() === 2, WAIT_MS);
+      assert.equal(fake.receivedMethods().length, 2);
+      assert.ok((await first) instanceof HerdrTransportError);
+      assert.ok((await second) instanceof HerdrTransportError);
+      await waitUntil(() => fake.connectionCount() === 0, WAIT_MS);
+    });
+  });
+
+  test('a server that keeps the socket open after its answer: rpc still destroys it', async () => {
+    let answeredId = '';
+    let clientClosed = false;
+    const server = await startRawServer((socket) => {
+      socket.setEncoding('utf8');
+      socket.on('data', (chunk: string) => {
+        answeredId = String((JSON.parse(chunk.trim()) as Record<string, unknown>)[WireField.Id]);
+        socket.write(`${JSON.stringify({ [WireField.Id]: answeredId, [WireField.Result]: PONG_REPLY })}\n`);
+      });
+      socket.on('close', () => {
+        clientClosed = true;
+      });
+    });
+    try {
+      const result = await rpc({ socketPath: server.path, timeoutMs: WAIT_MS }, Method.Ping, {});
+      assert.deepEqual(result, PONG_REPLY);
+      await waitUntil(() => clientClosed, WAIT_MS);
+      assert.ok(answeredId.length > 0, 'the server answered the request');
+    } finally {
+      await server.close();
+    }
+  });
+
+  test('an empty-id error followed by EOF rejects once as a HerdrError, and onCall fires once', async () => {
+    await withFake({}, async (fake) => {
+      fake.rawReply(Method.Ping, UNPARSEABLE_REPLY);
+      const events: CallEvent[] = [];
+      const error = await rejectionOf(
+        rpc({ socketPath: fake.path, timeoutMs: WAIT_MS, onCall: (event) => events.push(event) }, Method.Ping, {}),
+      );
+      assert.ok(error instanceof HerdrError, 'the EOF after the error must not replace it');
+      await delay(20);
+      assert.equal(events.length, 1);
+      assert.equal(events[0]?.outcome, CallOutcome.Refused);
     });
   });
 

@@ -42,6 +42,15 @@ function checkProtocol(pong: Result_pong, policy: ProtocolPolicy): void {
   }
 }
 
+// A call's own timeoutMs and signal win over the client default; the socket path and onCall always come from the client.
+function callRpcOptions(rpcOptions: RpcOptions & { readonly timeoutMs: number }, callOptions: CallOptions): RpcOptions {
+  return {
+    ...rpcOptions,
+    timeoutMs: callOptions.timeoutMs ?? rpcOptions.timeoutMs,
+    signal: callOptions.signal,
+  };
+}
+
 // The capabilities and server facts are fixed at connect time; a closed client refuses every call without contacting herdr
 // and aborts transport.closed so the streams P2b composes end with it (contract ClientBase.close).
 function createClient(
@@ -64,12 +73,12 @@ function createClient(
     capabilities,
     serverInfo,
     transport,
-    async call<M extends Method>(method: M, params: ParamsOf<M>, options: CallOptions = {}): Promise<ResultOf<M>> {
+    async call<M extends Method>(method: M, params: ParamsOf<M>, callOptions: CallOptions = {}): Promise<ResultOf<M>> {
       if (closed) {
         throw new HerdrTransportError(ErrorText.ClientClosed(method));
       }
       assertCapability(method, capabilities);
-      return rpc({ ...rpcOptions, signal: options.signal }, method, params);
+      return rpc(callRpcOptions(rpcOptions, callOptions), method, params);
     },
     close(): void {
       closed = true;
