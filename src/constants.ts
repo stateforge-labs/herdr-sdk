@@ -283,7 +283,20 @@ export type Lane = (typeof Lane)[keyof typeof Lane];
 // --- end P4a ---
 
 // --- lane P4b ---
+// Messages of the watch layer (plan 3.6, HERDR-ADR-0016 W5/W6). Codes stay in ErrorName; these are the texts only.
+export const WatchText = {
+  ReplayOverflow: (max: number): string => `replay buffer overflowed at ${max} frames`,
+  OutputMatchUnsupported:
+    'watchPaneSet does not subscribe to pane.output_matched: its match and source are not options yet (HERDR-ADR-0016 open issue 8)',
+} as const;
 
+// Messages of the held connection layer (plan 3.6).
+export const HeldText = {
+  Ended: (method: string): string => `${method}: the held connection is closed`,
+} as const;
+
+// Subscription types that keep watchPaneSet's set of panes (W6): a pane is created or closed.
+export const PANE_LIFECYCLE_SUBSCRIPTION_TYPES = [SubscriptionType.PaneCreated, SubscriptionType.PaneClosed] as const;
 // --- end P4b ---
 
 // --- lane P5a ---
