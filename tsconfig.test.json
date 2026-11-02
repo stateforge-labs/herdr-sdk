@@ -1,0 +1,10 @@
+{
+  "//": "Typecheck gate for code outside src that tsconfig.json skips: bin, examples, tests. bun:test files join on 2026-11-06 when @types/bun 1.4.4 is 14 days old (HERDR-ADR-0015); then include becomes [\"bin\", \"examples\", \"test\"] minus fixtures (contracts.md, integration item A0).",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["es2023", "esnext.disposable"]
+  },
+  "include": ["src", "bin", "examples", "test/wire", "test/connect", "test/support"],
+  "exclude": ["node_modules", "test/gen", "test/scripts", "test/types"]
+}

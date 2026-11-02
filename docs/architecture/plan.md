@@ -327,6 +327,19 @@ Also: hub `docs/delivery.md` S8 row; repo-root README entry for `packages/`.
 
 Each slice follows the hub pattern: Opus-low architect spec → Haiku implement (each < 100k tokens) → Haiku check x3 → Sonnet review x3 → fix → Sonnet gate.
 
+**Parallel build on locked interfaces** ([HERDR-ADR-0017](../decisions/HERDR-ADR-0017-interfaces-locked-before-parallel-implementation.md)). The contract files (one `types.ts` per layer, the error classes, the contract section of `constants.ts`) were written first and are read-only for every lane. Every unbuilt function is a typed stub that throws `NotImplementedError`. Contract map, lane ownership (disjoint paths), acceptance and stub strategy per lane: [contracts.md](contracts.md). Lane graph:
+
+```
+now:        P2a (review fixes) ──► P5a (takes over the fake files)
+            P2b (slice P2b-1 first: tree builder, allow-list), P3, P4a, P4b, P5c   in parallel (P4b on P4a's stubs)
+2026-11-06: A0 (@types/bun pinned; every test dir type-checked)
+2026-11-16: amendment A1 (effect pinned; Effect/MCP types; effect/services.ts stubs) ──► P6a
+            A1 + S7 merged ──► P6c (parallel to P6a, on A1's tags)
+            all lanes integrated ──► 6b hub migration (S8)
+```
+
+Gate for every lane, in addition to its row: `bun run typecheck && bun run typecheck:types && bun test && bun run lint:layers`.
+
 | Phase | Delivers | Acceptance (command) |
 |---|---|---|
 | 0 Baseline | measurement study (research skill) on a clean checkout + a generator prototype emitting only `METHODS` | numbers in section 10.1 filled; `bun run study:size` reproduces them |

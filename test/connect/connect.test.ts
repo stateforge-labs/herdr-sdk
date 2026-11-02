@@ -5,9 +5,10 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { CallOutcome, ErrorText, Fake, ProtocolPolicy, WireField } from '../../src/constants.ts';
-import { connect } from '../../src/client/connect.ts';
+import { CallOutcome, ErrorText, Fake, ProtocolPolicy, Timeout, WireField } from '../../src/constants.ts';
+import { connectCore as connect } from '../../src/client/connect-core.ts';
 import { Method, PROTOCOL, ResultTag, ServerCapability } from '../../src/generated/index.ts';
+import type { ResultOf } from '../../src/wire/types.ts';
 import type { CallEvent } from '../../src/wire/call-hook.ts';
 import { HerdrError, HerdrTransportError, ProtocolMismatchError, UnsupportedByServerError } from '../../src/wire/errors.ts';
 import { withFake } from '../support/fake.ts';
@@ -16,15 +17,16 @@ import { rejectionOf } from '../support/rejection.ts';
 const SHORT_MS = 150;
 const OLDER = PROTOCOL - 1;
 const NEWER = PROTOCOL + 1;
-const SNAPSHOT_RESULT = { [WireField.Type]: ResultTag.SessionSnapshot, snapshot: {} };
+// A partial snapshot: these tests check transport, not the snapshot shape (fake.reply is typed per method since HERDR-ADR-0017).
+const SNAPSHOT_RESULT = { [WireField.Type]: ResultTag.SessionSnapshot, snapshot: {} } as unknown as ResultOf<typeof Method.SessionSnapshot>;
 const REFUSAL = { code: 'bad_target', message: 'no such pane' };
 
 describe('connect', () => {
   test('connects to a current server and reports its protocol, version and capabilities', async () => {
     await withFake({}, async (fake) => {
       const client = await connect({ socketPath: fake.path, timeoutMs: SHORT_MS });
-      assert.equal(client.server.protocol, PROTOCOL);
-      assert.equal(client.server.version, Fake.Version);
+      assert.equal(client.serverInfo.protocol, PROTOCOL);
+      assert.equal(client.serverInfo.version, Fake.Version);
       assert.equal(client.capabilities.live_handoff, true);
       client.close();
     });
@@ -46,7 +48,7 @@ describe('connect', () => {
         timeoutMs: SHORT_MS,
         protocolPolicy: ProtocolPolicy.Minimum,
       });
-      assert.equal(client.server.protocol, NEWER);
+      assert.equal(client.serverInfo.protocol, NEWER);
       client.close();
     });
     await withFake({ protocol: OLDER }, async (fake) => {
@@ -92,7 +94,7 @@ describe('connect', () => {
 
   test('a gated method on a server with its capability is sent', async () => {
     await withFake({}, async (fake) => {
-      fake.reply(Method.ServerLiveHandoff, null);
+      fake.reply(Method.ServerLiveHandoff, null as unknown as ResultOf<typeof Method.ServerLiveHandoff>);
       const client = await connect({ socketPath: fake.path, timeoutMs: SHORT_MS });
       const result = await client.call(Method.ServerLiveHandoff, {});
       assert.equal(result, null);
@@ -123,6 +125,25 @@ describe('connect', () => {
         ],
       );
       client.close();
+    });
+  });
+
+  test('serverInfo.version is the version the pong reports', async () => {
+    await withFake({ version: '0.0.0-test' }, async (fake) => {
+      const client = await connect({ socketPath: fake.path, timeoutMs: SHORT_MS });
+      assert.equal(client.serverInfo.version, '0.0.0-test');
+      client.close();
+    });
+  });
+
+  test('the transport carries the resolved settings and close() aborts its closed signal', async () => {
+    await withFake({}, async (fake) => {
+      const client = await connect({ socketPath: fake.path });
+      assert.equal(client.transport.socketPath, fake.path);
+      assert.equal(client.transport.timeoutMs, Timeout.DefaultMs);
+      assert.equal(client.transport.closed.aborted, false);
+      client.close();
+      assert.equal(client.transport.closed.aborted, true);
     });
   });
 

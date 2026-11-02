@@ -22,5 +22,6 @@ Ids are **HERDR-ADR-NNNN** (the library's own sequence). The voice engine's reco
 | [HERDR-ADR-0014](HERDR-ADR-0014-executable-docs.md) | Docs are executable: README-first, examples compiled and run | proposed |
 | [HERDR-ADR-0015](HERDR-ADR-0015-dependency-policy-and-size-budget.md) | Dependency policy and size budget | proposed |
 | [HERDR-ADR-0016](HERDR-ADR-0016-design-intent-inherited-from-atalaya.md) | Design intent inherited from atalaya: measured wire facts and client principles | proposed |
+| [HERDR-ADR-0017](HERDR-ADR-0017-interfaces-locked-before-parallel-implementation.md) | Interfaces are locked before parallel implementation | proposed |
 
 Cross-project (not written here): hub ADR-0030 "Depend on the extracted @homelab/herdr package" supersedes hub ADR-0003 and amends hub ADR-0012, 0022, 0028 and 0029; its draft text is [HERDR-ADR-0013](HERDR-ADR-0013-hub-adr-amendments-draft.md) (see [plan section 9](../architecture/plan.md#9-migration)).

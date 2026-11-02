@@ -21,13 +21,16 @@ import { serveConnection } from './fake-connection.ts';
 import { advertisedCapabilities } from './fake-pong.ts';
 import { fakeSocketLocation, removeOwnedDir, type FakeSocketLocation } from './fake-socket-path.ts';
 import { FakeScript } from './fake-script.ts';
-import type { FakeHerdr, FakeHerdrOptions } from './fake-types.ts';
+import { Fake, Lane, WireFact } from '../constants.ts';
+import { notImplemented } from '../not-implemented.ts';
+import type { CreateFakeHerdr, FakeHerdr, FakeHerdrOptions } from './types.ts';
 
-export async function createFakeHerdr(options: FakeHerdrOptions = {}): Promise<FakeHerdr> {
+export const createFakeHerdr: CreateFakeHerdr = async function createFakeHerdr(options: FakeHerdrOptions = {}): Promise<FakeHerdr> {
   const location = fakeSocketLocation(options.socketPath);
   const script = new FakeScript();
   const pong = {
     protocol: options.protocol ?? PROTOCOL,
+    version: options.version ?? Fake.Version,
     capabilities: advertisedCapabilities(options.capabilities),
   };
   const sockets = new Set<Socket>();
@@ -39,17 +42,21 @@ export async function createFakeHerdr(options: FakeHerdrOptions = {}): Promise<F
     serveConnection(socket, { script, pong });
   });
   await listen(server, location.path);
-  return handleFor(location, script, sockets, server);
-}
+  return handleFor(location, script, sockets, server, pong.capabilities);
+};
 
 function handleFor(
   location: FakeSocketLocation,
   script: FakeScript,
   sockets: ReadonlySet<Socket>,
   server: Server,
+  capabilities: FakeHerdr['capabilities'],
 ): FakeHerdr {
   return {
     path: location.path,
+    capabilities,
+    // W1 and W3 today (header above); P5a adds the rest as it implements them.
+    reproduces: [WireFact.W1CloseAfterResponse, WireFact.W3EmptyIdOnUnparseable],
     reply(method, result) {
       script.setReply(method, result);
     },
@@ -68,6 +75,16 @@ function handleFor(
     connectionCount() {
       return sockets.size;
     },
+    replySequence: () => notImplemented('fake.replySequence', Lane.P5a),
+    requests: () => notImplemented('fake.requests', Lane.P5a),
+    push: () => notImplemented('fake.push', Lane.P5a),
+    closeSubscribers: () => notImplemented('fake.closeSubscribers', Lane.P5a),
+    subscriberCount: () => notImplemented('fake.subscriberCount', Lane.P5a),
+    holdPushes: () => notImplemented('fake.holdPushes', Lane.P5a),
+    splitAck: () => notImplemented('fake.splitAck', Lane.P5a),
+    strayLine: () => notImplemented('fake.strayLine', Lane.P5a),
+    heldCount: () => notImplemented('fake.heldCount', Lane.P5a),
+    closeHeld: () => notImplemented('fake.closeHeld', Lane.P5a),
     async stop() {
       for (const socket of sockets) {
         socket.destroy();

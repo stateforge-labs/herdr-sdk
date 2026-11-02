@@ -72,7 +72,7 @@ export function sourceFiles(srcDir: string): readonly string[] {
 
 // Layer of a file under src/, or undefined when its folder is not in the layer table.
 export function layerOf(rel: string): Layer | undefined {
-  if (rel === SourcePath.Constants) {
+  if (rel === SourcePath.Constants || rel === SourcePath.NotImplemented) {
     return Layer.Constants;
   }
   if (rel === SourcePath.ModelFromWire) {

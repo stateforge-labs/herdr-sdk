@@ -34,6 +34,8 @@ export const FOLDER_LAYERS: readonly Layer[] = [
 // Single files under src/ that are not entries.
 export const SourcePath = {
   Constants: 'constants.ts',
+  // HERDR-ADR-0017: the shared NotImplemented helper of the contract stubs; same layer as constants (importable by every layer but generated and model).
+  NotImplemented: 'not-implemented.ts',
   ModelFromWire: 'model/from-wire.ts',
 } as const;
 
@@ -56,8 +58,9 @@ export const ALLOWED_IMPORTS: Readonly<Record<Layer, readonly Layer[]>> = {
   [Layer.Wire]: [Layer.Wire, Layer.Constants, Layer.Generated],
   [Layer.Client]: [Layer.Client, Layer.Wire, Layer.Constants, Layer.Generated],
   [Layer.Effect]: [Layer.Effect, Layer.Client, Layer.Wire, Layer.Constants, Layer.Generated],
-  // HERDR-ADR-0010: the MCP toolkit is a read-only client; it may use the effect package (see PACKAGE_ALLOWED).
-  [Layer.Mcp]: [Layer.Mcp, Layer.Client, Layer.Wire, Layer.Constants, Layer.Generated],
+  // HERDR-ADR-0010: the MCP toolkit is a read-only client built on the /effect services (HerdrReadOnly, HerdrTaggedError)
+  // and the effect package (see PACKAGE_ALLOWED). Contract review finding: P6c needs src/effect.
+  [Layer.Mcp]: [Layer.Mcp, Layer.Effect, Layer.Client, Layer.Wire, Layer.Constants, Layer.Generated],
   [Layer.Drift]: [Layer.Drift, Layer.Constants, Layer.Generated],
   [Layer.TestKit]: [Layer.TestKit, Layer.Wire, Layer.Constants, Layer.Generated],
   [Layer.Model]: [Layer.Model],

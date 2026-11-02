@@ -119,9 +119,11 @@ const HerdrLive = Herdr.layer({ timeoutMs: 5_000 }) // no default timeout: the c
 | Promise error | Effect `_tag` | Fields |
 |---|---|---|
 | `HerdrError` | `HerdrRefused` | `method`, `code`, `message` |
-| `HerdrTransportError`, `SubscriptionEnded` | `HerdrUnavailable` | `cause` |
+| `HerdrTransportError`, `SubscriptionEnded` | `HerdrUnavailable` | `cause`, `isTimeout` |
 | `ProtocolMismatchError` | `ProtocolMismatch` | `expected`, `actual` |
 | `UnsupportedByServerError` | `HerdrUnsupported` | `method`, `capability` |
+
+Every tagged error also has `message` (the Promise error's message).
 
 Layers: `Herdr.layer`, `Herdr.layerReadOnly`, `Herdr.layerPrompt`, `Herdr.layerAdmin`.
 
@@ -162,7 +164,7 @@ It never registers a write method.
 
 ```sh
 bun run capture      # herdr api schema --json > schema/herdr-api.schema.json
-bun run generate     # regenerate src/generated and docs/api
+bun run gen          # regenerate src/generated and docs/api
 herdr-drift          # exit 0 clean, 1 drift, 2 usage, 3 herdr not found
 ```
 

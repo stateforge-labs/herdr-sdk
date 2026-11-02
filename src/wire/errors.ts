@@ -1,4 +1,4 @@
-// Role: the four error classes of the wire layer: a server refusal, a transport failure, a protocol mismatch and a capability the server lacks.
+// Role: the five error classes of the core: a server refusal, a transport failure, a protocol mismatch, a capability the server lacks, and an ended subscription. CONTRACT FILE (HERDR-ADR-0017): read-only for every lane.
 // Informs HERDR-ADR-0003 (layers), HERDR-ADR-0016 (W3 error envelope) and plan 3.1 (error list); ported from atalaya src/protocol/error.ts plus two new classes.
 import { ErrorName, ErrorText } from '../constants.ts';
 import type { ErrorBody, Method, ServerCapability } from '../generated/index.ts';
@@ -61,5 +61,16 @@ export class UnsupportedByServerError extends Error {
     super(ErrorText.Unsupported(method, capability));
     this.method = method;
     this.capability = capability;
+  }
+}
+
+// The server closed a subscription connection (or it failed after the ack). Mapped to HerdrUnavailable in /effect (plan 3.7).
+export class SubscriptionEnded extends Error {
+  override readonly name: string = ErrorName.SubscriptionEnded;
+  readonly method: Method;
+
+  constructor(method: Method, options: { cause?: unknown } = {}) {
+    super(ErrorText.SubscriptionEnded(method), { cause: options.cause });
+    this.method = method;
   }
 }

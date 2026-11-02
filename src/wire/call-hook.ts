@@ -1,17 +1,10 @@
 // Role: the onCall timing hook: the event it receives, how a failed call is classified, and a reporter that a throwing hook cannot break.
 // Informs HERDR-ADR-0004 (Promise core) and plan 3.3 (onCall); outcome kinds and observe/outcomeOf ported from atalaya src/client/rpc.ts.
 import { CallOutcome } from '../constants.ts';
-import type { Method } from '../generated/index.ts';
 import { HerdrError } from './errors.ts';
+import type { CallEvent, OnCall } from './types.ts';
 
-export interface CallEvent {
-  readonly method: Method;
-  readonly durationMs: number;
-  readonly outcome: CallOutcome;
-  readonly code?: string;
-}
-
-export type OnCall = (event: CallEvent) => void;
+export type { CallEvent, OnCall } from './types.ts';
 
 export interface CallClassification {
   readonly outcome: CallOutcome;

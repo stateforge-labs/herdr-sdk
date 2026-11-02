@@ -3,19 +3,14 @@
 // ported from the hub vendor client/rpc.ts (settle-once, destroy on every exit, late-open destroyed, AbortSignal) with atalaya's timing hook.
 import { CallOutcome, EMPTY_REPLY_ID, ErrorText } from '../constants.ts';
 import type { Method } from '../generated/index.ts';
-import { outcomeOf, reportCall, type OnCall } from './call-hook.ts';
+import { outcomeOf, reportCall } from './call-hook.ts';
 import { Connection } from './connection.ts';
 import { HerdrError, HerdrTransportError } from './errors.ts';
 import { encodeRequest, isErrorEnvelope, isObject, type ResponseEnvelope } from './envelope.ts';
 import { nextId } from './id.ts';
-import type { ParamsOf, ResultOf } from './typed.ts';
+import type { ParamsOf, ResultOf, Rpc, RpcOptions } from './types.ts';
 
-export interface RpcOptions {
-  readonly socketPath: string;
-  readonly timeoutMs?: number | undefined;
-  readonly signal?: AbortSignal | undefined;
-  readonly onCall?: OnCall | undefined;
-}
+export type { RpcOptions } from './types.ts';
 
 // State of one call. `done` is set by the first exit; every later exit is ignored.
 interface Call<R> {
@@ -33,7 +28,7 @@ interface Call<R> {
 
 const NO_CLEANUP = (): void => undefined;
 
-export async function rpc<M extends Method>(opts: RpcOptions, method: M, params: ParamsOf<M>): Promise<ResultOf<M>> {
+export const rpc: Rpc = async function rpc<M extends Method>(opts: RpcOptions, method: M, params: ParamsOf<M>): Promise<ResultOf<M>> {
   const startedAt = performance.now();
   try {
     const result = await exchange(opts, method, params);
@@ -43,7 +38,7 @@ export async function rpc<M extends Method>(opts: RpcOptions, method: M, params:
     reportCall(opts.onCall, { method, durationMs: performance.now() - startedAt, ...outcomeOf(error) });
     throw error;
   }
-}
+};
 
 function exchange<M extends Method>(opts: RpcOptions, method: M, params: ParamsOf<M>): Promise<ResultOf<M>> {
   const requestId = nextId();

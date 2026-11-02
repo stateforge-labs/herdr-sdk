@@ -1,6 +1,6 @@
 // Role: every literal the library uses outside the generated modules, as as-const objects; no consumers in phase 1b.
 // Informs HERDR-ADR-0003 (layering) and plan section 3 ("every literal lives in constants.ts"), 3.1, 3.3 and 3.6.
-import { ServerCapability } from './generated/index.ts';
+import { ServerCapability, SubscriptionType } from './generated/index.ts';
 import type { ServerCapabilities } from './generated/results.ts';
 
 export { TOKEN_NAME_PATTERN } from './generated/names.ts';
@@ -30,6 +30,8 @@ export const Backoff = {
   InitialMs: 1_000,
   MaxMs: 30_000,
   Factor: 2,
+  // A connection that stayed up this long resets the backoff to InitialMs (hub ADR-0022 "reset after a stable period"; the owner may tune it).
+  StableResetMs: 60_000,
 } as const;
 
 // Protocol compatibility policy: exact match by default, minimum is optional (plan 3.1; hub infra/herdr/protocol-policy.ts).
@@ -44,17 +46,20 @@ export const Overflow = {
   DropOldest: 'drop-oldest',
   Fail: 'fail',
 } as const;
+export type Overflow = (typeof Overflow)[keyof typeof Overflow];
 
 // Kinds of watch handle (plan 3.6; hand-kept, not generated).
 export const WatchKind = {
   Live: 'live',
   Frame: 'frame',
 } as const;
+export type WatchKind = (typeof WatchKind)[keyof typeof WatchKind];
 
 // Keys of PRESET_METHODS in names.ts.
 export const Presets = {
   SessionsReader: 'SessionsReader',
 } as const;
+export type Preset = (typeof Presets)[keyof typeof Presets];
 
 // Prefix of subscription request ids (hub wire.ts:68).
 export const SUBSCRIBE_ID_PREFIX = 'sub';
@@ -75,6 +80,9 @@ export const ErrorText = {
     `herdr protocol ${actual} is not supported (expected ${expected})`,
   Unsupported: (method: string, capability: string): string => `${method}: server lacks capability ${capability}`,
   Refused: (method: string, message: string, code: string): string => `${method}: ${message} [${code}]`,
+  SubscriptionEnded: (method: string): string => `${method}: the server closed the subscription`,
+  NotImplemented: (what: string, lane: string): string => `${what} is not implemented yet (owned by lane ${lane}, HERDR-ADR-0017)`,
+  NotAllowed: (method: string): string => `${method}: not allowed on this client`,
 } as const;
 
 // Error class names, set as `name` on each wire error class (so the names are not typed twice).
@@ -83,6 +91,8 @@ export const ErrorName = {
   Transport: 'HerdrTransportError',
   ProtocolMismatch: 'ProtocolMismatchError',
   UnsupportedByServer: 'UnsupportedByServerError',
+  SubscriptionEnded: 'SubscriptionEnded',
+  NotImplemented: 'NotImplementedError',
 } as const;
 
 // JSON field names of the NDJSON wire envelopes (hub wire.ts HerdrWireField).
@@ -157,3 +167,137 @@ export const AnswerKind = {
   Envelope: 'envelope',
 } as const;
 export type AnswerKind = (typeof AnswerKind)[keyof typeof AnswerKind];
+
+// ---------------------------------------------------------------------------------------------
+// Contract constants (HERDR-ADR-0017, docs/architecture/contracts.md). Locked: lanes read them, the architect amends them.
+// ---------------------------------------------------------------------------------------------
+
+// The `event` of a push frame whose kind this library does not know (HERDR-ADR-0016 P3). Not a herdr value, so it cannot collide.
+export const UNKNOWN_EVENT = '@homelab/herdr:unknown-event' as const;
+
+// Kinds of change watchPaneSet emits (plan 3.6, HERDR-ADR-0016 W6).
+export const PaneSetKind = {
+  Added: 'added',
+  Removed: 'removed',
+  Frame: 'frame',
+} as const;
+export type PaneSetKind = (typeof PaneSetKind)[keyof typeof PaneSetKind];
+
+// Subscription types that need pane_id (HERDR-ADR-0016 W6). Not a hand copy that can drift: the contract test
+// test/types/contract/subscription-lists.ts fails to compile unless this list equals PerPaneSubscriptionType exactly.
+export const PER_PANE_SUBSCRIPTION_TYPES = [
+  SubscriptionType.PaneOutputMatched,
+  SubscriptionType.PaneAgentStatusChanged,
+  SubscriptionType.PaneScrollChanged,
+] as const;
+
+// Every other subscription type: watch()'s default `subscriptions` (plan 3.6).
+export const GLOBAL_SUBSCRIPTION_TYPES: readonly SubscriptionType[] = Object.values(SubscriptionType).filter(
+  (type) => !(PER_PANE_SUBSCRIPTION_TYPES as readonly SubscriptionType[]).includes(type),
+);
+
+// herdr-drift exit codes (HERDR-ADR-0009; P5: could not look is 3, never 0).
+export const DriftExitCode = {
+  Clean: 0,
+  Drift: 1,
+  Usage: 2,
+  NotCovered: 3,
+} as const;
+export type DriftExitCode = (typeof DriftExitCode)[keyof typeof DriftExitCode];
+
+// What a schema source found (drift; HERDR-ADR-0009).
+export const SchemaReadKind = {
+  Found: 'found',
+  NotFound: 'not-found',
+  Unreadable: 'unreadable',
+} as const;
+export type SchemaReadKind = (typeof SchemaReadKind)[keyof typeof SchemaReadKind];
+
+// The drift CLI outcome before its exit code (drift; HERDR-ADR-0009).
+export const DriftOutcomeKind = {
+  Usage: 'usage',
+  NotCovered: 'not-covered',
+  Report: 'report',
+} as const;
+export type DriftOutcomeKind = (typeof DriftOutcomeKind)[keyof typeof DriftOutcomeKind];
+
+// _tag of each Effect error (plan 3.7; same tags as hub kernel/herdr-errors.ts).
+export const EffectErrorTag = {
+  Refused: 'HerdrRefused',
+  Unavailable: 'HerdrUnavailable',
+  ProtocolMismatch: 'ProtocolMismatch',
+  Unsupported: 'HerdrUnsupported',
+} as const;
+export type EffectErrorTag = (typeof EffectErrorTag)[keyof typeof EffectErrorTag];
+
+// MCP tool naming: herdr_<method with dots as underscores> (plan 7).
+export const McpToolName = {
+  Prefix: 'herdr_',
+  MethodSeparator: '.',
+  ToolSeparator: '_',
+} as const;
+
+// Measured herdr wire facts the full fake reproduces (HERDR-ADR-0016 W1-W6).
+export const WireFact = {
+  W1CloseAfterResponse: 'W1',
+  W2AckThenStream: 'W2',
+  W3EmptyIdOnUnparseable: 'W3',
+  W4SchemaOverSocketIsEmpty: 'W4',
+  W5NoHistoryReplay: 'W5',
+  W6PerPaneNeedsPaneId: 'W6',
+} as const;
+export type WireFact = (typeof WireFact)[keyof typeof WireFact];
+
+// Lanes of the parallel build (contracts.md). Used by notImplemented() so a stub names its owner.
+export const Lane = {
+  P2a: 'P2a',
+  P2b: 'P2b',
+  P3: 'P3',
+  P4a: 'P4a',
+  P4b: 'P4b',
+  P5a: 'P5a',
+  P5c: 'P5c',
+  P6a: 'P6a',
+  P6c: 'P6c',
+} as const;
+export type Lane = (typeof Lane)[keyof typeof Lane];
+
+// ---------------------------------------------------------------------------------------------
+// Lane sections: a lane adds constants ONLY between its own `--- lane Px ---` and `--- end Px ---` lines (append-only;
+// contracts.md "shared files"). The blank lines between sections keep two lanes' inserts in separate merge hunks.
+// ---------------------------------------------------------------------------------------------
+// --- lane P2a ---
+
+// --- end P2a ---
+
+// --- lane P2b ---
+
+// --- end P2b ---
+
+// --- lane P3 ---
+
+// --- end P3 ---
+
+// --- lane P4a ---
+
+// --- end P4a ---
+
+// --- lane P4b ---
+
+// --- end P4b ---
+
+// --- lane P5a ---
+
+// --- end P5a ---
+
+// --- lane P5c ---
+
+// --- end P5c ---
+
+// --- lane P6a ---
+
+// --- end P6a ---
+
+// --- lane P6c ---
+
+// --- end P6c ---

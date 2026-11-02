@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { CallOutcome, ErrorText, Fake, WireField } from '../../src/constants.ts';
 import { Method, ResultTag } from '../../src/generated/index.ts';
+import type { ResultOf } from '../../src/wire/types.ts';
 import type { CallEvent } from '../../src/wire/call-hook.ts';
 import { HerdrError, HerdrTransportError } from '../../src/wire/errors.ts';
 import { rpc } from '../../src/wire/rpc.ts';
@@ -16,7 +17,8 @@ import { waitUntil } from '../support/wait.ts';
 
 const SHORT_MS = 150;
 const WAIT_MS = 1000;
-const SNAPSHOT_RESULT = { [WireField.Type]: ResultTag.SessionSnapshot, snapshot: {} };
+// A partial snapshot: these tests check transport, not the snapshot shape (fake.reply is typed per method since HERDR-ADR-0017).
+const SNAPSHOT_RESULT = { [WireField.Type]: ResultTag.SessionSnapshot, snapshot: {} } as unknown as ResultOf<typeof Method.SessionSnapshot>;
 const REFUSAL = { code: 'bad_target', message: 'no such pane' };
 const UNPARSEABLE_REPLY = '{"id":"","error":{"code":"invalid_request","message":"unparseable request"}}';
 const PONG_REPLY = { [WireField.Type]: ResultTag.Pong, [WireField.Protocol]: 22, [WireField.Version]: 'test' };
