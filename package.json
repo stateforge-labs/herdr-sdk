@@ -22,6 +22,7 @@
     "test": "bun test",
     "test:gen": "bun test test/gen",
     "check:pins": "bun scripts/check-pins.ts",
+    "lint:layers": "bun scripts/check-layers.ts",
     "typecheck": "tsc --noEmit -p .",
     "study:size": "bash ../../docs/research/studies/2026-11-02-herdr-size-baseline/scripts/measure.sh"
   },

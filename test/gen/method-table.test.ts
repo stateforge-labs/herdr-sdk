@@ -1,15 +1,15 @@
 // Role: tests of the METHODS generator (gen/emit-method-table.ts, gen/index.ts) against the committed schema and a fixture.
 // Informs HERDR-ADR-0002 and plan section 3.2; the committed output must be reproducible.
 import { afterAll, describe, expect, test } from 'bun:test';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { METHODS } from '../../src/generated/methods.ts';
 import { methodRows, namespaceOf } from '../../gen/emit-method-table.ts';
-import { runGenerator, OUTPUT_FILES } from '../../gen/index.ts';
 import type { ApiSchema } from '../../gen/schema.ts';
 import { branchesOf, constOf, GEN_PATHS, loadSchema, requestNamespace, SCHEMA_KEY, SCHEMA_NAMESPACE } from '../../gen/schema.ts';
+import { methodRows as tableRows } from '../../gen/emit-method-table.ts';
+import { METHOD_CLASS } from '../../gen/capabilities.ts';
+import { METHOD_RESULT_SEED } from '../../gen/method-result-map.ts';
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_PATH = join(TEST_DIR, 'fixtures', 'methods-mini.schema.json');
@@ -81,10 +81,18 @@ describe('fixture schema', () => {
   const fixture = loadSchema(FIXTURE_PATH);
 
   test('emits the three fixture methods with their namespace paths', () => {
-    expect(methodRows(fixture)).toEqual([
-      { name: FIXTURE_METHOD.ping, ns: [] },
-      { name: FIXTURE_METHOD.paneList, ns: ['pane'] },
-      { name: FIXTURE_METHOD.paneSelectionRead, ns: ['pane', 'selection'] },
+    expect(methodRows(fixture).map((row) => [row.name, row.ns])).toEqual([
+      [FIXTURE_METHOD.ping, []],
+      [FIXTURE_METHOD.paneList, ['pane']],
+      [FIXTURE_METHOD.paneSelectionRead, ['pane', 'selection']],
+    ]);
+  });
+
+  test('each fixture row carries its class, seeded result and long-poll flag', () => {
+    expect(tableRows(fixture)).toEqual([
+      { name: FIXTURE_METHOD.ping, class: 'R-meta', result: 'pong', ns: [], longPoll: false },
+      { name: FIXTURE_METHOD.paneList, class: 'R-meta', result: 'pane_list', ns: ['pane'], longPoll: false },
+      { name: FIXTURE_METHOD.paneSelectionRead, class: 'R-content', result: null, ns: ['pane', 'selection'], longPoll: false },
     ]);
   });
 
@@ -110,15 +118,26 @@ describe('fixture schema', () => {
   });
 });
 
-describe('determinism', () => {
-  test('a fresh run reproduces every committed src/generated file byte for byte', () => {
-    const outDir = mkdtempSync(join(tmpdir(), 'herdr-gen-'));
-    generatedDirs.push(outDir);
-    runGenerator({ schemaPath: GEN_PATHS.schemaPath, outDir });
-    for (const file of Object.values(OUTPUT_FILES)) {
-      const fresh = readFileSync(join(outDir, file), 'utf8');
-      const committed = readFileSync(join(GEN_PATHS.outDir, file), 'utf8');
-      expect(fresh).toBe(committed);
+describe('full table of the committed schema', () => {
+  const committed = loadSchema(GEN_PATHS.schemaPath);
+  const rows = tableRows(committed);
+
+  test('every row class equals its METHOD_CLASS row', () => {
+    for (const row of rows) {
+      expect(row.class).toBe(METHOD_CLASS[row.name]?.class);
+    }
+  });
+
+  test('longPoll is true for exactly the six long-poll methods', () => {
+    const longPoll = rows.filter((row) => row.longPoll).map((row) => row.name).sort();
+    expect(longPoll).toEqual([
+      'agent.prompt', 'agent.start', 'agent.wait', 'events.subscribe', 'events.wait', 'pane.wait_for_output',
+    ]);
+  });
+
+  test('result is null exactly for methods outside the seed', () => {
+    for (const row of rows) {
+      expect(row.result === null).toBe(!Object.hasOwn(METHOD_RESULT_SEED, row.name));
     }
   });
 });

@@ -1,0 +1,34 @@
+{
+  "protocol": 22,
+  "schema_version": 1,
+  "schemas": {
+    "event": {
+      "$defs": {
+        "PaneInfo": {
+          "properties": {
+            "tokens": {
+              "type": "object",
+              "additionalProperties": { "type": "string" },
+              "propertyNames": { "pattern": "^[A-Za-z0-9_-]{1,32}$" }
+            }
+          },
+          "type": "object"
+        }
+      }
+    },
+    "request": {
+      "$defs": {
+        "PaneReportMetadataParams": {
+          "properties": {
+            "tokens": {
+              "type": "object",
+              "additionalProperties": { "type": "string" },
+              "propertyNames": { "pattern": "^[a-z]{1,8}$" }
+            }
+          },
+          "type": "object"
+        }
+      }
+    }
+  }
+}

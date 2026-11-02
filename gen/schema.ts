@@ -45,6 +45,35 @@ export const SCHEMA_KEY = {
   params: 'params',
   type: 'type',
   ref: '$ref',
+  properties: 'properties',
+  required: 'required',
+  enum: 'enum',
+  propertyNames: 'propertyNames',
+  event: 'event',
+  pattern: 'pattern',
+  defs: '$defs',
+} as const;
+
+// Named definitions the generator looks up by name inside a bundle.
+export const SCHEMA_DEF = {
+  serverCapabilities: 'ServerCapabilities',
+  subscription: 'Subscription',
+  eventMatch: 'EventMatch',
+  responseResult: 'ResponseResult',
+  eventKind: 'EventKind',
+  agentStatus: 'AgentStatus',
+  subscriptionEventKind: 'SubscriptionEventKind',
+} as const;
+
+// Declared JSON type kinds, used by defaults and by the params shape table.
+export const JSON_KIND = {
+  string: 'string',
+  integer: 'integer',
+  number: 'number',
+  boolean: 'boolean',
+  null: 'null',
+  array: 'array',
+  object: 'object',
 } as const;
 
 // JavaScript typeof results, so no string literal is compared in code.
@@ -56,6 +85,7 @@ const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const GEN_PATHS = {
   schemaPath: join(PACKAGE_ROOT, 'schema', 'herdr-api.schema.json'),
   outDir: join(PACKAGE_ROOT, 'src', 'generated'),
+  docsDir: join(PACKAGE_ROOT, 'docs', 'api'),
 } as const;
 
 export function parseSchema(raw: string): ApiSchema {
@@ -76,6 +106,16 @@ export function namespaceOf(schema: ApiSchema, name: string): JSONSchema {
 
 export function requestNamespace(schema: ApiSchema): JSONSchema {
   return namespaceOf(schema, SCHEMA_NAMESPACE.request);
+}
+
+// The params type name a request branch points at (`#/schemas/request/$defs/<Name>` -> `<Name>`).
+export function methodParamsName(schema: ApiSchema, method: string): string {
+  const branch = branchesOf(requestNamespace(schema)).find((candidate) => constOf(candidate, SCHEMA_KEY.method) === method);
+  const ref = branch?.properties?.[SCHEMA_KEY.params]?.[SCHEMA_KEY.ref];
+  if (!isString(ref)) {
+    throw new Error(`method '${method}' has no params reference`);
+  }
+  return ref.split('/').at(-1) ?? ref;
 }
 
 export function definitionsOf(namespace: JSONSchema): Readonly<Record<string, JSONSchema>> {

@@ -4,7 +4,10 @@ import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { METHOD_RESULT, METHODS, PROTOCOL, SCHEMA_VERSION } from '../../src/generated/index.ts';
+import {
+  CAPABILITY_GATE, DEFAULT_RESULT, ENTRY_METHODS, LONG_POLL, Method, METHOD_RESULT, METHODS, PARAMS_SHAPE, PRESET_METHODS,
+  PROTOCOL, SCHEMA_VERSION, STREAM_RETURNS, TOKEN_NAME_PATTERN,
+} from '../../src/generated/index.ts';
 
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const MANIFEST_PATH = join(PACKAGE_ROOT, 'package.json');
@@ -45,5 +48,19 @@ describe('METHOD_RESULT against METHODS', () => {
     for (const method of Object.keys(METHOD_RESULT)) {
       expect(names.has(method)).toBe(true);
     }
+  });
+});
+
+describe('the new public exports', () => {
+  test('the name tables, defaults, shapes and overrides are exported', () => {
+    expect(Method.PaneList).toBe('pane.list');
+    expect(typeof TOKEN_NAME_PATTERN).toBe('string');
+    expect(Object.keys(DEFAULT_RESULT).length).toBe(63);
+    expect(Object.keys(PARAMS_SHAPE).length).toBe(METHODS.length);
+    expect(LONG_POLL['agent.start']?.timeoutPath).toEqual(['timeout_ms']);
+    expect(STREAM_RETURNS['events.subscribe']).toBe('Subscription');
+    expect(CAPABILITY_GATE['server.live_handoff']).toBe('live_handoff');
+    expect(ENTRY_METHODS.held).toEqual(['client.window_title.clear', 'client.window_title.set', 'client_shell.surface.set', 'server.ssh_agent.register']);
+    expect(PRESET_METHODS.SessionsReader).toContain('pane.list');
   });
 });

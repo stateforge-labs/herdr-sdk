@@ -16,6 +16,6 @@
     "erasableSyntaxOnly": true,
     "skipLibCheck": true
   },
-  "include": ["gen", "scripts", "src"],
+  "include": ["gen", "rules", "scripts", "src"],
   "exclude": ["node_modules", "test"]
 }
