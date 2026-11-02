@@ -15,6 +15,8 @@ Plan: [section 2 dependency policy](../architecture/plan.md#2-location-packaging
 
 Earlier budgets ("core < 6 KB", "herdr code < 10 KB") were guesses. The hub runs from source (`hub/Containerfile` `CMD ["bun", "src/apps/voice-hub/main.ts"]`), so "bundle size" is a synthetic measure. On 2026-11-02 `effect` 4.1.2 (released that day) and `@types/bun` 1.4.4 (2026-10-23) are younger than 14 days (`npm view <pkg> time`).
 
+Evidence: [R-2026-11-02-02](../../../../docs/research/studies/2026-11-02-herdr-size-baseline/README.md)
+
 ## Decision outcome
 
 - Runtime dependencies: none. Peers: `effect` (optional). Dev: exact pins listed with release dates in plan section 2; `scripts/check-pins.ts` rejects ranges and pins under 14 days old. TypeDoc dropped.

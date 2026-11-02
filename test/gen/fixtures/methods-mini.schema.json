@@ -1,0 +1,25 @@
+{
+  "protocol": 22,
+  "schema_version": 1,
+  "schemas": {
+    "request": {
+      "oneOf": [
+        {
+          "properties": { "method": { "const": "ping", "type": "string" } },
+          "required": ["method"],
+          "type": "object"
+        },
+        {
+          "properties": { "method": { "const": "pane.list", "type": "string" } },
+          "required": ["method"],
+          "type": "object"
+        },
+        {
+          "properties": { "method": { "const": "pane.selection.read", "type": "string" } },
+          "required": ["method"],
+          "type": "object"
+        }
+      ]
+    }
+  }
+}

@@ -352,9 +352,11 @@ Filled from phase 0 (baseline) and phase 2b (budget); enforced by `scripts/check
 | `/admin` | — | — | as above |
 | `/effect` (herdr code only) | — | measured + 10 % | as above |
 | `/test-kit`, `/mcp` | — | not budgeted (dev / add-on) | as above |
-| hub herdr code | `bun build --minify` of vendored rpc + `infra/herdr/*` | **strictly smaller** than baseline | `bun build --minify hub/src/apps/voice-hub/main.ts` diff |
+| hub herdr code | 6723 B ([study](../../../../docs/research/studies/2026-11-02-herdr-size-baseline/README.md)) | **strictly smaller** than baseline | `bun run study:size` (vendored rpc + `infra/herdr/*`); later `bun build --minify hub/src/apps/voice-hub/main.ts` diff |
 | hub installed | — | `du -sb node_modules/@homelab/herdr` after `bun install --production` | reported |
-| atalaya herdr code | measured in phase 0 | strictly smaller (phase 7) | `bun build --minify` of atalaya `src/herdr-client.ts` |
+| atalaya herdr code | 10257 B ([study](../../../../docs/research/studies/2026-11-02-herdr-size-baseline/README.md)) | strictly smaller (phase 7) | `bun run study:size` (atalaya `src/herdr-client.ts` at 097adfd) |
+
+Baseline measured 2026-11-02 by R-2026-11-02-02; reproduce with `bun run study:size` in packages/herdr. Library-entry rows stay `—` until phase 2b.
 
 No-leak test (phase 6c): the minified hub bundle contains none of `createFakeHerdr`, `readOnlyToolkit`'s test strings, or `test-kit` paths.
 

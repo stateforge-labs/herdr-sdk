@@ -1,0 +1,11 @@
+{
+  "name": "@homelab/herdr",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "study:size": "bash ../../docs/research/studies/2026-11-02-herdr-size-baseline/scripts/measure.sh",
+    "gen": "bun gen/index.ts",
+    "test": "bun test"
+  }
+}
