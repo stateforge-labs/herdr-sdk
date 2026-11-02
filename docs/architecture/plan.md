@@ -94,13 +94,13 @@ packages/herdr/
   contract/herdr-22/       recorded goldens (confirm generated defaults)
   examples/*.ts            source of the README snippets (section 8)
   rules/                   dependency-cruiser + ast-grep templates
-  scripts/                 check-pins.ts, check-size.ts, check-readme.ts
+  scripts/                 check-pins.ts, check-size.ts, check-readme.ts, check-layers.ts (+ import-specifiers.ts)
   test/  test/types/       bun:test (also node --test over dist); negative type fixtures
   docs/architecture/       this plan, README, c4/
   docs/decisions/          HERDR-ADR-0001..
 ```
 
-**Dependency rule** (`rules/layers.dependency-cruiser.cjs`): `generated <- wire <- client <- {effect, mcp}`; `test-kit` imports `wire` and `generated` only; nothing imports `test-kit` or `mcp` except tests; only `effect/` and `mcp/` import `effect`. All literals live in `src/constants.ts`; comparisons use generated `Method`, `EventKind`, `SubscriptionType`, `ResultTag`, `AgentStatus` and the hand `WatchKind` objects, never string literals.
+**Dependency rule** (`rules/layers.dependency-cruiser.cjs`; phase 1b implements it as data in `rules/layers.ts` checked by `scripts/check-layers.ts`, with no dependency; the table can move to dependency-cruiser later): `generated <- wire <- client <- {effect, mcp}`; `test-kit` imports `wire` and `generated` only; nothing imports `test-kit` or `mcp` except tests; only `effect/` and `mcp/` import `effect`. All literals live in `src/constants.ts`; comparisons use generated `Method`, `EventKind`, `SubscriptionType`, `ResultTag`, `AgentStatus` and the hand `WatchKind` objects, never string literals.
 
 ### 3.1 Wire (layer 1)
 

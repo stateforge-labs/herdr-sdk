@@ -17,7 +17,7 @@ atalaya's `HerdrClient` builds 12 service classes eagerly (`src/herdr-client.ts`
 
 ## Decision outcome
 
-Folders `src/{generated,wire,client,effect,drift,test-kit,mcp}`; rule `generated <- wire <- client <- {effect, mcp}`; `test-kit` imports only `wire` and `generated`; only `effect/` and `mcp/` import `effect` (checked by `rules/layers.dependency-cruiser.cjs`). Subpath exports `.`, `./read-only`, `./admin`, `./effect`, `./drift`, `./test-kit`, `./mcp` (and `./model` in phase 7); `"sideEffects": false`.
+Folders `src/{generated,wire,client,effect,drift,test-kit,mcp}`; rule `generated <- wire <- client <- {effect, mcp}`; `test-kit` imports only `wire` and `generated`; only `effect/` and `mcp/` import `effect` (checked by `rules/layers.dependency-cruiser.cjs`; phase 1b implements the rule as data in `rules/layers.ts` checked by `scripts/check-layers.ts` with no dependency; the table can move to dependency-cruiser later, after an ADR-0015 review). Subpath exports `.`, `./read-only`, `./admin`, `./effect`, `./drift`, `./test-kit`, `./mcp` (and `./model` in phase 7); `"sideEffects": false`.
 
 The namespace tree is built eagerly from **one** generated `METHODS` table (name, class, result, namespace); `Method`, capability sets and paths derive from it. We do not claim namespace tree-shaking: entries shake, namespaces do not. Standalone per-method functions are a possible later minor if measurement asks for it.
 
