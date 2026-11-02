@@ -24,7 +24,10 @@
     "check:pins": "bun scripts/check-pins.ts",
     "lint:layers": "bun scripts/check-layers.ts",
     "typecheck": "tsc --noEmit -p .",
-    "study:size": "bash ../../docs/research/studies/2026-11-02-herdr-size-baseline/scripts/measure.sh"
+    "study:size": "bash ../../docs/research/studies/2026-11-02-herdr-size-baseline/scripts/measure.sh",
+    "build:test": "tsc -p tsconfig.dist-test.json",
+    "test:node": "bun run build:test && node --test \"dist-test/test/wire/**/*.test.js\" \"dist-test/test/connect/**/*.test.js\"",
+    "test:wire": "bun test test/wire test/connect"
   },
   "devDependencies": {
     "@types/node": "22.20.5",

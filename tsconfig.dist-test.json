@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "rewriteRelativeImportExtensions": true,
+    "outDir": "dist-test",
+    "rootDir": ".",
+    "declaration": false
+  },
+  "include": ["src", "test/wire", "test/connect", "test/support"],
+  "exclude": ["node_modules", "test/gen", "test/scripts"]
+}
