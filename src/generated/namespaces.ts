@@ -14,8 +14,8 @@ export interface ReadOnlyNamespaces {
   /** class R-meta. */
   ping(params?: P.PingParams, options?: CallOptions): Promise<ResultByTag["pong"]>;
   agent: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    explain(params: P.AgentTarget, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    explain(params: P.AgentTarget, options?: CallOptions): Promise<ResultByTag["agent_explain"]>;
     /** class R-meta. */
     get(params: P.AgentTarget, options?: CallOptions): Promise<ResultByTag["agent_info"]>;
     /** class R-meta. */
@@ -30,28 +30,28 @@ export interface ReadOnlyNamespaces {
     wait(params: Omit<P.EventsWaitParams, "timeout_ms"> & { timeout_ms: number }, options?: CallOptions): Promise<unknown>;
   };
   integration: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    list(params?: P.EmptyParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    list(params?: P.EmptyParams, options?: CallOptions): Promise<ResultByTag["integration_list"]>;
   };
   layout: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    export(params?: P.LayoutExportParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    export(params?: P.LayoutExportParams, options?: CallOptions): Promise<ResultByTag["layout_export"]>;
   };
   pane: {
     /** class R-meta. */
     current(params?: P.PaneCurrentParams, options?: CallOptions): Promise<ResultByTag["pane_current"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    edges(params?: P.PaneEdgesParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    edges(params?: P.PaneEdgesParams, options?: CallOptions): Promise<ResultByTag["pane_edges"]>;
     /** class R-meta. */
     get(params: P.PaneTarget, options?: CallOptions): Promise<ResultByTag["pane_info"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    layout(params?: P.PaneLayoutParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    layout(params?: P.PaneLayoutParams, options?: CallOptions): Promise<ResultByTag["pane_layout"]>;
     /** class R-meta. */
     list(params?: P.PaneListParams, options?: CallOptions): Promise<ResultByTag["pane_list"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    neighbor(params: P.PaneNeighborParams, options?: CallOptions): Promise<unknown>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    process_info(params?: P.PaneProcessInfoParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    neighbor(params: P.PaneNeighborParams, options?: CallOptions): Promise<ResultByTag["pane_neighbor"]>;
+    /** class R-meta. */
+    process_info(params?: P.PaneProcessInfoParams, options?: CallOptions): Promise<ResultByTag["pane_process_info"]>;
     /** class L; rpc timeout = timeout_ms + LONG_POLL_MARGIN_MS; result unmapped until phase 3 (plan 4.2). */
     wait_for_output(params: Omit<P.PaneWaitForOutputParams, "timeout_ms"> & { timeout_ms: number }, options?: CallOptions): Promise<unknown>;
     link: {
@@ -60,15 +60,15 @@ export interface ReadOnlyNamespaces {
     };
   };
   plugin: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    list(params?: P.PluginListParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    list(params?: P.PluginListParams, options?: CallOptions): Promise<ResultByTag["plugin_list"]>;
     action: {
-      /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-      list(params?: P.PluginActionListParams, options?: CallOptions): Promise<unknown>;
+      /** class R-meta. */
+      list(params?: P.PluginActionListParams, options?: CallOptions): Promise<ResultByTag["plugin_action_list"]>;
     };
     log: {
-      /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-      list(params?: P.PluginLogListParams, options?: CallOptions): Promise<unknown>;
+      /** class R-meta. */
+      list(params?: P.PluginLogListParams, options?: CallOptions): Promise<ResultByTag["plugin_log_list"]>;
     };
   };
   server: {
@@ -101,8 +101,8 @@ export interface ReadOnlyContentNamespaces {
   /** class R-meta. */
   ping(params?: P.PingParams, options?: CallOptions): Promise<ResultByTag["pong"]>;
   agent: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    explain(params: P.AgentTarget, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    explain(params: P.AgentTarget, options?: CallOptions): Promise<ResultByTag["agent_explain"]>;
     /** class R-meta. */
     get(params: P.AgentTarget, options?: CallOptions): Promise<ResultByTag["agent_info"]>;
     /** class R-meta. */
@@ -119,28 +119,28 @@ export interface ReadOnlyContentNamespaces {
     wait(params: Omit<P.EventsWaitParams, "timeout_ms"> & { timeout_ms: number }, options?: CallOptions): Promise<unknown>;
   };
   integration: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    list(params?: P.EmptyParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    list(params?: P.EmptyParams, options?: CallOptions): Promise<ResultByTag["integration_list"]>;
   };
   layout: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    export(params?: P.LayoutExportParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    export(params?: P.LayoutExportParams, options?: CallOptions): Promise<ResultByTag["layout_export"]>;
   };
   pane: {
     /** class R-meta. */
     current(params?: P.PaneCurrentParams, options?: CallOptions): Promise<ResultByTag["pane_current"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    edges(params?: P.PaneEdgesParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    edges(params?: P.PaneEdgesParams, options?: CallOptions): Promise<ResultByTag["pane_edges"]>;
     /** class R-meta. */
     get(params: P.PaneTarget, options?: CallOptions): Promise<ResultByTag["pane_info"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    layout(params?: P.PaneLayoutParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    layout(params?: P.PaneLayoutParams, options?: CallOptions): Promise<ResultByTag["pane_layout"]>;
     /** class R-meta. */
     list(params?: P.PaneListParams, options?: CallOptions): Promise<ResultByTag["pane_list"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    neighbor(params: P.PaneNeighborParams, options?: CallOptions): Promise<unknown>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    process_info(params?: P.PaneProcessInfoParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    neighbor(params: P.PaneNeighborParams, options?: CallOptions): Promise<ResultByTag["pane_neighbor"]>;
+    /** class R-meta. */
+    process_info(params?: P.PaneProcessInfoParams, options?: CallOptions): Promise<ResultByTag["pane_process_info"]>;
     /** class R-content. */
     read(params: P.PaneReadParams, options?: CallOptions): Promise<ResultByTag["pane_read"]>;
     /** class L; rpc timeout = timeout_ms + LONG_POLL_MARGIN_MS; result unmapped until phase 3 (plan 4.2). */
@@ -155,15 +155,15 @@ export interface ReadOnlyContentNamespaces {
     };
   };
   plugin: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    list(params?: P.PluginListParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    list(params?: P.PluginListParams, options?: CallOptions): Promise<ResultByTag["plugin_list"]>;
     action: {
-      /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-      list(params?: P.PluginActionListParams, options?: CallOptions): Promise<unknown>;
+      /** class R-meta. */
+      list(params?: P.PluginActionListParams, options?: CallOptions): Promise<ResultByTag["plugin_action_list"]>;
     };
     log: {
-      /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-      list(params?: P.PluginLogListParams, options?: CallOptions): Promise<unknown>;
+      /** class R-meta. */
+      list(params?: P.PluginLogListParams, options?: CallOptions): Promise<ResultByTag["plugin_log_list"]>;
     };
   };
   server: {
@@ -196,8 +196,8 @@ export interface PromptNamespaces {
   /** class R-meta. */
   ping(params?: P.PingParams, options?: CallOptions): Promise<ResultByTag["pong"]>;
   agent: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    explain(params: P.AgentTarget, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    explain(params: P.AgentTarget, options?: CallOptions): Promise<ResultByTag["agent_explain"]>;
     /** class R-meta. */
     get(params: P.AgentTarget, options?: CallOptions): Promise<ResultByTag["agent_info"]>;
     /** class R-meta. */
@@ -206,43 +206,43 @@ export interface PromptNamespaces {
     prompt(params: Omit<P.AgentPromptParams, "wait"> & { wait?: Omit<P.AgentPromptWaitOptions, "timeout_ms"> & { timeout_ms: number } }, options?: CallOptions): Promise<ResultByTag["agent_prompted"]>;
   };
   integration: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    list(params?: P.EmptyParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    list(params?: P.EmptyParams, options?: CallOptions): Promise<ResultByTag["integration_list"]>;
   };
   layout: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    export(params?: P.LayoutExportParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    export(params?: P.LayoutExportParams, options?: CallOptions): Promise<ResultByTag["layout_export"]>;
   };
   pane: {
     /** class R-meta. */
     current(params?: P.PaneCurrentParams, options?: CallOptions): Promise<ResultByTag["pane_current"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    edges(params?: P.PaneEdgesParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    edges(params?: P.PaneEdgesParams, options?: CallOptions): Promise<ResultByTag["pane_edges"]>;
     /** class R-meta. */
     get(params: P.PaneTarget, options?: CallOptions): Promise<ResultByTag["pane_info"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    layout(params?: P.PaneLayoutParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    layout(params?: P.PaneLayoutParams, options?: CallOptions): Promise<ResultByTag["pane_layout"]>;
     /** class R-meta. */
     list(params?: P.PaneListParams, options?: CallOptions): Promise<ResultByTag["pane_list"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    neighbor(params: P.PaneNeighborParams, options?: CallOptions): Promise<unknown>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    process_info(params?: P.PaneProcessInfoParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    neighbor(params: P.PaneNeighborParams, options?: CallOptions): Promise<ResultByTag["pane_neighbor"]>;
+    /** class R-meta. */
+    process_info(params?: P.PaneProcessInfoParams, options?: CallOptions): Promise<ResultByTag["pane_process_info"]>;
     link: {
       /** class R-meta; result unmapped until phase 3 (plan 4.2). */
       resolve(params: P.PaneLinkActivateParams, options?: CallOptions): Promise<unknown>;
     };
   };
   plugin: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    list(params?: P.PluginListParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    list(params?: P.PluginListParams, options?: CallOptions): Promise<ResultByTag["plugin_list"]>;
     action: {
-      /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-      list(params?: P.PluginActionListParams, options?: CallOptions): Promise<unknown>;
+      /** class R-meta. */
+      list(params?: P.PluginActionListParams, options?: CallOptions): Promise<ResultByTag["plugin_action_list"]>;
     };
     log: {
-      /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-      list(params?: P.PluginLogListParams, options?: CallOptions): Promise<unknown>;
+      /** class R-meta. */
+      list(params?: P.PluginLogListParams, options?: CallOptions): Promise<ResultByTag["plugin_log_list"]>;
     };
   };
   server: {
@@ -275,8 +275,8 @@ export interface ClientNamespaces {
   /** class R-meta. */
   ping(params?: P.PingParams, options?: CallOptions): Promise<ResultByTag["pong"]>;
   agent: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    explain(params: P.AgentTarget, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    explain(params: P.AgentTarget, options?: CallOptions): Promise<ResultByTag["agent_explain"]>;
     /** class W; result unmapped until phase 3 (plan 4.2). */
     focus(params: P.AgentTarget, options?: CallOptions): Promise<unknown>;
     /** class R-meta. */
@@ -307,50 +307,50 @@ export interface ClientNamespaces {
     wait(params: Omit<P.EventsWaitParams, "timeout_ms"> & { timeout_ms: number }, options?: CallOptions): Promise<unknown>;
   };
   integration: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    list(params?: P.EmptyParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    list(params?: P.EmptyParams, options?: CallOptions): Promise<ResultByTag["integration_list"]>;
   };
   layout: {
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    apply(params: P.LayoutApplyParams, options?: CallOptions): Promise<unknown>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    export(params?: P.LayoutExportParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    apply(params: P.LayoutApplyParams, options?: CallOptions): Promise<ResultByTag["layout_apply"]>;
+    /** class R-meta. */
+    export(params?: P.LayoutExportParams, options?: CallOptions): Promise<ResultByTag["layout_export"]>;
     /** class W; result unmapped until phase 3 (plan 4.2). */
     set_split_ratio(params: P.LayoutSetSplitRatioParams, options?: CallOptions): Promise<unknown>;
   };
   notification: {
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    show(params: P.NotificationShowParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    show(params: P.NotificationShowParams, options?: CallOptions): Promise<ResultByTag["notification_show"]>;
   };
   pane: {
     /** class W; result unmapped until phase 3 (plan 4.2). */
     clear(params: P.PaneTarget, options?: CallOptions): Promise<unknown>;
     /** class H; result unmapped until phase 3 (plan 4.2). */
     clear_agent_authority(params: P.PaneClearAgentAuthorityParams, options?: CallOptions): Promise<unknown>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    copy_motion(params: P.PaneCopyMotionParams, options?: CallOptions): Promise<unknown>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    copy_search(params: P.PaneCopySearchParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    copy_motion(params: P.PaneCopyMotionParams, options?: CallOptions): Promise<ResultByTag["pane_copy_motion"]>;
+    /** class W. */
+    copy_search(params: P.PaneCopySearchParams, options?: CallOptions): Promise<ResultByTag["pane_copy_search"]>;
     /** class R-meta. */
     current(params?: P.PaneCurrentParams, options?: CallOptions): Promise<ResultByTag["pane_current"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    edges(params?: P.PaneEdgesParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    edges(params?: P.PaneEdgesParams, options?: CallOptions): Promise<ResultByTag["pane_edges"]>;
     /** class W; result unmapped until phase 3 (plan 4.2). */
     focus(params: P.PaneTarget, options?: CallOptions): Promise<unknown>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    focus_direction(params: P.PaneFocusDirectionParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    focus_direction(params: P.PaneFocusDirectionParams, options?: CallOptions): Promise<ResultByTag["pane_focus_direction"]>;
     /** class R-meta. */
     get(params: P.PaneTarget, options?: CallOptions): Promise<ResultByTag["pane_info"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    layout(params?: P.PaneLayoutParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    layout(params?: P.PaneLayoutParams, options?: CallOptions): Promise<ResultByTag["pane_layout"]>;
     /** class R-meta. */
     list(params?: P.PaneListParams, options?: CallOptions): Promise<ResultByTag["pane_list"]>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    move(params: P.PaneMoveParams, options?: CallOptions): Promise<unknown>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    neighbor(params: P.PaneNeighborParams, options?: CallOptions): Promise<unknown>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    process_info(params?: P.PaneProcessInfoParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    move(params: P.PaneMoveParams, options?: CallOptions): Promise<ResultByTag["pane_move"]>;
+    /** class R-meta. */
+    neighbor(params: P.PaneNeighborParams, options?: CallOptions): Promise<ResultByTag["pane_neighbor"]>;
+    /** class R-meta. */
+    process_info(params?: P.PaneProcessInfoParams, options?: CallOptions): Promise<ResultByTag["pane_process_info"]>;
     /** class R-content. */
     read(params: P.PaneReadParams, options?: CallOptions): Promise<ResultByTag["pane_read"]>;
     /** class H; result unmapped until phase 3 (plan 4.2). */
@@ -363,8 +363,8 @@ export interface ClientNamespaces {
     report_agent_session(params: P.PaneReportAgentSessionParams, options?: CallOptions): Promise<unknown>;
     /** class H; result unmapped until phase 3 (plan 4.2). */
     report_metadata(params: P.PaneReportMetadataParams, options?: CallOptions): Promise<unknown>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    resize(params: P.PaneResizeParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    resize(params: P.PaneResizeParams, options?: CallOptions): Promise<ResultByTag["pane_resize"]>;
     /** class W; result unmapped until phase 3 (plan 4.2). */
     scroll(params: P.PaneScrollParams, options?: CallOptions): Promise<unknown>;
     /** class I; result unmapped until phase 3 (plan 4.2). */
@@ -375,12 +375,12 @@ export interface ClientNamespaces {
     send_text(params: P.PaneSendTextParams, options?: CallOptions): Promise<unknown>;
     /** class W; result unmapped until phase 3 (plan 4.2). */
     split(params: P.PaneSplitParams, options?: CallOptions): Promise<unknown>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    swap(params?: P.PaneSwapParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    swap(params?: P.PaneSwapParams, options?: CallOptions): Promise<ResultByTag["pane_swap"]>;
     /** class L; rpc timeout = timeout_ms + LONG_POLL_MARGIN_MS; result unmapped until phase 3 (plan 4.2). */
     wait_for_output(params: Omit<P.PaneWaitForOutputParams, "timeout_ms"> & { timeout_ms: number }, options?: CallOptions): Promise<unknown>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    zoom(params?: P.PaneZoomParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    zoom(params?: P.PaneZoomParams, options?: CallOptions): Promise<ResultByTag["pane_zoom"]>;
     input: {
       /** class I; result unmapped until phase 3 (plan 4.2). */
       set(params: P.PaneInputSetParams, options?: CallOptions): Promise<unknown>;
@@ -397,15 +397,15 @@ export interface ClientNamespaces {
   plugin: {
     /** class W; result unmapped until phase 3 (plan 4.2). */
     disable(params: P.PluginSetEnabledParams, options?: CallOptions): Promise<unknown>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    list(params?: P.PluginListParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    list(params?: P.PluginListParams, options?: CallOptions): Promise<ResultByTag["plugin_list"]>;
     action: {
-      /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-      list(params?: P.PluginActionListParams, options?: CallOptions): Promise<unknown>;
+      /** class R-meta. */
+      list(params?: P.PluginActionListParams, options?: CallOptions): Promise<ResultByTag["plugin_action_list"]>;
     };
     log: {
-      /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-      list(params?: P.PluginLogListParams, options?: CallOptions): Promise<unknown>;
+      /** class R-meta. */
+      list(params?: P.PluginLogListParams, options?: CallOptions): Promise<ResultByTag["plugin_log_list"]>;
     };
     pane: {
       /** class W; result unmapped until phase 3 (plan 4.2). */
@@ -474,8 +474,8 @@ export interface AdminNamespaces {
   /** class R-meta. */
   ping(params?: P.PingParams, options?: CallOptions): Promise<ResultByTag["pong"]>;
   agent: {
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    explain(params: P.AgentTarget, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    explain(params: P.AgentTarget, options?: CallOptions): Promise<ResultByTag["agent_explain"]>;
     /** class W; result unmapped until phase 3 (plan 4.2). */
     focus(params: P.AgentTarget, options?: CallOptions): Promise<unknown>;
     /** class R-meta. */
@@ -512,24 +512,24 @@ export interface AdminNamespaces {
     wait(params: Omit<P.EventsWaitParams, "timeout_ms"> & { timeout_ms: number }, options?: CallOptions): Promise<unknown>;
   };
   integration: {
-    /** class X; result unmapped until phase 3 (plan 4.2). */
-    install(params: P.IntegrationInstallParams, options?: CallOptions): Promise<unknown>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    list(params?: P.EmptyParams, options?: CallOptions): Promise<unknown>;
-    /** class D; result unmapped until phase 3 (plan 4.2). */
-    uninstall(params: P.IntegrationUninstallParams, options?: CallOptions): Promise<unknown>;
+    /** class X. */
+    install(params: P.IntegrationInstallParams, options?: CallOptions): Promise<ResultByTag["integration_install"]>;
+    /** class R-meta. */
+    list(params?: P.EmptyParams, options?: CallOptions): Promise<ResultByTag["integration_list"]>;
+    /** class D. */
+    uninstall(params: P.IntegrationUninstallParams, options?: CallOptions): Promise<ResultByTag["integration_uninstall"]>;
   };
   layout: {
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    apply(params: P.LayoutApplyParams, options?: CallOptions): Promise<unknown>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    export(params?: P.LayoutExportParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    apply(params: P.LayoutApplyParams, options?: CallOptions): Promise<ResultByTag["layout_apply"]>;
+    /** class R-meta. */
+    export(params?: P.LayoutExportParams, options?: CallOptions): Promise<ResultByTag["layout_export"]>;
     /** class W; result unmapped until phase 3 (plan 4.2). */
     set_split_ratio(params: P.LayoutSetSplitRatioParams, options?: CallOptions): Promise<unknown>;
   };
   notification: {
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    show(params: P.NotificationShowParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    show(params: P.NotificationShowParams, options?: CallOptions): Promise<ResultByTag["notification_show"]>;
   };
   pane: {
     /** class W; result unmapped until phase 3 (plan 4.2). */
@@ -538,32 +538,32 @@ export interface AdminNamespaces {
     clear_agent_authority(params: P.PaneClearAgentAuthorityParams, options?: CallOptions): Promise<unknown>;
     /** class D; result unmapped until phase 3 (plan 4.2). */
     close(params: P.PaneTarget, options?: CallOptions): Promise<unknown>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    copy_motion(params: P.PaneCopyMotionParams, options?: CallOptions): Promise<unknown>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    copy_search(params: P.PaneCopySearchParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    copy_motion(params: P.PaneCopyMotionParams, options?: CallOptions): Promise<ResultByTag["pane_copy_motion"]>;
+    /** class W. */
+    copy_search(params: P.PaneCopySearchParams, options?: CallOptions): Promise<ResultByTag["pane_copy_search"]>;
     /** class R-meta. */
     current(params?: P.PaneCurrentParams, options?: CallOptions): Promise<ResultByTag["pane_current"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    edges(params?: P.PaneEdgesParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    edges(params?: P.PaneEdgesParams, options?: CallOptions): Promise<ResultByTag["pane_edges"]>;
     /** class X; result unmapped until phase 3 (plan 4.2). */
     edit_scrollback(params: P.PaneTarget, options?: CallOptions): Promise<unknown>;
     /** class W; result unmapped until phase 3 (plan 4.2). */
     focus(params: P.PaneTarget, options?: CallOptions): Promise<unknown>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    focus_direction(params: P.PaneFocusDirectionParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    focus_direction(params: P.PaneFocusDirectionParams, options?: CallOptions): Promise<ResultByTag["pane_focus_direction"]>;
     /** class R-meta. */
     get(params: P.PaneTarget, options?: CallOptions): Promise<ResultByTag["pane_info"]>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    layout(params?: P.PaneLayoutParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    layout(params?: P.PaneLayoutParams, options?: CallOptions): Promise<ResultByTag["pane_layout"]>;
     /** class R-meta. */
     list(params?: P.PaneListParams, options?: CallOptions): Promise<ResultByTag["pane_list"]>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    move(params: P.PaneMoveParams, options?: CallOptions): Promise<unknown>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    neighbor(params: P.PaneNeighborParams, options?: CallOptions): Promise<unknown>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    process_info(params?: P.PaneProcessInfoParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    move(params: P.PaneMoveParams, options?: CallOptions): Promise<ResultByTag["pane_move"]>;
+    /** class R-meta. */
+    neighbor(params: P.PaneNeighborParams, options?: CallOptions): Promise<ResultByTag["pane_neighbor"]>;
+    /** class R-meta. */
+    process_info(params?: P.PaneProcessInfoParams, options?: CallOptions): Promise<ResultByTag["pane_process_info"]>;
     /** class R-content. */
     read(params: P.PaneReadParams, options?: CallOptions): Promise<ResultByTag["pane_read"]>;
     /** class H; result unmapped until phase 3 (plan 4.2). */
@@ -576,8 +576,8 @@ export interface AdminNamespaces {
     report_agent_session(params: P.PaneReportAgentSessionParams, options?: CallOptions): Promise<unknown>;
     /** class H; result unmapped until phase 3 (plan 4.2). */
     report_metadata(params: P.PaneReportMetadataParams, options?: CallOptions): Promise<unknown>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    resize(params: P.PaneResizeParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    resize(params: P.PaneResizeParams, options?: CallOptions): Promise<ResultByTag["pane_resize"]>;
     /** class W; result unmapped until phase 3 (plan 4.2). */
     scroll(params: P.PaneScrollParams, options?: CallOptions): Promise<unknown>;
     /** class I; result unmapped until phase 3 (plan 4.2). */
@@ -588,12 +588,12 @@ export interface AdminNamespaces {
     send_text(params: P.PaneSendTextParams, options?: CallOptions): Promise<unknown>;
     /** class W; result unmapped until phase 3 (plan 4.2). */
     split(params: P.PaneSplitParams, options?: CallOptions): Promise<unknown>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    swap(params?: P.PaneSwapParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    swap(params?: P.PaneSwapParams, options?: CallOptions): Promise<ResultByTag["pane_swap"]>;
     /** class L; rpc timeout = timeout_ms + LONG_POLL_MARGIN_MS; result unmapped until phase 3 (plan 4.2). */
     wait_for_output(params: Omit<P.PaneWaitForOutputParams, "timeout_ms"> & { timeout_ms: number }, options?: CallOptions): Promise<unknown>;
-    /** class W; result unmapped until phase 3 (plan 4.2). */
-    zoom(params?: P.PaneZoomParams, options?: CallOptions): Promise<unknown>;
+    /** class W. */
+    zoom(params?: P.PaneZoomParams, options?: CallOptions): Promise<ResultByTag["pane_zoom"]>;
     input: {
       /** class I; result unmapped until phase 3 (plan 4.2). */
       set(params: P.PaneInputSetParams, options?: CallOptions): Promise<unknown>;
@@ -616,19 +616,19 @@ export interface AdminNamespaces {
     enable(params: P.PluginSetEnabledParams, options?: CallOptions): Promise<unknown>;
     /** class X; result unmapped until phase 3 (plan 4.2). */
     link(params: P.PluginLinkParams, options?: CallOptions): Promise<unknown>;
-    /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-    list(params?: P.PluginListParams, options?: CallOptions): Promise<unknown>;
+    /** class R-meta. */
+    list(params?: P.PluginListParams, options?: CallOptions): Promise<ResultByTag["plugin_list"]>;
     /** class D; result unmapped until phase 3 (plan 4.2). */
     unlink(params: P.PluginUnlinkParams, options?: CallOptions): Promise<unknown>;
     action: {
       /** class X; result unmapped until phase 3 (plan 4.2). */
       invoke(params: P.PluginActionInvokeParams, options?: CallOptions): Promise<unknown>;
-      /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-      list(params?: P.PluginActionListParams, options?: CallOptions): Promise<unknown>;
+      /** class R-meta. */
+      list(params?: P.PluginActionListParams, options?: CallOptions): Promise<ResultByTag["plugin_action_list"]>;
     };
     log: {
-      /** class R-meta; result unmapped until phase 3 (plan 4.2). */
-      list(params?: P.PluginLogListParams, options?: CallOptions): Promise<unknown>;
+      /** class R-meta. */
+      list(params?: P.PluginLogListParams, options?: CallOptions): Promise<ResultByTag["plugin_log_list"]>;
     };
     pane: {
       /** class D; result unmapped until phase 3 (plan 4.2). */
@@ -726,8 +726,8 @@ export interface HeldNamespaces {
   };
   client_shell: {
     surface: {
-      /** class C; result unmapped until phase 3 (plan 4.2); gated on surface_interest. */
-      set(params: P.ClientShellSurfaceSetParams, options?: CallOptions): Promise<unknown>;
+      /** class C; gated on surface_interest. */
+      set(params: P.ClientShellSurfaceSetParams, options?: CallOptions): Promise<ResultByTag["client_shell_surface_set"]>;
     };
   };
   server: {

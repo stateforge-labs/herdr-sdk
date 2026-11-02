@@ -407,9 +407,11 @@ export interface ResultByTag {
 
 export type ResultTag = keyof ResultByTag;
 
-/** Method -> response tag. Seeded from gen/method-result-map.ts; completed in phase 3 (plan 4.2). */
+/** Method -> response tag for every typed row of gen/method-result-map.ts (LOOSE rows are absent: ResultOf falls back to ResponseResult). Completed in phase 3 (plan 4.2). */
 export const METHOD_RESULT = {
   "ping": "pong",
+  "notification.show": "notification_show",
+  "client_shell.surface.set": "client_shell_surface_set",
   "session.snapshot": "session_snapshot",
   "workspace.create": "workspace_created",
   "workspace.list": "workspace_list",
@@ -424,14 +426,34 @@ export const METHOD_RESULT = {
   "agent.list": "agent_list",
   "agent.get": "agent_info",
   "agent.read": "pane_read",
+  "agent.explain": "agent_explain",
+  "agent.view.set": "agent_view",
+  "agent.view.clear": "agent_view",
   "agent.start": "agent_started",
   "agent.prompt": "agent_prompted",
   "agent.wait": "agent_info",
-  "agent.view.set": "agent_view",
-  "agent.view.clear": "agent_view",
+  "pane.swap": "pane_swap",
+  "pane.move": "pane_move",
+  "pane.zoom": "pane_zoom",
+  "pane.layout": "pane_layout",
+  "pane.process_info": "pane_process_info",
+  "layout.export": "layout_export",
+  "layout.apply": "layout_apply",
+  "pane.neighbor": "pane_neighbor",
+  "pane.edges": "pane_edges",
+  "pane.focus_direction": "pane_focus_direction",
+  "pane.resize": "pane_resize",
+  "pane.copy_motion": "pane_copy_motion",
+  "pane.copy_search": "pane_copy_search",
   "pane.list": "pane_list",
   "pane.current": "pane_current",
   "pane.get": "pane_info",
   "pane.read": "pane_read",
-  "events.subscribe": "subscription_started"
+  "events.subscribe": "subscription_started",
+  "integration.list": "integration_list",
+  "integration.install": "integration_install",
+  "integration.uninstall": "integration_uninstall",
+  "plugin.list": "plugin_list",
+  "plugin.action.list": "plugin_action_list",
+  "plugin.log.list": "plugin_log_list"
 } as const satisfies Partial<Record<Method, ResultTag>>;

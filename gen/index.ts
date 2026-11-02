@@ -3,6 +3,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { assertClassified } from './capabilities.ts';
+import { checkResultMap } from './check-result-map.ts';
 import { emitDefaults } from './emit-defaults.ts';
 import { emitEventsDoc, emitMethodsDoc } from './emit-docs.ts';
 import { emitErrors } from './emit-errors.ts';
@@ -15,6 +16,7 @@ import { emitOverrides } from './emit-overrides.ts';
 import { emitParams } from './emit-params.ts';
 import { emitResults } from './emit-results.ts';
 import { emitShapes } from './emit-shapes.ts';
+import { METHOD_RESULT_MAP } from './method-result-map.ts';
 import { assertOverrides } from './overrides.ts';
 import type { ApiSchema } from './schema.ts';
 import { GEN_PATHS, header, loadSchema } from './schema.ts';
@@ -53,11 +55,15 @@ export interface GenOptions {
   readonly docsDir: string;
 }
 
-// Refuses a schema whose methods, classes or overrides do not agree before any file is rendered.
+// Refuses a schema whose methods, classes, overrides or result rows do not agree before any file is rendered.
 function assertCoverage(schema: ApiSchema): void {
   const methods = methodNames(schema);
   assertClassified(methods);
   assertOverrides(schema, methods);
+  const problems = checkResultMap(schema, METHOD_RESULT_MAP);
+  if (problems.length > 0) {
+    throw new Error(`gen/method-result-map.ts does not cover the schema:\n${problems.join('\n')}`);
+  }
 }
 
 // The body of every output module, keyed like OUTPUT_FILES.

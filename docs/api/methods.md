@@ -2,204 +2,204 @@
 <!-- herdr protocol 22, schema_version 1. -->
 # Method reference
 
-102 methods. Each row gives the wire method, the generated params type, the response tag, the capability class, whether the call is long-poll, and the capability gate.
+102 methods. Each row gives the wire method, the generated params type, the response tag and its source (gen/method-result-map.ts), the capability class, whether the call is long-poll, and the capability gate.
 
 ## root
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `ping` | `P.PingParams` | `pong` | R-meta | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `ping` | `P.PingParams` | `pong` | seed | R-meta | no | — |
 
 ## server
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `server.stop` | `P.EmptyParams` | unmapped (phase 3) | S | no | — |
-| `server.live_handoff` | `P.ServerLiveHandoffParams` | unmapped (phase 3) | S | no | live_handoff |
-| `server.reload_config` | `P.EmptyParams` | unmapped (phase 3) | S | no | — |
-| `server.ssh_agent.register` | `P.ServerSshAgentRegisterParams` | unmapped (phase 3) | C | no | ssh_agent_registration |
-| `server.agent_manifests` | `P.EmptyParams` | unmapped (phase 3) | R-meta | no | — |
-| `server.reload_agent_manifests` | `P.EmptyParams` | unmapped (phase 3) | S | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `server.stop` | `P.EmptyParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | S | no | — |
+| `server.live_handoff` | `P.ServerLiveHandoffParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | S | no | live_handoff |
+| `server.reload_config` | `P.EmptyParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | S | no | — |
+| `server.ssh_agent.register` | `P.ServerSshAgentRegisterParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | C | no | ssh_agent_registration |
+| `server.agent_manifests` | `P.EmptyParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | R-meta | no | — |
+| `server.reload_agent_manifests` | `P.EmptyParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | S | no | — |
 
 ## notification
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `notification.show` | `P.NotificationShowParams` | unmapped (phase 3) | W | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `notification.show` | `P.NotificationShowParams` | `notification_show` | name | W | no | — |
 
 ## product_announcement
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `product_announcement.dismiss` | `P.ProductAnnouncementDismissParams` | unmapped (phase 3) | W | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `product_announcement.dismiss` | `P.ProductAnnouncementDismissParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
 
 ## release_notes
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `release_notes.dismiss` | `P.ReleaseNotesDismissParams` | unmapped (phase 3) | W | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `release_notes.dismiss` | `P.ReleaseNotesDismissParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
 
 ## command
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `command.invoke` | `P.CommandInvokeParams` | unmapped (phase 3) | X | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `command.invoke` | `P.CommandInvokeParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | X | no | — |
 
 ## client
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `client.window_title.set` | `P.ClientWindowTitleSetParams` | unmapped (phase 3) | C | no | — |
-| `client.window_title.clear` | `P.EmptyParams` | unmapped (phase 3) | C | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `client.window_title.set` | `P.ClientWindowTitleSetParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | C | no | — |
+| `client.window_title.clear` | `P.EmptyParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | C | no | — |
 
 ## client_shell
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `client_shell.surface.set` | `P.ClientShellSurfaceSetParams` | unmapped (phase 3) | C | no | surface_interest |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `client_shell.surface.set` | `P.ClientShellSurfaceSetParams` | `client_shell_surface_set` | name | C | no | surface_interest |
 
 ## session
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `session.snapshot` | `P.EmptyParams` | `session_snapshot` | R-meta | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `session.snapshot` | `P.EmptyParams` | `session_snapshot` | seed | R-meta | no | — |
 
 ## workspace
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `workspace.create` | `P.WorkspaceCreateParams` | `workspace_created` | W | no | — |
-| `workspace.list` | `P.EmptyParams` | `workspace_list` | R-meta | no | — |
-| `workspace.get` | `P.WorkspaceTarget` | `workspace_info` | R-meta | no | — |
-| `workspace.focus` | `P.WorkspaceTarget` | unmapped (phase 3) | W | no | — |
-| `workspace.rename` | `P.WorkspaceRenameParams` | unmapped (phase 3) | W | no | — |
-| `workspace.move` | `P.WorkspaceMoveParams` | unmapped (phase 3) | W | no | — |
-| `workspace.move_block` | `P.WorkspaceMoveBlockParams` | unmapped (phase 3) | W | no | — |
-| `workspace.report_metadata` | `P.WorkspaceReportMetadataParams` | unmapped (phase 3) | H | no | — |
-| `workspace.close` | `P.WorkspaceCloseParams` | unmapped (phase 3) | D | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `workspace.create` | `P.WorkspaceCreateParams` | `workspace_created` | seed | W | no | — |
+| `workspace.list` | `P.EmptyParams` | `workspace_list` | seed | R-meta | no | — |
+| `workspace.get` | `P.WorkspaceTarget` | `workspace_info` | seed | R-meta | no | — |
+| `workspace.focus` | `P.WorkspaceTarget` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `workspace.rename` | `P.WorkspaceRenameParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `workspace.move` | `P.WorkspaceMoveParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `workspace.move_block` | `P.WorkspaceMoveBlockParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `workspace.report_metadata` | `P.WorkspaceReportMetadataParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | H | no | — |
+| `workspace.close` | `P.WorkspaceCloseParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | D | no | — |
 
 ## worktree
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `worktree.list` | `P.WorktreeListParams` | `worktree_list` | R-meta | no | — |
-| `worktree.create` | `P.WorktreeCreateParams` | `worktree_created` | W | no | — |
-| `worktree.open` | `P.WorktreeOpenParams` | `worktree_opened` | W | no | — |
-| `worktree.remove` | `P.WorktreeRemoveParams` | `worktree_removed` | D | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `worktree.list` | `P.WorktreeListParams` | `worktree_list` | seed | R-meta | no | — |
+| `worktree.create` | `P.WorktreeCreateParams` | `worktree_created` | seed | W | no | — |
+| `worktree.open` | `P.WorktreeOpenParams` | `worktree_opened` | seed | W | no | — |
+| `worktree.remove` | `P.WorktreeRemoveParams` | `worktree_removed` | seed | D | no | — |
 
 ## tab
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `tab.create` | `P.TabCreateParams` | `tab_created` | W | no | — |
-| `tab.list` | `P.TabListParams` | `tab_list` | R-meta | no | — |
-| `tab.get` | `P.TabTarget` | `tab_info` | R-meta | no | — |
-| `tab.focus` | `P.TabTarget` | unmapped (phase 3) | W | no | — |
-| `tab.rename` | `P.TabRenameParams` | unmapped (phase 3) | W | no | — |
-| `tab.move` | `P.TabMoveParams` | unmapped (phase 3) | W | no | — |
-| `tab.close` | `P.TabTarget` | unmapped (phase 3) | D | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `tab.create` | `P.TabCreateParams` | `tab_created` | seed | W | no | — |
+| `tab.list` | `P.TabListParams` | `tab_list` | seed | R-meta | no | — |
+| `tab.get` | `P.TabTarget` | `tab_info` | seed | R-meta | no | — |
+| `tab.focus` | `P.TabTarget` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `tab.rename` | `P.TabRenameParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `tab.move` | `P.TabMoveParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `tab.close` | `P.TabTarget` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | D | no | — |
 
 ## agent
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `agent.list` | `P.EmptyParams` | `agent_list` | R-meta | no | — |
-| `agent.get` | `P.AgentTarget` | `agent_info` | R-meta | no | — |
-| `agent.read` | `P.AgentReadParams` | `pane_read` | R-content | no | — |
-| `agent.explain` | `P.AgentTarget` | unmapped (phase 3) | R-meta | no | — |
-| `agent.send_keys` | `P.AgentSendKeysParams` | unmapped (phase 3) | I | no | — |
-| `agent.rename` | `P.AgentRenameParams` | unmapped (phase 3) | W | no | — |
-| `agent.view.set` | `P.AgentViewSetParams` | `agent_view` | W | no | — |
-| `agent.view.clear` | `P.AgentViewClearParams` | `agent_view` | W | no | — |
-| `agent.focus` | `P.AgentTarget` | unmapped (phase 3) | W | no | — |
-| `agent.start` | `P.AgentStartParams` | `agent_started` | X | yes | — |
-| `agent.prompt` | `P.AgentPromptParams` | `agent_prompted` | I | yes | — |
-| `agent.wait` | `P.AgentWaitParams` | `agent_info` | L | yes | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `agent.list` | `P.EmptyParams` | `agent_list` | seed | R-meta | no | — |
+| `agent.get` | `P.AgentTarget` | `agent_info` | seed | R-meta | no | — |
+| `agent.read` | `P.AgentReadParams` | `pane_read` | seed | R-content | no | — |
+| `agent.explain` | `P.AgentTarget` | `agent_explain` | name | R-meta | no | — |
+| `agent.send_keys` | `P.AgentSendKeysParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | I | no | — |
+| `agent.rename` | `P.AgentRenameParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `agent.view.set` | `P.AgentViewSetParams` | `agent_view` | seed | W | no | — |
+| `agent.view.clear` | `P.AgentViewClearParams` | `agent_view` | seed | W | no | — |
+| `agent.focus` | `P.AgentTarget` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `agent.start` | `P.AgentStartParams` | `agent_started` | seed | X | yes | — |
+| `agent.prompt` | `P.AgentPromptParams` | `agent_prompted` | seed | I | yes | — |
+| `agent.wait` | `P.AgentWaitParams` | `agent_info` | seed | L | yes | — |
 
 ## pane
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `pane.split` | `P.PaneSplitParams` | unmapped (phase 3) | W | no | — |
-| `pane.swap` | `P.PaneSwapParams` | unmapped (phase 3) | W | no | — |
-| `pane.move` | `P.PaneMoveParams` | unmapped (phase 3) | W | no | — |
-| `pane.zoom` | `P.PaneZoomParams` | unmapped (phase 3) | W | no | — |
-| `pane.layout` | `P.PaneLayoutParams` | unmapped (phase 3) | R-meta | no | — |
-| `pane.process_info` | `P.PaneProcessInfoParams` | unmapped (phase 3) | R-meta | no | — |
-| `pane.neighbor` | `P.PaneNeighborParams` | unmapped (phase 3) | R-meta | no | — |
-| `pane.edges` | `P.PaneEdgesParams` | unmapped (phase 3) | R-meta | no | — |
-| `pane.focus_direction` | `P.PaneFocusDirectionParams` | unmapped (phase 3) | W | no | — |
-| `pane.resize` | `P.PaneResizeParams` | unmapped (phase 3) | W | no | — |
-| `pane.scroll` | `P.PaneScrollParams` | unmapped (phase 3) | W | no | — |
-| `pane.clear` | `P.PaneTarget` | unmapped (phase 3) | W | no | — |
-| `pane.edit_scrollback` | `P.PaneTarget` | unmapped (phase 3) | X | no | — |
-| `pane.selection.read` | `P.PaneSelectionReadParams` | unmapped (phase 3) | R-content | no | — |
-| `pane.copy_motion` | `P.PaneCopyMotionParams` | unmapped (phase 3) | W | no | — |
-| `pane.copy_search` | `P.PaneCopySearchParams` | unmapped (phase 3) | W | no | — |
-| `pane.list` | `P.PaneListParams` | `pane_list` | R-meta | no | — |
-| `pane.current` | `P.PaneCurrentParams` | `pane_current` | R-meta | no | — |
-| `pane.get` | `P.PaneTarget` | `pane_info` | R-meta | no | — |
-| `pane.focus` | `P.PaneTarget` | unmapped (phase 3) | W | no | — |
-| `pane.input.set` | `P.PaneInputSetParams` | unmapped (phase 3) | I | no | — |
-| `pane.link.activate` | `P.PaneLinkActivateParams` | unmapped (phase 3) | X | no | — |
-| `pane.link.resolve` | `P.PaneLinkActivateParams` | unmapped (phase 3) | R-meta | no | — |
-| `pane.rename` | `P.PaneRenameParams` | unmapped (phase 3) | W | no | — |
-| `pane.send_text` | `P.PaneSendTextParams` | unmapped (phase 3) | I | no | — |
-| `pane.send_keys` | `P.PaneSendKeysParams` | unmapped (phase 3) | I | no | — |
-| `pane.send_input` | `P.PaneSendInputParams` | unmapped (phase 3) | I | no | — |
-| `pane.read` | `P.PaneReadParams` | `pane_read` | R-content | no | — |
-| `pane.report_agent` | `P.PaneReportAgentParams` | unmapped (phase 3) | H | no | — |
-| `pane.report_agent_session` | `P.PaneReportAgentSessionParams` | unmapped (phase 3) | H | no | — |
-| `pane.report_metadata` | `P.PaneReportMetadataParams` | unmapped (phase 3) | H | no | — |
-| `pane.clear_agent_authority` | `P.PaneClearAgentAuthorityParams` | unmapped (phase 3) | H | no | — |
-| `pane.release_agent` | `P.PaneReleaseAgentParams` | unmapped (phase 3) | H | no | — |
-| `pane.close` | `P.PaneTarget` | unmapped (phase 3) | D | no | — |
-| `pane.wait_for_output` | `P.PaneWaitForOutputParams` | unmapped (phase 3) | L | yes | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `pane.split` | `P.PaneSplitParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `pane.swap` | `P.PaneSwapParams` | `pane_swap` | name | W | no | — |
+| `pane.move` | `P.PaneMoveParams` | `pane_move` | name | W | no | — |
+| `pane.zoom` | `P.PaneZoomParams` | `pane_zoom` | name | W | no | — |
+| `pane.layout` | `P.PaneLayoutParams` | `pane_layout` | name | R-meta | no | — |
+| `pane.process_info` | `P.PaneProcessInfoParams` | `pane_process_info` | name | R-meta | no | — |
+| `pane.neighbor` | `P.PaneNeighborParams` | `pane_neighbor` | name | R-meta | no | — |
+| `pane.edges` | `P.PaneEdgesParams` | `pane_edges` | name | R-meta | no | — |
+| `pane.focus_direction` | `P.PaneFocusDirectionParams` | `pane_focus_direction` | name | W | no | — |
+| `pane.resize` | `P.PaneResizeParams` | `pane_resize` | name | W | no | — |
+| `pane.scroll` | `P.PaneScrollParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `pane.clear` | `P.PaneTarget` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `pane.edit_scrollback` | `P.PaneTarget` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | X | no | — |
+| `pane.selection.read` | `P.PaneSelectionReadParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | R-content | no | — |
+| `pane.copy_motion` | `P.PaneCopyMotionParams` | `pane_copy_motion` | name | W | no | — |
+| `pane.copy_search` | `P.PaneCopySearchParams` | `pane_copy_search` | name | W | no | — |
+| `pane.list` | `P.PaneListParams` | `pane_list` | seed | R-meta | no | — |
+| `pane.current` | `P.PaneCurrentParams` | `pane_current` | seed | R-meta | no | — |
+| `pane.get` | `P.PaneTarget` | `pane_info` | seed | R-meta | no | — |
+| `pane.focus` | `P.PaneTarget` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `pane.input.set` | `P.PaneInputSetParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | I | no | — |
+| `pane.link.activate` | `P.PaneLinkActivateParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | X | no | — |
+| `pane.link.resolve` | `P.PaneLinkActivateParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | R-meta | no | — |
+| `pane.rename` | `P.PaneRenameParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `pane.send_text` | `P.PaneSendTextParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | I | no | — |
+| `pane.send_keys` | `P.PaneSendKeysParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | I | no | — |
+| `pane.send_input` | `P.PaneSendInputParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | I | no | — |
+| `pane.read` | `P.PaneReadParams` | `pane_read` | seed | R-content | no | — |
+| `pane.report_agent` | `P.PaneReportAgentParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | H | no | — |
+| `pane.report_agent_session` | `P.PaneReportAgentSessionParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | H | no | — |
+| `pane.report_metadata` | `P.PaneReportMetadataParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | H | no | — |
+| `pane.clear_agent_authority` | `P.PaneClearAgentAuthorityParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | H | no | — |
+| `pane.release_agent` | `P.PaneReleaseAgentParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | H | no | — |
+| `pane.close` | `P.PaneTarget` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | D | no | — |
+| `pane.wait_for_output` | `P.PaneWaitForOutputParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | L | yes | — |
 
 ## layout
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `layout.export` | `P.LayoutExportParams` | unmapped (phase 3) | R-meta | no | — |
-| `layout.apply` | `P.LayoutApplyParams` | unmapped (phase 3) | W | no | — |
-| `layout.set_split_ratio` | `P.LayoutSetSplitRatioParams` | unmapped (phase 3) | W | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `layout.export` | `P.LayoutExportParams` | `layout_export` | name | R-meta | no | — |
+| `layout.apply` | `P.LayoutApplyParams` | `layout_apply` | name | W | no | — |
+| `layout.set_split_ratio` | `P.LayoutSetSplitRatioParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
 
 ## popup
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `popup.close` | `P.EmptyParams` | unmapped (phase 3) | D | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `popup.close` | `P.EmptyParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | D | no | — |
 
 ## events
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `events.subscribe` | `P.EventsSubscribeParams` | `subscription_started` | L | yes | — |
-| `events.wait` | `P.EventsWaitParams` | unmapped (phase 3) | L | yes | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `events.subscribe` | `P.EventsSubscribeParams` | `subscription_started` | seed | L | yes | — |
+| `events.wait` | `P.EventsWaitParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | L | yes | — |
 
 ## integration
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `integration.list` | `P.EmptyParams` | unmapped (phase 3) | R-meta | no | — |
-| `integration.install` | `P.IntegrationInstallParams` | unmapped (phase 3) | X | no | — |
-| `integration.uninstall` | `P.IntegrationUninstallParams` | unmapped (phase 3) | D | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `integration.list` | `P.EmptyParams` | `integration_list` | name | R-meta | no | — |
+| `integration.install` | `P.IntegrationInstallParams` | `integration_install` | name | X | no | — |
+| `integration.uninstall` | `P.IntegrationUninstallParams` | `integration_uninstall` | name | D | no | — |
 
 ## plugin
 
-| Method | Params type | Result tag | Class | Long-poll | Gate |
-| --- | --- | --- | --- | --- | --- |
-| `plugin.link` | `P.PluginLinkParams` | unmapped (phase 3) | X | no | — |
-| `plugin.list` | `P.PluginListParams` | unmapped (phase 3) | R-meta | no | — |
-| `plugin.unlink` | `P.PluginUnlinkParams` | unmapped (phase 3) | D | no | — |
-| `plugin.enable` | `P.PluginSetEnabledParams` | unmapped (phase 3) | X | no | — |
-| `plugin.disable` | `P.PluginSetEnabledParams` | unmapped (phase 3) | W | no | — |
-| `plugin.action.list` | `P.PluginActionListParams` | unmapped (phase 3) | R-meta | no | — |
-| `plugin.action.invoke` | `P.PluginActionInvokeParams` | unmapped (phase 3) | X | no | — |
-| `plugin.log.list` | `P.PluginLogListParams` | unmapped (phase 3) | R-meta | no | — |
-| `plugin.pane.open` | `P.PluginPaneOpenParams` | unmapped (phase 3) | X | no | — |
-| `plugin.pane.focus` | `P.PluginPaneFocusParams` | unmapped (phase 3) | W | no | — |
-| `plugin.pane.close` | `P.PluginPaneCloseParams` | unmapped (phase 3) | D | no | — |
+| Method | Params type | Result tag | Source | Class | Long-poll | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| `plugin.link` | `P.PluginLinkParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | X | no | — |
+| `plugin.list` | `P.PluginListParams` | `plugin_list` | name | R-meta | no | — |
+| `plugin.unlink` | `P.PluginUnlinkParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | D | no | — |
+| `plugin.enable` | `P.PluginSetEnabledParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | X | no | — |
+| `plugin.disable` | `P.PluginSetEnabledParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `plugin.action.list` | `P.PluginActionListParams` | `plugin_action_list` | name | R-meta | no | — |
+| `plugin.action.invoke` | `P.PluginActionInvokeParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | X | no | — |
+| `plugin.log.list` | `P.PluginLogListParams` | `plugin_log_list` | name | R-meta | no | — |
+| `plugin.pane.open` | `P.PluginPaneOpenParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | X | no | — |
+| `plugin.pane.focus` | `P.PluginPaneFocusParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
+| `plugin.pane.close` | `P.PluginPaneCloseParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | D | no | — |
 
 ## Class counts
 

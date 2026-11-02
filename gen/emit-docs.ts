@@ -3,6 +3,7 @@
 import { CapabilityClass, ENTRY_CLASSES } from './capabilities.ts';
 import { methodRows } from './emit-method-table.ts';
 import type { MethodRow } from './emit-method-table.ts';
+import { METHOD_RESULT_MAP, RESULT_KIND } from './method-result-map.ts';
 import { entryMethods } from './emit-names.ts';
 import { eventFacts, eventMap, NO_VALUE } from './event-map.ts';
 import type { EventMapRow } from './event-map.ts';
@@ -10,7 +11,6 @@ import { OVERRIDES } from './overrides.ts';
 import type { ApiSchema } from './schema.ts';
 import { methodParamsName } from './schema.ts';
 
-const UNMAPPED_RESULT = 'unmapped (phase 3)';
 const YES = 'yes';
 const NO = 'no';
 const ROOT_SECTION = 'root';
@@ -46,19 +46,33 @@ function sections(rows: readonly MethodRow[]): readonly (readonly [string, reado
   return names.map((name) => [name, rows.filter((row) => sectionOf(row) === name)] as const);
 }
 
+// The result cell and the source cell of a method; a LOOSE row shows its reason in the source cell.
+function resultCells(name: string): readonly [string, string] {
+  const row = Object.hasOwn(METHOD_RESULT_MAP, name) ? METHOD_RESULT_MAP[name] : undefined;
+  if (row === undefined) {
+    return [NO_VALUE, NO_VALUE];
+  }
+  if (row.kind === RESULT_KIND.typed) {
+    return [`\`${row.tag}\``, row.source];
+  }
+  return [NO_VALUE, row.reason];
+}
+
 function methodTableRow(schema: ApiSchema, row: MethodRow): readonly string[] {
   const gate = OVERRIDES[row.name]?.capability;
+  const [result, source] = resultCells(row.name);
   return [
     `\`${row.name}\``,
     `\`P.${methodParamsName(schema, row.name)}\``,
-    row.result === null ? UNMAPPED_RESULT : `\`${row.result}\``,
+    result,
+    source,
     row.class,
     row.longPoll ? YES : NO,
     gate ?? NO_VALUE,
   ];
 }
 
-const METHOD_HEADER = ['Method', 'Params type', 'Result tag', 'Class', 'Long-poll', 'Gate'] as const;
+const METHOD_HEADER = ['Method', 'Params type', 'Result tag', 'Source', 'Class', 'Long-poll', 'Gate'] as const;
 
 function classCountRows(rows: readonly MethodRow[]): readonly (readonly string[])[] {
   return Object.values(CapabilityClass).map((cls) => [cls, String(rows.filter((row) => row.class === cls).length)]);
@@ -80,7 +94,7 @@ export function emitMethodsDoc(schema: ApiSchema): string {
   return `${banner(schema)}
 # Method reference
 
-${rows.length} methods. Each row gives the wire method, the generated params type, the response tag, the capability class, whether the call is long-poll, and the capability gate.
+${rows.length} methods. Each row gives the wire method, the generated params type, the response tag and its source (gen/method-result-map.ts), the capability class, whether the call is long-poll, and the capability gate.
 
 ${body.join('\n\n')}
 

@@ -63,7 +63,7 @@ ${variants.map((variant) => `  ${JSON.stringify(variant.tag)}: ${variant.name};`
 
 export type ResultTag = keyof ResultByTag;
 
-/** Method -> response tag. Seeded from gen/method-result-map.ts; completed in phase 3 (plan 4.2). */
+/** Method -> response tag for every typed row of gen/method-result-map.ts (LOOSE rows are absent: ResultOf falls back to ResponseResult). Completed in phase 3 (plan 4.2). */
 export const METHOD_RESULT = ${JSON.stringify(methodResultTags(), null, 2)} as const satisfies Partial<Record<Method, ResultTag>>;
 `;
 }
