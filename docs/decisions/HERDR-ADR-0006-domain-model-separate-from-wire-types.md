@@ -17,7 +17,7 @@ atalaya's reducers (`src/reducers/{fleet-state,from-snapshot,apply-event}.ts`) m
 
 ## Decision outcome
 
-Defer `/model` to phase 7. Then: `model/entities.ts` (readonly entities, branded ids, no wire import) and `model/from-wire.ts` (`fromSnapshot`, `applyEvent`), the only model file allowed to import `generated`; rule `generated <- model/from-wire.ts`. Acceptance: atalaya's reducer tests pass on it. The predicate "no generated wire type in ports/domain" (atalaya `ci/domain-types/scope.ts:28-30`) ships as a rule template.
+Defer `/model` to phase 7. Then: `model/entities.ts` (readonly entities, branded ids, no wire import) and `model/from-wire.ts` (`fromSnapshot`, `applyEvent`), the only model file allowed to import `generated`; rule `generated <- model/from-wire.ts`. Acceptance: atalaya's reducer tests pass on it. The predicate "no generated wire type in ports/domain" (atalaya `ci/domain-types/scope.ts:28-30`) ships as a rule template. Framing (spine AD-10, ADR-0037 decision 6, [HERDR-ADR-0016](HERDR-ADR-0016-design-intent-inherited-from-atalaya.md) P7): the library is conformist at the wire. A consumer keeps an anticorruption layer at its own port, and only one adapter file imports `@homelab/herdr`.
 
 ## Consequences
 

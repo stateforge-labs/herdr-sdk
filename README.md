@@ -166,6 +166,10 @@ bun run generate     # regenerate src/generated and docs/api
 herdr-drift          # exit 0 clean, 1 drift, 2 usage, 3 herdr not found
 ```
 
+## Using it from your own domain
+
+The library conforms to herdr's wire vocabulary. Keep your own domain language behind your own port, and let one adapter file import `@homelab/herdr`. The dependency-cruiser rule template enforces that (`rules/`; idea from atalaya-bridge, spine AD-10). Snapshot before you subscribe, because a subscription delivers changes, not the present. `watch()` does this for you ([HERDR-ADR-0016](docs/decisions/HERDR-ADR-0016-design-intent-inherited-from-atalaya.md)).
+
 ## Licence
 
 MIT. Derived from brooswit/jsHerdrSDK (e34fd3f) via atalaya-bridge (097adfd); see `NOTICE.md`.

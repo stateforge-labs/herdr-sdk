@@ -6,7 +6,7 @@ Modelled with [LikeC4](https://likec4.dev) following the voice engine's conventi
 |---|---|
 | [plan.md](plan.md) | the plan: summary and decisions, layers, coverage, test kit, drift, MCP, migration, phases with size table, portability inventory (appendix A) |
 | [../../README.md](../../README.md) | README-first developer guide (planned API) |
-| [../decisions/](../decisions/README.md) | 15 ADRs (proposed), ids HERDR-ADR-NNNN |
+| [../decisions/](../decisions/README.md) | 16 ADRs (proposed), ids HERDR-ADR-NNNN |
 | [c4/](c4/) | the LikeC4 model |
 
 ## How to read it

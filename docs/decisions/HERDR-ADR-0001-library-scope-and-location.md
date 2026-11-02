@@ -17,7 +17,7 @@ Two copies of the herdr client exist: atalaya-bridge 097adfd (`delivery-handbook
 
 ## Decision outcome
 
-Create `packages/herdr` in omarchylab, package name `@homelab/herdr`, private. Scope: the herdr wire, the full generated API, capability-scoped clients, a domain model, an Effect entry, a test kit, drift tooling and a read-only MCP add-on. Out of scope: a CLI, herdr state reimplementation (hub ADR-0004), app domains (attention, sessions views, atalaya messaging), Python bindings, public npm.
+Create `packages/herdr` in omarchylab, package name `@homelab/herdr`, private. Scope: the herdr wire, the full generated API, capability-scoped clients, a domain model, an Effect entry, a test kit, drift tooling and a read-only MCP add-on. Out of scope: a CLI, herdr state reimplementation (hub ADR-0004), app domains (attention, sessions views, atalaya messaging), Python bindings, public npm. Reason to exist (spine AD-10, [HERDR-ADR-0016](HERDR-ADR-0016-design-intent-inherited-from-atalaya.md) P7): the library is the one conformist adapter at the herdr wire, so consumers keep their own domain language behind their own port.
 
 Rejected: inside the hub (not reusable), inside atalaya's workspace (hub would depend on another repo), own repo now (two-repo churn while the API moves; revisit after phase 6 with `git subtree split`).
 
