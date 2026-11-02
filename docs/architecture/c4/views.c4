@@ -1,0 +1,88 @@
+// Views. Navigation: 1 · Context -> 2 · Containers -> 3 · Components (hub ADR-0015).
+
+views {
+  style element.tag = #planned {
+    border dashed
+    opacity 70%
+  }
+
+  view index {
+    title '1 · Context / @homelab/herdr'
+    order 1
+    description '''
+      Who uses the library and what does it talk to? voice-hub (Effect), atalaya-bridge (Node, Promise), scripts and, through the hub,
+      MCP clients; herdr is the only system the library calls. **Click the library** for its entry points.
+    '''
+    include owner, herdr, voiceHub, atalaya, scripts, mcpClient
+    include lib with {
+      navigateTo entries
+    }
+    rank source {
+      owner,
+      mcpClient
+    }
+    rank sink {
+      herdr
+    }
+    autoLayout LeftRight
+  }
+
+  view entries of lib {
+    title '2 · Containers / @homelab/herdr'
+    order 1
+    description '''
+      Which entry points exist and who imports which? One subpath export each (/admin adds destructive and server-control methods); the core has zero runtime dependencies, /effect and /mcp
+      need effect as a peer, test-kit and the generator/drift tooling (slate) never reach a production bundle.
+      **Decisions:** HERDR-ADR-0003, HERDR-ADR-0004, HERDR-ADR-0005, HERDR-ADR-0008, HERDR-ADR-0009, HERDR-ADR-0010
+    '''
+    include *
+    include herdr, voiceHub, atalaya, scripts, owner
+    include lib.core with {
+      navigateTo coreComponents
+    }
+    include lib.effectEntry with {
+      navigateTo effectComponents
+    }
+    exclude mcpClient
+    rank source {
+      voiceHub,
+      atalaya,
+      scripts,
+      owner
+    }
+    rank sink {
+      herdr
+    }
+    autoLayout LeftRight
+  }
+
+  view coreComponents of lib.core {
+    title '3 · Components / Core client'
+    order 1
+    description '''
+      How does a call reach herdr? namespace client -> wire (rpc, framing, envelope, errors, protocol policy) -> unix socket; scoped
+      clients narrow the namespace tree; subscribe and held connections each open a dedicated connection; watch adds snapshot, replay and resubscribe.
+      **Decisions:** HERDR-ADR-0002, HERDR-ADR-0005, HERDR-ADR-0007
+    '''
+    include *
+    include herdr
+    rank sink {
+      herdr
+    }
+    autoLayout LeftRight
+  }
+
+  view effectComponents of lib.effectEntry {
+    title '3 · Components / Effect client'
+    order 2
+    description '''
+      How does the Effect entry wrap the core? Layers provide the Herdr service, which fails with the hub tagged errors; Stream subscribe
+      and watchPaneSet wrap the core subscription with acquireRelease and resubscribe.
+      **Decisions:** HERDR-ADR-0004, HERDR-ADR-0007
+    '''
+    include *
+    include lib.core.namespaces, lib.core.subscribe
+    include voiceHub
+    autoLayout LeftRight
+  }
+}

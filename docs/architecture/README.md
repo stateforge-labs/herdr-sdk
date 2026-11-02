@@ -1,0 +1,35 @@
+# Architecture of @homelab/herdr (C4, LikeC4)
+
+Modelled with [LikeC4](https://likec4.dev) following the voice engine's conventions (`plugins/crisap94.voice-engine/docs/architecture/c4-guide.md`, hub ADR-0015: StateForge subset, folders 1 to 6, one meaning per colour, one model). Everything is **proposed** until the code lands.
+
+| Document | What |
+|---|---|
+| [plan.md](plan.md) | the plan: summary and decisions, layers, coverage, test kit, drift, MCP, migration, phases with size table, portability inventory (appendix A) |
+| [../../README.md](../../README.md) | README-first developer guide (planned API) |
+| [../decisions/](../decisions/README.md) | 15 ADRs (proposed), ids HERDR-ADR-NNNN |
+| [c4/](c4/) | the LikeC4 model |
+
+## How to read it
+
+1. Start with the README usage snippets: they are the API the design must serve.
+2. Read the plan summary, then section 3 (layers); appendix A lists what is ported from atalaya-bridge and the hub.
+3. Each plan section links its ADR; each ADR cites the plan section and the evidence files.
+4. Open the C4 views: Context -> Containers -> Components.
+
+## Layout
+
+```
+c4/
+  specification.c4   kinds, colours with the legend, tags
+  model.c4           consumers, herdr, the library, its entry points and components
+  views.c4           1 · Context, 2 · Containers, 3 · Components (core client, Effect client)
+```
+
+## Views
+
+- `1 · Context / @homelab/herdr` (`index`): consumers (voice-hub, atalaya-bridge, scripts, MCP clients) and herdr.
+- `2 · Containers / @homelab/herdr` (`entries`): entry points core, read-only, admin, model (deferred), effect, test-kit, mcp, drift tooling and generator.
+- `3 · Components / Core client` (`coreComponents`): generated, wire, client layers, subscribe, watch and held connections.
+- `3 · Components / Effect client` (`effectComponents`): Herdr service, layers, tagged errors, Stream subscribe, watchPaneSet.
+
+Validate: `cd packages/herdr/docs/architecture/c4 && npx -y likec4@1.60.0 validate .`

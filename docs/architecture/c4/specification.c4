@@ -1,0 +1,96 @@
+// @homelab/herdr C4 notation, following the voice engine's conventions (hub ADR-0015, c4-guide.md).
+// Colour legend (one meaning per colour)
+//   primary   the library and its entry points (ours)
+//   green     consumers in omarchylab or the owner's repos (voice-hub, scripts)
+//   gray      external software (herdr, atalaya-bridge as a separate repo, MCP clients)
+//   indigo    generated code and the domain model
+//   amber     subscriptions and events
+//   slate     dev-only parts: test kit, generator, drift tooling (never in production bundles)
+//   dashed + faded = #planned (everything in this model is planned until the code lands)
+
+specification {
+  color driven #475569
+
+  element actor {
+    notation 'Person'
+    style {
+      shape person
+      color green
+    }
+  }
+  element system {
+    notation 'Software system'
+    style {
+      color primary
+      icon bootstrap:diagram-3
+    }
+  }
+  element external {
+    notation 'External system'
+    style {
+      color gray
+    }
+  }
+  element consumer {
+    notation 'Consumer of the library'
+    style {
+      color green
+    }
+  }
+  element entry {
+    notation 'Entry point: one subpath export (C4 level 2)'
+    style {
+      shape component
+      color primary
+    }
+  }
+  element devEntry {
+    notation 'Dev-only entry or tool, never in a production bundle'
+    style {
+      shape component
+      color driven
+    }
+  }
+  element component {
+    notation 'Component'
+    style {
+      shape rectangle
+    }
+  }
+  element generated {
+    notation 'Generated code (committed output of the generator)'
+    style {
+      shape rectangle
+      color indigo
+    }
+  }
+  element stream {
+    notation 'Subscription or event stream'
+    style {
+      shape queue
+      color amber
+    }
+  }
+  element store {
+    notation 'File store'
+    style {
+      shape cylinder
+      color secondary
+    }
+  }
+
+  relationship calls {
+    technology 'NDJSON over unix socket'
+  }
+  relationship imports {
+    line dotted
+  }
+
+  tag planned {
+    color #9CA3AF
+  }
+  tag effectPeer {
+  }
+  tag devOnly {
+  }
+}

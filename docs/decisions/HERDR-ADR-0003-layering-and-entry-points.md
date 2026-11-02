@@ -1,0 +1,27 @@
+---
+id: HERDR-ADR-0003
+title: "Layering and subpath entry points, zero-dependency core"
+status: proposed
+date: 2026-11-02
+decision-makers: owner
+summary: "Layers generated, wire, client, then effect/mcp; one subpath export per entry; one generated method table feeds names, capability sets and the namespace tree; the core has no runtime dependencies."
+---
+
+# HERDR-ADR-0003: Layering and subpath entry points, zero-dependency core
+
+Plan: [section 3](../architecture/plan.md#3-layered-design), [3.3](../architecture/plan.md#33-core-client-promise), size table [10.1](../architecture/plan.md#101-size-table). C4: `2 · Containers / @homelab/herdr`.
+
+## Context and problem statement
+
+atalaya's `HerdrClient` builds 12 service classes eagerly (`src/herdr-client.ts`, `src/services/*`); the hub vendors 13 files it partly uses (`hub/src/shared/vendor/atalaya/**`). A runtime namespace tree (`herdr.pane.list`) is a property-access object: bundlers cannot shake unused namespaces out of it.
+
+## Decision outcome
+
+Folders `src/{generated,wire,client,effect,drift,test-kit,mcp}`; rule `generated <- wire <- client <- {effect, mcp}`; `test-kit` imports only `wire` and `generated`; only `effect/` and `mcp/` import `effect` (checked by `rules/layers.dependency-cruiser.cjs`). Subpath exports `.`, `./read-only`, `./admin`, `./effect`, `./drift`, `./test-kit`, `./mcp` (and `./model` in phase 7); `"sideEffects": false`.
+
+The namespace tree is built eagerly from **one** generated `METHODS` table (name, class, result, namespace); `Method`, capability sets and paths derive from it. We do not claim namespace tree-shaking: entries shake, namespaces do not. Standalone per-method functions are a possible later minor if measurement asks for it.
+
+## Consequences
+
+- Good: Node consumers import no Effect; test-kit and mcp never reach production bundles (no-leak test).
+- Bad: every client carries the full name table once; its size is measured, not guessed ([HERDR-ADR-0015](HERDR-ADR-0015-dependency-policy-and-size-budget.md)).

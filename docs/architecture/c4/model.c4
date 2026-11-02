@@ -1,0 +1,293 @@
+// Model: the library, its consumers and herdr. Status: everything tagged #planned until the code lands.
+
+model {
+  owner = actor 'Owner' {
+    summary 'Captures the schema, runs the drift gate and upgrades herdr.'
+  }
+
+  herdr = external 'herdr' {
+    summary 'Multiplexes agent panes and serves the socket API.'
+    technology 'herdr 0.9.5, protocol 22'
+    description '''
+      **Responsibilities:** the only registry of workspaces, tabs, panes and agents (hub ADR-0004); 102 methods, 26 event kinds, 27 subscription types.
+    '''
+    metadata {
+      evidence 'herdr api schema --json (0.9.5)'
+    }
+  }
+
+  voiceHub = consumer 'voice-hub' {
+    summary 'Watches agent status and serves the read-only sessions MCP.'
+    technology 'Effect 4.1.2 on Bun 1.4.4'
+    metadata {
+      evidence 'plugins/crisap94.voice-engine/hub'
+    }
+  }
+  atalaya = external 'atalaya-bridge' {
+    summary 'Bridges herdr to Atalaya messaging and watchers.'
+    technology 'Node 24, pnpm'
+    metadata {
+      evidence 'delivery-handbook/atalaya-bridge 097adfd'
+    }
+  }
+  scripts = consumer 'Scripts' {
+    summary 'Run one-off herdr queries and prompts without the CLI.'
+    technology 'Bun or Node'
+  }
+  mcpClient = external 'MCP client' {
+    summary 'Reads agent sessions through MCP tools.'
+    technology 'Hermes, Claude Code'
+  }
+
+  lib = system '@homelab/herdr' {
+    #planned
+    summary 'Gives typed, capability-scoped access to the whole herdr socket API.'
+    description '''
+      **Responsibilities:** wire, generated API, scoped clients, domain model, Effect entry, test kit, drift, read-only MCP.
+      **Does not:** reimplement herdr state, carry app domains, wrap the CLI.
+      **Decisions:** HERDR-ADR-0001, HERDR-ADR-0003
+    '''
+
+    core = entry '@homelab/herdr (core)' {
+      #planned
+      summary 'Connects with zero config and calls every method by namespace.'
+      technology 'TypeScript, Promise API, zero runtime deps'
+      description '''
+        **Responsibilities:** connect(), namespace tree, events.subscribe, watch, hold, long-poll typing, errors.
+        **Decisions:** HERDR-ADR-0003, HERDR-ADR-0004, HERDR-ADR-0007
+      '''
+
+      generatedTypes = generated 'generated' {
+        #planned
+        summary 'Holds wire types, name constants, namespaces and capability sets.'
+        technology 'type-only TS + as const objects'
+        description '**Decisions:** HERDR-ADR-0002'
+      }
+      constants = component 'constants' {
+        #planned
+        summary 'Centralises env names, default paths, timeouts and texts.'
+        technology 'as const objects'
+      }
+      socketPath = component 'socket-path' {
+        #planned
+        summary 'Finds the herdr socket from option, env or default path.'
+      }
+      wire = component 'wire' {
+        #planned
+        summary 'Frames NDJSON, matches envelopes and maps errors.'
+        technology 'node:net'
+        description '**Responsibilities:** connection, line-splitter, envelope, id, errors, rpc, protocol-policy. **Decisions:** HERDR-ADR-0004, HERDR-ADR-0009'
+      }
+      namespaces = component 'namespace client' {
+        #planned
+        summary 'Builds herdr.pane.list() style calls lazily per namespace.'
+        description '**Decisions:** HERDR-ADR-0002, HERDR-ADR-0003'
+      }
+      scoped = component 'scoped clients' {
+        #planned
+        summary 'Limits a client to read or prompt methods.'
+        description '**Decisions:** HERDR-ADR-0005'
+      }
+      subscribe = stream 'subscribe' {
+        #planned
+        summary 'Delivers push frames as an async iterator on its own connection.'
+        description '**Decisions:** HERDR-ADR-0007'
+      }
+      watch = component 'watch' {
+        #planned
+        summary 'Subscribes, snapshots, replays buffered frames and resubscribes with backoff.'
+        description '**Decisions:** HERDR-ADR-0007'
+      }
+      held = component 'held connection' {
+        #planned
+        summary 'Keeps one connection open for connection-bound methods until close().'
+        description '**Responsibilities:** ssh agent registration, surface interest lease, window title. **Decisions:** HERDR-ADR-0007'
+      }
+    }
+
+    readOnly = entry '/read-only' {
+      #planned
+      summary 'Exposes a client without write methods; terminal content on opt-in.'
+      description '**Decisions:** HERDR-ADR-0005'
+    }
+    admin = entry '/admin' {
+      #planned
+      summary 'Adds destructive, server-control and spawn methods.'
+      description '**Decisions:** HERDR-ADR-0005'
+    }
+    domainModel = entry '/model' {
+      #planned
+      summary 'Folds snapshots and events into readonly entities (deferred to phase 7).'
+      style {
+        color indigo
+      }
+      description '**Decisions:** HERDR-ADR-0006'
+    }
+    effectEntry = entry '/effect' {
+      #planned
+      #effectPeer
+      summary 'Provides the Herdr service, layers, tagged errors and Streams.'
+      technology 'effect 4.1.2 (optional peer)'
+      description '**Decisions:** HERDR-ADR-0004, HERDR-ADR-0005, HERDR-ADR-0007'
+
+      herdrService = component 'Herdr service' {
+        #planned
+        summary 'Returns Effects for every namespaced method.'
+        technology 'Context.Service'
+      }
+      layers = component 'layers' {
+        #planned
+        summary 'Provide Herdr, HerdrReadOnly and HerdrPrompt.'
+        technology 'Layer'
+      }
+      taggedErrors = component 'tagged errors' {
+        #planned
+        summary 'Keep the hub tags HerdrUnavailable, HerdrRefused, ProtocolMismatch.'
+      }
+      streamSubscribe = stream 'Stream subscribe' {
+        #planned
+        summary 'Streams push frames with acquireRelease.'
+      }
+      watchPaneSet = stream 'watchPaneSet' {
+        #planned
+        summary 'Streams the live pane set with resubscribe and backoff.'
+      }
+    }
+    mcp = entry '/mcp' {
+      #planned
+      #effectPeer
+      summary 'Generates read-only MCP tools with a bearer guard.'
+      technology 'effect/ai McpServer'
+      description '**Decisions:** HERDR-ADR-0010'
+    }
+    testKit = devEntry '/test-kit' {
+      #planned
+      #devOnly
+      summary 'Fakes herdr with scripted replies and pushed events.'
+      technology 'node:net'
+      description '**Decisions:** HERDR-ADR-0008'
+    }
+    tooling = devEntry 'generator and drift' {
+      #planned
+      #devOnly
+      summary 'Captures the schema, generates code and reports drift.'
+      technology 'bun gen/index.ts, herdr-drift'
+      description '**Decisions:** HERDR-ADR-0002, HERDR-ADR-0009'
+    }
+    schemaFile = store 'schema' {
+      #planned
+      summary 'Keeps the captured schema and herdr version.'
+      technology 'schema/herdr-api.schema.json'
+    }
+  }
+
+  // ---- consumers
+  voiceHub -> lib.effectEntry 'watches panes and calls herdr through' {
+    #planned
+  }
+  voiceHub -> lib.mcp 'serves session tools with' {
+    #planned
+  }
+  voiceHub -> lib.testKit 'tests against the fake from' {
+    #planned
+  }
+  atalaya -> lib.core 'calls herdr and reads events through' {
+    #planned
+  }
+  atalaya -> lib.domainModel 'folds fleet state with' {
+    #planned
+  }
+  scripts -> lib.readOnly 'lists agents through' {
+    #planned
+  }
+  scripts -> lib.core 'prompts agents through' {
+    #planned
+  }
+  mcpClient -> voiceHub 'reads sessions from' 'MCP over HTTP'
+  owner -> lib.tooling 'captures and checks the schema with' {
+    #planned
+  }
+
+  // ---- inside the library
+  lib.readOnly -> lib.core.scoped 'wraps' {
+    #planned
+  }
+  lib.domainModel -> lib.core.generatedTypes 'maps from' {
+    #planned
+  }
+  lib.mcp -> lib.readOnly 'reads herdr only through' {
+    #planned
+  }
+  lib.testKit -> lib.core.generatedTypes 'types fake replies with' {
+    #planned
+  }
+  lib.tooling -> lib.schemaFile 'writes' {
+    #planned
+  }
+  lib.tooling -> lib.core.generatedTypes 'generates' {
+    #planned
+  }
+  lib.tooling -> herdr 'reads the schema of' 'herdr api schema --json' {
+    #planned
+  }
+
+  lib.core.namespaces -> lib.core.wire 'sends requests through' {
+    #planned
+  }
+  lib.core.namespaces -> lib.core.generatedTypes 'is typed by' {
+    #planned
+  }
+  lib.core.scoped -> lib.core.namespaces 'narrows' {
+    #planned
+  }
+  lib.core.watch -> lib.core.subscribe 'resubscribes through' {
+    #planned
+  }
+  lib.core.watch -> lib.core.namespaces 'snapshots with' {
+    #planned
+  }
+  lib.core.held -> lib.core.wire 'holds a dedicated connection with' {
+    #planned
+  }
+  lib.admin -> lib.core.scoped 'widens' {
+    #planned
+  }
+  scripts -> lib.admin 'closes panes through' {
+    #planned
+  }
+  lib.core.subscribe -> lib.core.wire 'opens a dedicated connection with' {
+    #planned
+  }
+  lib.core.wire -> lib.core.socketPath 'finds the socket with' {
+    #planned
+  }
+  lib.core.wire -> lib.core.constants 'reads timeouts from' {
+    #planned
+  }
+  lib.core.wire -> herdr 'sends requests to and reads frames from' {
+    #planned
+    technology 'NDJSON over unix socket'
+  }
+
+  lib.effectEntry.layers -> lib.effectEntry.herdrService 'provide' {
+    #planned
+  }
+  lib.effectEntry.herdrService -> lib.core.namespaces 'wraps' {
+    #planned
+  }
+  lib.effectEntry.herdrService -> lib.effectEntry.taggedErrors 'fails with' {
+    #planned
+  }
+  lib.effectEntry.streamSubscribe -> lib.core.subscribe 'wraps' {
+    #planned
+  }
+  lib.effectEntry.watchPaneSet -> lib.effectEntry.streamSubscribe 'resubscribes through' {
+    #planned
+  }
+  lib.effectEntry.watchPaneSet -> lib.effectEntry.herdrService 'snapshots with' {
+    #planned
+  }
+  lib.testKit -> lib.core.wire 'speaks the protocol of' {
+    #planned
+  }
+}
