@@ -295,6 +295,10 @@ export type Lane = (typeof Lane)[keyof typeof Lane];
 // --- end P5c ---
 
 // --- lane P6a ---
+// Message of a tagged error whose source carries no message (a thrown string, undefined, a plain object).
+export const EffectFallbackMessage = {
+  UnknownError: 'unknown herdr error',
+} as const;
 
 // --- end P6a ---
 
