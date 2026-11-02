@@ -21,6 +21,8 @@ Folders `src/{generated,wire,client,effect,drift,test-kit,mcp}`; rule `generated
 
 The namespace tree is built eagerly from **one** generated `METHODS` table (name, class, result, namespace); `Method`, capability sets and paths derive from it. We do not claim namespace tree-shaking: entries shake, namespaces do not. Standalone per-method functions are a possible later minor if measurement asks for it.
 
+Every subpath entry names its real consumer, verified by what that consumer imports. An entry without one does not ship in 1.0. This extends the HERDR-ADR-0010 rule for `/mcp` to every entry (from delivery-handbook ADR-0041 decision 3, 2026-09-20: "split on a second real consumer, not a predicted one"; [HERDR-ADR-0016](HERDR-ADR-0016-design-intent-inherited-from-atalaya.md) P8). `src/wire` and `src/client` import no `node:child_process`, because the runtime never spawns `herdr` (P1).
+
 ## Consequences
 
 - Good: Node consumers import no Effect; test-kit and mcp never reach production bundles (no-leak test).

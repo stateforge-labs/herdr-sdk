@@ -19,6 +19,8 @@ Hub ADR-0028 (accepted) says "zod stays for the MCP tool schemas (the MCP SDK ex
 
 `/mcp` exports `readOnlyToolkit({ methods })` (R-meta only, `readOnlyHint: true`), `bearerGuard`, `tokenFile`, `toolResult`, on `effect/ai` (Effect as peer), using only the read-only client ([HERDR-ADR-0005](HERDR-ADR-0005-capability-scoped-clients.md)). It **amends hub ADR-0028**: MCP tool schemas via `effect/ai`, not zod (draft in [HERDR-ADR-0013](HERDR-ADR-0013-hub-adr-amendments-draft.md)). Ships only after S7 merges; if S7 lands without `effect/ai`, `/mcp` leaves 1.0.
 
+Rule widened to all entries by [HERDR-ADR-0003](HERDR-ADR-0003-layering-and-entry-points.md) and [HERDR-ADR-0016](HERDR-ADR-0016-design-intent-inherited-from-atalaya.md) P8 (`scripts/check-entries.ts`).
+
 ## Consequences
 
 - Good: an MCP over herdr is a few lines and cannot write.

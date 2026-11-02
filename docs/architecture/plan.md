@@ -26,6 +26,10 @@ The portability inventory (what is ported from where) is [appendix A](#appendix-
 
 **Counts (schema is the source of truth; the coverage test asserts them).** 102 methods, 26 `EventKind`s, 27 `Subscription` variants (24 lifecycle + 3 parameterised: `pane.output_matched`, `pane.agent_status_changed`, `pane.scroll_changed`), 19 `EventMatch` variants, 63 result tags, 78 params types.
 
+## Design intent inherited from atalaya
+
+atalaya-bridge's design intent (measured wire facts W1-W6, client principles P1-P8) is adopted in [HERDR-ADR-0016](../decisions/HERDR-ADR-0016-design-intent-inherited-from-atalaya.md); atalaya's own open work is out of scope. Mapping table: [appendix B](#appendix-b-inherited-intent).
+
 ## 1. Goals and non-goals
 
 **Goals.** (G1) Every one of the 102 methods callable with typed params and typed results, proven by a generated coverage test. (G2) One copy of the herdr client for hub, atalaya and scripts. (G3) Each consumer ships less than today, measured (section 10.1). (G4) Capability-scoped clients so a read-only consumer cannot write, by type and at runtime. (G5) Drift against a new herdr is detected by a command. (G6) Tests never touch a live herdr by default (hub ADR-0029).
@@ -93,7 +97,7 @@ packages/herdr/
   bin/herdr-drift.ts
   contract/herdr-22/       recorded goldens (confirm generated defaults)
   examples/*.ts            source of the README snippets (section 8)
-  rules/                   dependency-cruiser + ast-grep templates
+  rules/                   dependency-cruiser + ast-grep templates (layers; consumer-single-adapter.dependency-cruiser.cjs: only one consumer adapter file imports @homelab/herdr, HERDR-ADR-0016 P7)
   scripts/                 check-pins.ts, check-size.ts, check-readme.ts
   test/  test/types/       bun:test (also node --test over dist); negative type fixtures
   docs/architecture/       this plan, README, c4/
@@ -104,7 +108,7 @@ packages/herdr/
 
 ### 3.1 Wire (layer 1)
 
-NDJSON over a unix socket. `rpc`: one connection per request (hub ADR-0022), destroyed on every exit path. Subscriptions and held connections (3.6) each own one dedicated connection. Errors: `HerdrError` (server envelope: `code`, `message`, `method`), `HerdrTransportError` (connect/timeout/abort/malformed, `cause`, `isTimeout`), `ProtocolMismatchError` (`expected`, `actual`), `UnsupportedByServerError` (`method`, `capability`).
+NDJSON over a unix socket. `rpc`: one connection per request (hub ADR-0022), destroyed on every exit path. Measured wire rules (HERDR-ADR-0016): no id-correlation or pipelining layer; an error envelope with `id:""` is accepted as the reply; the runtime never spawns `herdr`; an unknown push `event` becomes `UnknownFrame` (counted via `onUnknown`, never thrown). Subscriptions and held connections (3.6) each own one dedicated connection. Errors: `HerdrError` (server envelope: `code`, `message`, `method`), `HerdrTransportError` (connect/timeout/abort/malformed, `cause`, `isTimeout`), `ProtocolMismatchError` (`expected`, `actual`), `UnsupportedByServerError` (`method`, `capability`).
 
 `connect()` pings once, applies the protocol policy (`exact` default, `minimum` optional) and **keeps `pong.capabilities`** (`ServerCapabilities`, `herdr-schema.json:10428-10451`: `ssh_agent_registration`, `surface_interest`, `live_handoff`, `health_check`...) as `client.capabilities`. A method gated by a capability throws `UnsupportedByServerError` before sending when the server lacks it; the gate table is part of `gen/overrides.ts`.
 
@@ -251,6 +255,7 @@ Each row records its source (`seed`, `name`, `docs`, `recorded`). `LOOSE` is all
 - `createFakeHerdr({ protocol?, socketPath?, capabilities? })` on `node:net`: `reply`, `replySequence`, `fail`, `silent`, `rawReply`, typed `push`, `closeSubscribers`, `receivedMethods`, `requests`, `subscriberCount`, `connectionCount`, `holdPushes`, `splitAck`, `strayLine`, `stop`. Ported from the **post-S7** hub fake (S7 adds 9 lines to `test/fakes/fake-herdr-server.ts`); if S7 has not merged when phase 2a starts, port main and apply S7's diff in phase 5a.
 - Defaults: every method answers with the generated default reply (3.2); goldens in `contract/herdr-22/` only confirm. Requests are checked against the params shape table; a bad request gets an error envelope (`invalid_params`).
 - `capabilities` option advertises or omits server capabilities in `pong`.
+- Measured herdr behaviour (HERDR-ADR-0016 W1-W6): close after each non-subscribe response; `id:""` + close for an unparseable line; no history replay on subscribe; `invalid_params` for a per-pane subscription without `pane_id`; `push` of an unknown kind; `api.schema` returns `{}`. Each has a test in `test/test-kit`.
 - Protocol facts F1-F6 from the hub fake header carried; F4 (unwrapped pushes) and F6 (unknown method / long-poll timeout code) pinned by goldens in phase 5b, or stay marked OPEN.
 - Live runs follow the hub mechanism: `test/contract/*.contract.ts`, excluded from `bun test`, run by an explicit `bun run test:contract` that needs the owner's OK each time (hub ADR-0029), guarded additionally by `HERDR_LIVE=1` and a scratch session. Reads, plus writes only on panes the test created.
 - Socket tests run x3 in the gate.
@@ -326,15 +331,15 @@ Each slice follows the hub pattern: Opus-low architect spec → Haiku implement 
 |---|---|---|
 | 0 Baseline | measurement study (research skill) on a clean checkout + a generator prototype emitting only `METHODS` | numbers in section 10.1 filled; `bun run study:size` reproduces them |
 | 1a Schema + gen port | package.json/tsconfig/LICENSE/NOTICE, 0.9.5 capture, ported gen with path params, construct fixtures | `bun gen/index.ts && git diff --exit-code`; `bun test test/gen`; `bun scripts/check-pins.ts` |
-| 1b New emitters | method table, names, namespaces types, defaults, shapes, docs, `constants.ts`, layer rule | `bun gen/index.ts && git diff --exit-code`; `bun run lint:layers` |
-| 2a Wire + rpc + fake | wire/, `rpc`, `connect()` with capabilities, minimal node:net fake (reply/fail/silent/rawReply/receivedMethods), ported hub rpc/connect tests | `bun test test/wire test/connect` and `node --test dist-test/wire` green |
+| 1b New emitters | method table, names, namespaces types, defaults, shapes, docs, `constants.ts`, layer rule | `bun gen/index.ts && git diff --exit-code`; `bun run lint:layers` (layers + consumer-single-adapter template self-test); every file in `src/generated` starts with the generated banner (P2); `scripts/check-entries.ts`: each `package.json` export maps to a named consumer (P8) |
+| 2a Wire + rpc + fake | wire/, `rpc`, `connect()` with capabilities, minimal node:net fake (reply/fail/silent/rawReply/receivedMethods), ported hub rpc/connect tests | `bun test test/wire test/connect` (incl. connection reuse fails, `id:""` rejects without hanging, no `child_process` import) and `node --test dist-test/wire` green |
 | 2b Namespaces + scoped clients | namespace tree, `/read-only`, `/admin`, `connectPrompt`, classes, examples 1 and 3 | `bun test test/scoped`; `tsc -p test/types`; `bun scripts/check-size.ts` (budgets set here) |
 | 3 Result map | complete mapping (4.2), coverage test, `docs/api/*.md` | `bun test test/coverage.test.ts` |
-| 4a Subscribe + long-poll | subscribe, push frames, overrides, long-poll typing; ported hub subscribe tests | `bun test test/subscribe test/long-poll`; `tsc -p test/types` |
-| 4b Watch + held | watch with replay rule and backoff, `hold()` for class C | `bun test test/watch test/held` (incl. frames between ack and snapshot, overflow policy, held connection stays open then closes) |
+| 4a Subscribe + long-poll | subscribe, push frames, overrides, long-poll typing; ported hub subscribe tests | `bun test test/subscribe test/long-poll` (incl. unknown-kind frame → `UnknownFrame`); `tsc -p test/types` |
+| 4b Watch + held | watch with replay rule and backoff, `hold()` for class C | `bun test test/watch test/held` (incl. snapshot removal fails the suite, `watchPaneSet` follows created/closed panes, frames between ack and snapshot, overflow policy, held connection stays open then closes) |
 | 5a Full fake | full fake from post-S7 hub fake, request checker, default replies, `capabilities` option | `bun test test/test-kit` x3 |
 | 5b Goldens | goldens from a scratch 0.9.5 (owner OK), F4/F6 pinned or OPEN | `bun run test:contract` (owner-run) |
-| 5c Drift | drift CLI with shapes and version | `bun test test/drift.test.ts` |
+| 5c Drift | drift CLI with shapes and version | `bun test test/drift.test.ts` (incl. no herdr on PATH → 3) |
 | 6a `/effect` | Effect entry, error mapping, `watchPaneSet` | `bun test test/effect`; hub tests unchanged and green against a local `bun link` |
 | 6b Hub migration (S8) | entry: S7 merged; table in section 9; hub ADR-0030 + amendments copied | hub `bun test` green; image builds from tarball; `herdr:pack` checksum matches; size table hub rows met |
 | 6c `/mcp` | toolkit, bearerGuard, tokenFile, toolResult; entry: S7 merged | `bun test test/mcp`; no-leak test passes |
@@ -377,8 +382,9 @@ No-leak test (phase 6c): the minified hub bundle contains none of `createFakeHer
 | [HERDR-ADR-0013](../decisions/HERDR-ADR-0013-hub-adr-amendments-draft.md) | Hub ADR-0030 and amendments (draft for the hub) | 7, 9 |
 | [HERDR-ADR-0014](../decisions/HERDR-ADR-0014-executable-docs.md) | Docs are executable: README-first, examples compiled and run | 8 |
 | [HERDR-ADR-0015](../decisions/HERDR-ADR-0015-dependency-policy-and-size-budget.md) | Dependency policy and size budget | 2, 10.1 |
+| [HERDR-ADR-0016](../decisions/HERDR-ADR-0016-design-intent-inherited-from-atalaya.md) | Design intent inherited from atalaya: measured wire facts and client principles | 1, 3.1, 3.6, 5 |
 
-**C4 views** ([c4/](c4/)): `1 · Context` (HERDR-ADR-0001, 0011), `2 · Containers` (0003, 0004, 0005, 0008, 0009, 0010), `3 · Components / Core client` (0002, 0005, 0007), `3 · Components / Effect client` (0004, 0007). No view: 0006 (deferred `/model` entry is shown in Containers), 0012 and 0015 (build output and policy are not C4 elements), 0013 and 0014 (documents).
+**C4 views** ([c4/](c4/)): `1 · Context` (HERDR-ADR-0001, 0011), `2 · Containers` (0003, 0004, 0005, 0008, 0009, 0010), `3 · Components / Core client` (0002, 0005, 0007), `3 · Components / Effect client` (0004, 0007). No view: 0006 (deferred `/model` entry is shown in Containers), 0012 and 0015 (build output and policy are not C4 elements), 0013 and 0014 (documents), 0016 (policy and rules, no element changes).
 
 | Risk | Mitigation |
 |---|---|
@@ -467,3 +473,26 @@ Disposition: **P** portable as-is, **C** after the named change, **A** app-speci
 | `test/shared/herdr-client.test.ts` | 489 | P | split: rpc/connect -> 2a, subscribe -> 4a | `test/` |
 | `test/attention/herdr-agent-fleet.test.ts` | 241 | C | watch cases move | `test/watch` |
 | `test/contract/probe/fake-herdr.probe.ts` | 37 | C | opt-in live run | `test/contract/` |
+
+## Appendix B. Inherited intent
+
+Origins: delivery-handbook ADR-0037/0041 (2026-09-20, herdr 0.9.0, protocol 22), spine AD-5/AD-9/AD-10, `atalaya-bridge/AGENTS.md`, `NOTICE.md`. Decision: [HERDR-ADR-0016](../decisions/HERDR-ADR-0016-design-intent-inherited-from-atalaya.md).
+
+| Intention | Origin | How the library embodies it |
+|---|---|---|
+| One request per connection; no correlation | ADR-0037 facts 1-2 (+ jsHerdrSDK 0.8.2) | 3.1 rule W1; the fake closes after each response; a reuse test |
+| Subscribe = ack, then held stream | ADR-0037 facts 3-4 | 3.6, HERDR-ADR-0007; `splitAck` and `strayLine` tests |
+| Unparseable request → `id:""` + EOF | ADR-0037 fact 5 | 3.1 rule W3; the fake emits the real shape; a no-hang test |
+| Runtime never shells out to `herdr` | ADR-0037 dec. 1, AD-5, AGENTS.md:120 | rule P1; `node:child_process` banned in wire/client |
+| Generate from the CLI schema; the socket gives `{}` | ADR-0037 fact 6, dec. 2 | HERDR-ADR-0002 |
+| Generated output never hand-edited | AGENTS.md:95,106 | rule P2; banner check (phase 1b); regen + diff gate |
+| Drift: "could not look" = 3, never 0 | `bin/herdr-drift.ts`, ADR-0037:207 | HERDR-ADR-0009; test with no herdr on PATH → 3 |
+| Drift has no CI; the gap is declared | AGENTS.md:110-114 | HERDR-ADR-0009 retirement condition |
+| Bumps are bounded and additive (20→22: +11/-0) | ADR-0037:91-105 | HERDR-ADR-0009 evidence + upgrade step |
+| Unmapped method = typing gap | AGENTS.md:116, NOTICE.md:36 | already stricter: the build fails until classified (4.2) |
+| Unknown event kind: surfaced, never guessed or fatal | ADR-0037 dec. 5, AD-9 | rule P3: `UnknownFrame` + `onUnknown`; fake `push` test |
+| Envelope-only validation | ADR-0037 dec. 5, AD-9 | HERDR-ADR-0002 + reversal condition |
+| Snapshot first: a subscription gives no present | ADR-0037:30-35, AGENTS.md:41 | rule W5; the fake replays no history; `test/watch` fails without the snapshot |
+| 3 of 27 subscribable types are per-pane | AGENTS.md:45-47 | rule W6; `watchPaneSet` follows created/closed; the fake rejects a per-pane subscription with no `pane_id` |
+| Conformist at the wire, ACL at the port | AD-10, ADR-0037 dec. 6 | HERDR-ADR-0001/0006; `rules/consumer-single-adapter.dependency-cruiser.cjs` |
+| Split on a real consumer | ADR-0041 dec. 3, AGENTS.md:29,90 | HERDR-ADR-0003; `scripts/check-entries.ts` gate |

@@ -21,6 +21,8 @@ The hub's `openSubscription` (`hub/src/shared/infra/herdr/herdr-client.ts:52-127
 - `events.subscribe` → `AsyncIterable` + `close()`; bounded queue optional with `Overflow.DropOldest | Overflow.Fail`.
 - `watch`/`watchPaneSet`: frames between ack and snapshot are buffered and replayed through an idempotent fold; resubscribe with backoff 1 s to 30 s.
 - `gen/overrides.ts` (method → required timeout path, bounds, return type, capability gate) drives the types; rpc timeout = timeout + margin.
+- Measured basis ([HERDR-ADR-0016](HERDR-ADR-0016-design-intent-inherited-from-atalaya.md) W2, W5, W6, delivery-handbook ADR-0037, 2026-09-20, herdr 0.9.0): a subscription delivers changes, not the present, so `watch` never emits `Live` before a snapshot and the watch path has no subscribe-only mode. `watchPaneSet` subscribes pane by pane for the 3 per-pane types and maintains the set with `pane.created`/`pane.closed`.
+- A push frame with an unknown `event` is delivered as `UnknownFrame { rawEvent, raw }` and counted through `onUnknown`. It is never dropped, never coerced and never thrown (P3).
 - Class C methods only on `herdr.hold()` → `Held` with `close()`; gated by `pong.capabilities`.
 
 ## Consequences
