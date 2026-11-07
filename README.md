@@ -21,6 +21,17 @@ A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22,
 
 Wire types are `export type` only. Raw strings are accepted by the types, but these docs always use the generated constants (`Method`, `EventKind`, `SubscriptionType`, `AgentStatus`, `WatchKind`).
 
+## Install
+
+From the homelab GitLab registry ([HERDR-ADR-0019](docs/decisions/HERDR-ADR-0019-publish-to-the-gitlab-npm-registry-on-a-tag.md)). In the consumer's `bunfig.toml`:
+
+```toml
+[install.scopes]
+"@homelab" = { url = "https://gitlab.example.internal/api/v4/projects/518/packages/npm/", token = "$HOMELAB_NPM_TOKEN" }
+```
+
+`HOMELAB_NPM_TOKEN` is a read-only token (`read_package_registry`). A release younger than 14 days needs an entry in `minimumReleaseAgeExcludes`. Releases are protected `v*` tags (Maintainers only); the pipeline checks the tag equals the `package.json` version.
+
 ## Install and footprint
 
 The package ships compiled ESM in `dist/` with declarations (no bundle). A bundler or Node loads only the modules a call reaches: `connect()` does not load the streams until `events.subscribe`, `watch()` or `hold()` is first used.

@@ -1,11 +1,17 @@
 {
   "name": "@homelab/herdr",
   "version": "0.2.0",
-  "private": true,
   "type": "module",
   "sideEffects": false,
   "description": "Typed client for the herdr socket API (protocol 22), generated from herdr's published schema.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.example.internal/homelab/herdr-sdk.git"
+  },
+  "publishConfig": {
+    "@homelab:registry": "https://gitlab.example.internal/api/v4/projects/518/packages/npm/"
+  },
   "herdr": {
     "protocol": 22,
     "schemaVersion": 1,

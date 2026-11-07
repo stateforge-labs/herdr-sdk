@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="herdr-sdk: three terminal panes, one running an agent">
+  <rect width="256" height="256" rx="48" fill="#12151c"/>
+  <!-- left pane -->
+  <rect x="36" y="36" width="88" height="184" rx="14" fill="#1f2530" stroke="#3b4658" stroke-width="4"/>
+  <rect x="52" y="60" width="44" height="8" rx="4" fill="#6b7a93"/>
+  <rect x="52" y="82" width="58" height="8" rx="4" fill="#44506a"/>
+  <rect x="52" y="104" width="34" height="8" rx="4" fill="#44506a"/>
+  <!-- top right pane -->
+  <rect x="136" y="36" width="84" height="84" rx="14" fill="#1f2530" stroke="#3b4658" stroke-width="4"/>
+  <rect x="152" y="60" width="40" height="8" rx="4" fill="#44506a"/>
+  <rect x="152" y="82" width="52" height="8" rx="4" fill="#44506a"/>
+  <!-- bottom right pane: the agent, highlighted -->
+  <rect x="136" y="136" width="84" height="84" rx="14" fill="#2a2113" stroke="#f2a93b" stroke-width="5"/>
+  <path d="M156 164 l16 12 -16 12" fill="none" stroke="#f2a93b" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="180" y="190" width="24" height="9" rx="4.5" fill="#f2a93b"/>
+</svg>
