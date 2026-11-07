@@ -81,5 +81,5 @@ export type ToTaggedError = (error: unknown) => HerdrTaggedError;
  *   client the layer holds (the service keeps a private reference to it; no second subscribe implementation).
  * - Fiber interruption destroys the connection (rpc signal, subscription close, held close).
  * - Stubs: A1 also creates `src/effect/services.ts` exporting the four tags (declared) and the four layers as typed
- *   stubs that throw NotImplementedError (Lane.P6a), so P6c can import the tags and build a test layer the day A1 lands.
+ *   stubs that throw NotImplementedError (Lane.P6a), so a test layer can import the tags the day A1 lands.
  */

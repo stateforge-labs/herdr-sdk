@@ -1,5 +1,5 @@
 // Role: layer rule as data for scripts/check-layers.ts; which src layer may import which, which bare packages each may use.
-// Informs HERDR-ADR-0003 (generated <- wire <- client <- {effect, mcp}; test-kit imports wire and generated only) and plan section 3 (dependency rule); new.
+// Informs HERDR-ADR-0003 (generated <- wire <- client <- effect; test-kit imports wire and generated only) and plan section 3 (dependency rule); new.
 
 export const Layer = {
   Generated: 'generated',
@@ -9,7 +9,6 @@ export const Layer = {
   Effect: 'effect',
   Drift: 'drift',
   TestKit: 'test-kit',
-  Mcp: 'mcp',
   Model: 'model',
   ModelFromWire: 'model/from-wire',
   Entry: 'entry',
@@ -27,7 +26,6 @@ export const FOLDER_LAYERS: readonly Layer[] = [
   Layer.Effect,
   Layer.Drift,
   Layer.TestKit,
-  Layer.Mcp,
   Layer.Model,
 ];
 
@@ -42,7 +40,6 @@ export const SourcePath = {
 // Top-level files under src/ that are subpath entries (one file per subpath export).
 export const EntryFile = {
   Effect: 'effect.ts',
-  Mcp: 'mcp.ts',
   TestKit: 'test-kit.ts',
 } as const;
 
@@ -58,9 +55,6 @@ export const ALLOWED_IMPORTS: Readonly<Record<Layer, readonly Layer[]>> = {
   [Layer.Wire]: [Layer.Wire, Layer.Constants, Layer.Generated],
   [Layer.Client]: [Layer.Client, Layer.Wire, Layer.Constants, Layer.Generated],
   [Layer.Effect]: [Layer.Effect, Layer.Client, Layer.Wire, Layer.Constants, Layer.Generated],
-  // HERDR-ADR-0010: the MCP toolkit is a read-only client built on the /effect services (HerdrReadOnly, HerdrTaggedError)
-  // and the effect package (see PACKAGE_ALLOWED). Contract review finding: P6c needs src/effect.
-  [Layer.Mcp]: [Layer.Mcp, Layer.Effect, Layer.Client, Layer.Wire, Layer.Constants, Layer.Generated],
   [Layer.Drift]: [Layer.Drift, Layer.Constants, Layer.Generated],
   [Layer.TestKit]: [Layer.TestKit, Layer.Wire, Layer.Constants, Layer.Generated],
   [Layer.Model]: [Layer.Model],
@@ -68,10 +62,9 @@ export const ALLOWED_IMPORTS: Readonly<Record<Layer, readonly Layer[]>> = {
   [Layer.Entry]: ALL_LAYERS,
 };
 
-// Folders that only their own entry file may import (nothing imports test-kit or mcp except tests).
+// Folders that only their own entry file may import (nothing imports test-kit except tests).
 export const RESTRICTED_FOLDERS: Readonly<Partial<Record<Layer, string>>> = {
   [Layer.TestKit]: EntryFile.TestKit,
-  [Layer.Mcp]: EntryFile.Mcp,
 };
 
 // Bare package names each layer may import.
@@ -81,7 +74,6 @@ export const PACKAGE_ALLOWED: Readonly<Record<Layer, readonly string[]>> = {
   [Layer.Wire]: [],
   [Layer.Client]: [],
   [Layer.Effect]: [PackageName.Effect],
-  [Layer.Mcp]: [PackageName.Effect],
   [Layer.Drift]: [],
   [Layer.TestKit]: [],
   [Layer.Model]: [],
@@ -92,7 +84,6 @@ export const PACKAGE_ALLOWED: Readonly<Record<Layer, readonly string[]>> = {
 // Entry files that may import a package their layer does not allow.
 export const ENTRY_PACKAGE_ALLOWED: Readonly<Record<string, readonly string[]>> = {
   [EntryFile.Effect]: [PackageName.Effect],
-  [EntryFile.Mcp]: [PackageName.Effect],
 };
 
 // Layers that may not use node builtins at all.

@@ -31,9 +31,9 @@
       "types": "./dist/effect.d.ts",
       "default": "./dist/effect.js"
     },
-    "./mcp": {
-      "types": "./dist/mcp.d.ts",
-      "default": "./dist/mcp.js"
+    "./schema": {
+      "types": "./dist/schema.d.ts",
+      "default": "./dist/schema.js"
     },
     "./drift": {
       "types": "./dist/drift.d.ts",

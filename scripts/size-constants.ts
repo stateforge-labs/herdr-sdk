@@ -7,7 +7,7 @@ export const SizeRow = {
   ReadOnly: 'dist /read-only',
   Admin: 'dist /admin',
   Effect: 'dist /effect',
-  Mcp: 'dist /mcp',
+  Schema: 'dist /schema',
   Lazy: 'lazy chunks of .',
   ScenarioA: 'scenario a',
   ScenarioAPreset: 'scenario a-preset',
@@ -22,7 +22,7 @@ export const SizeDistFile = {
   ReadOnly: 'dist/read-only.js',
   Admin: 'dist/admin.js',
   Effect: 'dist/effect.js',
-  Mcp: 'dist/mcp.js',
+  Schema: 'dist/schema.js',
 } as const;
 
 // Scenario sources, relative to the package root. Each is copied next to a node_modules symlink to the package, so it imports `@homelab/herdr/...` the way a consumer does.
@@ -43,7 +43,7 @@ export const SizePackage = {
 
 // Bytes per budgeted row: measured after the dist build (2026-11-02, plan 10.1 steps 2 to 4), plus about 10 %, rounded up to 100 B,
 // and never above the owner's ceiling of plan 10.1 (scenario a and a-preset land on their ceilings). A budget only moves down when
-// the code shrinks; an increase needs a note in HERDR-ADR-0015. Mcp is measured and printed only (add-on, plan 10.1).
+// the code shrinks; an increase needs a note in HERDR-ADR-0015. Schema is measured and printed only (introspection entry, no budget).
 export const SizeBudget: Readonly<Partial<Record<SizeRow, number>>> = {
   [SizeRow.Core]: 29600, // measured 26887 B; ceiling 36000
   [SizeRow.ReadOnly]: 20600, // measured 18691 B; ceiling 24000

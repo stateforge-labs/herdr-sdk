@@ -1,5 +1,5 @@
 // Role: tests of the layer gate (scripts/check-layers.ts) on fixture packages and on the real package; no network, no herdr.
-// Informs HERDR-ADR-0003 (layering, restricted test-kit and mcp folders) and plan section 3 (dependency rule).
+// Informs HERDR-ADR-0003 (layering, restricted test-kit folder) and plan section 3 (dependency rule).
 import { describe, expect, test } from 'bun:test';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

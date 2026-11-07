@@ -1,10 +1,9 @@
-// Role: README sections 5 and 6 and the drift/effect contracts compile: typed fake replies, drift exit codes, tool naming, tagged error shapes.
-// Informs HERDR-ADR-0008, HERDR-ADR-0009, HERDR-ADR-0010, HERDR-ADR-0017 and plan 3.7, 5, 6, 7. Compiled, never run.
+// Role: README sections 5 and 6 and the drift/effect contracts compile: typed fake replies, drift exit codes, tagged error shapes.
+// Informs HERDR-ADR-0008, HERDR-ADR-0009, HERDR-ADR-0017 and plan 3.7, 5, 6. Compiled, never run.
 import { connect, Method, ResultTag } from '../../../src/index.ts';
 import { createFakeHerdr } from '../../../src/test-kit.ts';
 import { DriftExitCode, DriftOutcomeKind, driftBetween, exitCodeFor } from '../../../src/drift.ts';
 import { EffectErrorTag, toTaggedError, type HerdrTaggedError } from '../../../src/effect.ts';
-import { bearerGuard, toolNameOf } from '../../../src/mcp.ts';
 
 export async function fakeTest(): Promise<void> {
   const fake = await createFakeHerdr();
@@ -40,11 +39,4 @@ export function effectErrors(error: unknown): string {
     case EffectErrorTag.Unsupported:
       return tagged.capability;
   }
-}
-
-export function mcp(): boolean {
-  const name: string = toolNameOf(Method.SessionSnapshot);
-  // @ts-expect-error a write method can never become an MCP tool
-  toolNameOf(Method.AgentPrompt);
-  return bearerGuard('t')(`Bearer ${name}`);
 }

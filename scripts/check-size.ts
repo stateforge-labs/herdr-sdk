@@ -87,7 +87,9 @@ export function run(measureOnly: boolean): number {
   results.push(resultOf(SizeRow.ReadOnly, measureEntry(join(PACKAGE_ROOT, SizeDistFile.ReadOnly), process.execPath), true));
   results.push(resultOf(SizeRow.Admin, measureEntry(join(PACKAGE_ROOT, SizeDistFile.Admin), process.execPath), false));
   results.push(resultOf(SizeRow.Effect, measureEntry(join(PACKAGE_ROOT, SizeDistFile.Effect), process.execPath), false));
-  results.push(resultOf(SizeRow.Mcp, measureEntry(join(PACKAGE_ROOT, SizeDistFile.Mcp), process.execPath), false));
+  // The schema entry carries the method table and parameter shapes by design, so only the child_process text check applies to it.
+  const schema = measureEntry(join(PACKAGE_ROOT, SizeDistFile.Schema), process.execPath);
+  results.push({ row: SizeRow.Schema, bytes: schema.bytes, budget: SizeBudget[SizeRow.Schema], leaks: leakedText(schema.emitted, [SizeForbidden.ChildProcess]) });
   results.push({ row: SizeRow.Lazy, bytes: core.lazyBytes, budget: SizeBudget[SizeRow.Lazy], leaks: [] });
   results.push(resultOf(SizeRow.ScenarioA, measureScenario(SizeScenarioFile.A), true));
   results.push(resultOf(SizeRow.ScenarioAPreset, measureScenario(SizeScenarioFile.APreset), true));
