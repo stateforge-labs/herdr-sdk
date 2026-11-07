@@ -1,7 +1,7 @@
 ---
 id: HERDR-ADR-0007
 title: "Subscriptions, long-poll and held connections"
-status: proposed
+status: accepted
 date: 2026-11-02
 decision-makers: owner
 summary: "Subscriptions are async iterators and Streams on a dedicated connection; watch replays frames buffered during the snapshot; long-poll timeouts are required per a generated override table; connection-bound methods run on a held connection."

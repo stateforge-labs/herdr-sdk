@@ -42,7 +42,7 @@ Contract tests (`test/types/contract/*.ts`, compiled by `tsc -p test/types`, nev
 
 ## Lane ownership
 
-Paths are relative to `packages/herdr`. A lane may create or edit **only** its paths. "except `types.ts`" means the contract file in that folder stays read-only.
+Paths are relative to the repository root (they were `packages/herdr/...` before the split into its own repository). A lane may create or edit **only** its paths. "except `types.ts`" means the contract file in that folder stays read-only.
 
 | Lane | May create / edit | Inputs (contracts) | Acceptance (plan section 9) | Tests against stubs of other layers |
 |---|---|---|---|---|

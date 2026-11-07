@@ -1,10 +1,10 @@
 ---
 id: HERDR-ADR-0011
 title: "Consumer migration and distribution (tarball, then registry)"
-status: proposed
+status: superseded
 date: 2026-11-02
 decision-makers: owner
-summary: "The hub moves first through a checksummed packed tarball as hub slice S8, atalaya later through the GitLab registry (release-asset fallback)."
+summary: "Superseded by HERDR-ADR-0019 (2026-11-07): the registry replaced the tarball; the hub migrated in hub ADR-0030 amendment A2. Original: the hub moves first through a checksummed packed tarball as hub slice S8, atalaya later through the GitLab registry (release-asset fallback)."
 ---
 
 # HERDR-ADR-0011: Consumer migration and distribution (tarball, then registry)

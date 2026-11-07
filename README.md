@@ -2,7 +2,7 @@
 
 A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22, herdr 0.9.5: 102 methods, 26 event kinds, 27 subscription types), for Bun and Node.
 
-> **Status: lanes P2a to P6a integrated on feat/herdr-lib (interfaces locked, HERDR-ADR-0017). `/effect` exposes only the effect-free contract until amendment A1 (effect pin); the full fake (P5a) and executable README snippets are not yet done. Treat the API below as the target.** This README is written first so the code is shaped by how it is used. When the code lands, every snippet comes from `examples/*.ts` (checked by `scripts/check-readme.ts`), compiles in CI, and the ones marked "runs" execute against the fake herdr ([HERDR-ADR-0014](docs/decisions/HERDR-ADR-0014-executable-docs.md)). Plan: [docs/architecture/plan.md](docs/architecture/plan.md) · decisions: [docs/decisions/](docs/decisions/README.md).
+> **Status: 0.2.0, published to the homelab GitLab npm registry.** The Promise API, the three capability-scoped clients, the fake herdr (`/test-kit`), the schema and drift tools and the agent skill are built and tested against the fake herdr. The `/effect` entry exposes only the effect-free part (`toTaggedError`, the layer option and error types): the `Herdr` service and Layers wait for amendment A1 (the `effect` pin, due 2026-11-16). Every snippet marked "runs" is executed in CI; section 4 shows the planned Effect surface, not code you can import today.
 
 ## Entry points
 
@@ -11,9 +11,10 @@ A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22,
 | `@homelab/herdr` | `connect()`: reads, writes, input, hooks, long-poll, `hold()`; errors; generated types and constants | none |
 | `@homelab/herdr/read-only` | `connectReadOnly()`: structure reads only; terminal content on opt-in | none |
 | `@homelab/herdr/admin` | `connectAdmin()`: adds destructive, server-control and spawn/execute methods | none |
-| `@homelab/herdr/effect` | `Herdr` service, Layers, tagged errors, Streams | peer `effect` 4.1.2 |
+| `@homelab/herdr/effect` | `toTaggedError` and the Effect layer types now; the `Herdr` service, Layers and Streams after amendment A1 | none now (peer `effect` 4.1.2 after A1) |
 | `@homelab/herdr/test-kit` | `createFakeHerdr()` (tests only) | none |
-| `@homelab/herdr/schema` | method table and parameter shapes of the generated API | none |
+| `@homelab/herdr/schema` | method table and parameter shapes of the generated API (what a generator such as herdr-mcp builds its tools from) | none |
+| `@homelab/herdr/drift` | `driftBetween`, `inventoryOf`, `exitCodeFor`: the library behind `herdr-drift`, for your own tooling | none |
 | `herdr-drift` (bin) | compare the committed schema with the installed herdr | none |
 | `herdr-skill` (bin) | print or install the agent skill that ships in `skills/herdr-sdk` | none |
 
@@ -32,7 +33,7 @@ From the homelab GitLab registry ([HERDR-ADR-0019](docs/decisions/HERDR-ADR-0019
 
 `HOMELAB_NPM_TOKEN` is a read-only token (`read_package_registry`). A release younger than 14 days needs an entry in `minimumReleaseAgeExcludes`. Releases are protected `v*` tags (Maintainers only); the pipeline checks the tag equals the `package.json` version.
 
-## Install and footprint
+## Footprint
 
 The package ships compiled ESM in `dist/` with declarations (no bundle). A bundler or Node loads only the modules a call reaches: `connect()` does not load the streams until `events.subscribe`, `watch()` or `hold()` is first used.
 
@@ -128,7 +129,9 @@ await herdr.agent.prompt({ target: "x", text: "y" })
 
 Without options it allows structure reads and long-poll; terminal content (`pane.read`, `agent.read`) needs `{ content: true }`. `{ methods: [Method.AgentList, ...] }` narrows at runtime. `connectPrompt()` adds exactly `agent.prompt`.
 
-## 4. The hub (Effect)
+## 4. The hub (Effect): planned, not in 0.2.0
+
+The error table below is built (`toTaggedError`). The service and layers in the snippet need amendment A1 and are not importable yet.
 
 ```ts
 import { Effect, Stream } from "effect"
@@ -175,7 +178,7 @@ test("lists agents", async () => {
 })
 ```
 
-The fake runs on `node:net`, answers `ping` and every method you script with `reply`, answers an unscripted method with an `unknown_method` error envelope, and supports `fail`, `silent`, `replySequence`, `push(frame)`, `closeSubscribers()`, `subscriberCount()`, `connectionCount()` and `capabilities`. A real herdr is used only by `bun run test:contract`, with the owner's OK.
+The fake runs on `node:net`, answers `ping` and every method you script with `reply`, answers an unscripted method with an `unknown_method` error envelope, and supports `fail`, `silent`, `replySequence`, `push(frame)`, `closeSubscribers()`, `subscriberCount()`, `connectionCount()` and `capabilities`. No test talks to a real herdr: contract tests against a live server are planned (HERDR-ADR-0008) and will need the owner's OK.
 
 ## Drift
 
@@ -200,7 +203,7 @@ Claude Code does not look inside `node_modules`, so `install` copies the skill t
 
 ## Using it from your own domain
 
-The library conforms to herdr's wire vocabulary. Keep your own domain language behind your own port, and let one adapter file import `@homelab/herdr`. The dependency-cruiser rule template enforces that (`rules/`; idea from atalaya-bridge, spine AD-10). Snapshot before you subscribe, because a subscription delivers changes, not the present. `watch()` does this for you ([HERDR-ADR-0016](docs/decisions/HERDR-ADR-0016-design-intent-inherited-from-atalaya.md)).
+The library conforms to herdr's wire vocabulary. Keep your own domain language behind your own port, and let one adapter file import `@homelab/herdr`. `scripts/check-layers.ts` enforces the library's own layers; the one-adapter rule for consumers is a convention (idea from atalaya-bridge, spine AD-10). Snapshot before you subscribe, because a subscription delivers changes, not the present. `watch()` does this for you ([HERDR-ADR-0016](docs/decisions/HERDR-ADR-0016-design-intent-inherited-from-atalaya.md)).
 
 ## Licence
 
