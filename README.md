@@ -15,6 +15,7 @@ A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22,
 | `@homelab/herdr/test-kit` | `createFakeHerdr()` (tests only) | none |
 | `@homelab/herdr/schema` | method table and parameter shapes of the generated API | none |
 | `herdr-drift` (bin) | compare the committed schema with the installed herdr | none |
+| `herdr-skill` (bin) | print or install the agent skill that ships in `skills/herdr-sdk` | none |
 
 `@homelab/herdr/model` (domain entities) arrives later, with atalaya as its first user.
 
@@ -163,7 +164,7 @@ test("lists agents", async () => {
 })
 ```
 
-The fake runs on `node:net`, answers every method with a schema-valid default, rejects malformed params with an error envelope, and supports `fail`, `silent`, `replySequence`, `push(frame)`, `closeSubscribers()`, `subscriberCount()`, `connectionCount()` and `capabilities`. A real herdr is used only by `bun run test:contract`, with the owner's OK.
+The fake runs on `node:net`, answers `ping` and every method you script with `reply`, answers an unscripted method with an `unknown_method` error envelope, and supports `fail`, `silent`, `replySequence`, `push(frame)`, `closeSubscribers()`, `subscriberCount()`, `connectionCount()` and `capabilities`. A real herdr is used only by `bun run test:contract`, with the owner's OK.
 
 ## Drift
 
@@ -172,6 +173,19 @@ bun run capture      # herdr api schema --json > schema/herdr-api.schema.json
 bun run gen          # regenerate src/generated and docs/api
 herdr-drift          # exit 0 clean, 1 drift, 2 usage, 3 herdr not found
 ```
+
+## For coding agents (the skill)
+
+The package ships an Agent Skill, `skills/herdr-sdk/` ([HERDR-ADR-0018](docs/decisions/HERDR-ADR-0018-the-skill-ships-in-the-package.md)): which entry point to pick, recipes, errors, version facts. Its code blocks are type-checked and run against the fake in `test/skill/`.
+
+```sh
+herdr-skill install              # copies it to .claude/skills/herdr-sdk (or: herdr-skill install ~/.claude/skills)
+herdr-skill print                # prints SKILL.md, for agents that take a prompt rather than a folder
+```
+
+Claude Code does not look inside `node_modules`, so `install` copies the skill to a skills directory. For other agents, add this to the project's `AGENTS.md`:
+
+> Code that uses `@homelab/herdr`: read `node_modules/@homelab/herdr/skills/herdr-sdk/SKILL.md` first.
 
 ## Using it from your own domain
 

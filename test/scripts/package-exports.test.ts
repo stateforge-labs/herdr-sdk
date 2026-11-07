@@ -36,10 +36,10 @@ describe('package exports of the compiled build', () => {
     }
   });
 
-  test('files ship the dist tree, the bin, the schema and the notices, not the sources', () => {
+  test('files ship the dist tree, the bin, the schema, the skill, the generated API docs and the notices, not the sources', () => {
     assert.deepEqual(
       [...pkg.files].sort(),
-      ['LICENSE', 'NOTICE.md', 'README.md', 'bin', 'dist', 'schema'].sort(),
+      ['LICENSE', 'NOTICE.md', 'README.md', 'bin', 'dist', 'docs/api', 'schema', 'skills'].sort(),
     );
   });
 });

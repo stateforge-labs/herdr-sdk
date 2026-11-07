@@ -49,6 +49,8 @@
     "dist",
     "bin",
     "schema",
+    "skills",
+    "docs/api",
     "README.md",
     "LICENSE",
     "NOTICE.md"
@@ -75,6 +77,7 @@
     "typescript": "7.0.2"
   },
   "bin": {
-    "herdr-drift": "./bin/herdr-drift.js"
+    "herdr-drift": "./bin/herdr-drift.js",
+    "herdr-skill": "./bin/herdr-skill.js"
   }
 }
