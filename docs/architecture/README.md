@@ -4,7 +4,7 @@ Modelled with [LikeC4](https://likec4.dev) following the voice engine's conventi
 
 | Document | What |
 |---|---|
-| [plan.md](plan.md) | the plan: summary and decisions, layers, coverage, test kit, drift, MCP, migration, phases with size table, portability inventory (appendix A) |
+| [plan.md](plan.md) | the plan: summary and decisions, layers, coverage, test kit, drift, migration, phases with size table, portability inventory (appendix A) |
 | [../../README.md](../../README.md) | README-first developer guide (planned API) |
 | [contracts.md](contracts.md) | locked contract files, lane ownership and lane graph for the parallel build (HERDR-ADR-0017) |
 | [../decisions/](../decisions/README.md) | 17 ADRs (proposed), ids HERDR-ADR-NNNN |
@@ -28,12 +28,11 @@ c4/
 
 ## Views
 
-- `1 · Context / @homelab/herdr` (`index`): consumers (voice-hub, atalaya-bridge, scripts, MCP clients) and herdr.
-- `2 · Containers / @homelab/herdr` (`entries`): entry points core, read-only, admin, model (deferred), effect, test-kit, mcp, drift tooling and generator.
+- `1 · Context / @homelab/herdr` (`index`): consumers (voice-hub, atalaya-bridge, scripts) and herdr.
+- `2 · Containers / @homelab/herdr` (`entries`): entry points core, read-only, admin, model (deferred), effect, schema, test-kit, drift tooling and generator.
 - `3 · Components / Core client` (`coreComponents`): generated, wire, client layers, subscribe, watch and held connections.
 - `3 · Components / Effect client` (`effectComponents`): Herdr service, layers, tagged errors, Stream subscribe, watchPaneSet.
 
 Validate: `cd packages/herdr/docs/architecture/c4 && npx -y likec4@1.60.0 validate .`
 
-Query: the `likec4-herdr` MCP server in the repo's `.mcp.json` serves this folder (`bunx likec4@1.60.0 mcp --stdio`); use `read-view`, `find-relationships`, `query-graph` instead of grepping `.c4` files.
 One server serves one folder, so the voice engine's model is the separate `likec4` server.

@@ -3,24 +3,24 @@ id: HERDR-PLAN
 title: "@homelab/herdr: a reusable library for the whole herdr socket API"
 status: proposed
 date: 2026-11-02
-summary: "Extract and complete the herdr client (protocol 22, herdr 0.9.5: 102 methods, 26 event kinds, 27 subscription types) into packages/herdr: a zero-dependency Promise core, an admin subpath for destructive and server-control methods, an Effect entry, capability-scoped clients, a test kit and an optional read-only MCP add-on, ported from atalaya-bridge 097adfd and the voice hub."
+summary: "Extract and complete the herdr client (protocol 22, herdr 0.9.5: 102 methods, 26 event kinds, 27 subscription types) into packages/herdr: a zero-dependency Promise core, an admin subpath for destructive and server-control methods, an Effect entry, capability-scoped clients and a test kit, ported from atalaya-bridge 097adfd and the voice hub."
 ---
 
 > Model: [`c4/`](c4/) · decisions: [../decisions/](../decisions/README.md) · guide: [../../README.md](../../README.md). Status rule as in the voice engine: everything here is **proposed** until the code lands.
-> Sources: atalaya-bridge = `~/src/delivery-handbook/atalaya-bridge` (097adfd), HUB = `plugins/crisap94.voice-engine/hub`, S7 = the sessions-MCP slice in worktree `omarchylab.worktrees/sessions-mcp` (not merged), schema = `herdr api schema --json` from herdr 0.9.5.
+> Sources: atalaya-bridge = `~/src/delivery-handbook/atalaya-bridge` (097adfd), HUB = `plugins/crisap94.voice-engine/hub`, schema = `herdr api schema --json` from herdr 0.9.5.
 > ADR ids: this library's records are **HERDR-ADR-NNNN**; the voice engine's are always written **hub ADR-NNNN**.
 
 ## Summary and decisions needed
 
 **What.** One private package, `packages/herdr` (`@homelab/herdr`), replaces the two copies of the herdr client (atalaya-bridge and the hub vendor copy) and covers all 102 methods with generated types.
 
-**Layers.** `generated` (types and name tables from the schema) <- `wire` (NDJSON over the unix socket) <- `client` (namespaced calls, scoped clients, subscriptions, held connections) <- entries `.`, `/read-only`, `/admin`, `/effect`, `/mcp`, `/test-kit`. Core and read-only have zero runtime dependencies; Effect is an optional peer.
+**Layers.** `generated` (types and name tables from the schema) <- `wire` (NDJSON over the unix socket) <- `client` (namespaced calls, scoped clients, subscriptions, held connections) <- entries `.`, `/read-only`, `/admin`, `/effect`, `/schema`, `/test-kit`. Core and read-only have zero runtime dependencies; Effect is an optional peer.
 
 **Decided in this revision** (previously open): `connect()` excludes destructive and server-control methods, which live in `/admin` (HERDR-ADR-0005); connection-bound methods get a held-connection API (HERDR-ADR-0007); `/model` is deferred until atalaya consumes it (HERDR-ADR-0006).
 
-**Decisions still needed from the owner:** see [section 12](#12-open-questions-and-rejected-review-points) (registry, licence, version start, Node MCP variant).
+**Decisions still needed from the owner:** see [section 11](#11-open-questions-and-rejected-review-points) (registry, licence, version start).
 
-**Size targets** are not guessed: phase 0 measures, phase 2b sets the budgets in the size table (section 10.1), and a script enforces them.
+**Size targets** are not guessed: phase 0 measures, phase 2b sets the budgets in the size table (section 9.1), and a script enforces them.
 
 The portability inventory (what is ported from where) is [appendix A](#appendix-a-portability-inventory).
 
@@ -32,7 +32,7 @@ atalaya-bridge's design intent (measured wire facts W1-W6, client principles P1-
 
 ## 1. Goals and non-goals
 
-**Goals.** (G1) Every one of the 102 methods callable with typed params and typed results, proven by a generated coverage test. (G2) One copy of the herdr client for hub, atalaya and scripts. (G3) Each consumer ships less than today, measured (section 10.1). (G4) Capability-scoped clients so a read-only consumer cannot write, by type and at runtime. (G5) Drift against a new herdr is detected by a command. (G6) Tests never touch a live herdr by default (hub ADR-0029).
+**Goals.** (G1) Every one of the 102 methods callable with typed params and typed results, proven by a generated coverage test. (G2) One copy of the herdr client for hub, atalaya and scripts. (G3) Each consumer ships less than today, measured (section 9.1). (G4) Capability-scoped clients so a read-only consumer cannot write, by type and at runtime. (G5) Drift against a new herdr is detected by a command. (G6) Tests never touch a live herdr by default (hub ADR-0029).
 
 **Non-goals.** No CLI wrapper. No reimplementation of herdr state (hub ADR-0004). No app domain (attention, sessions views, atalaya messaging). No Effect 3. No Python binding. No public npm publication.
 
@@ -64,7 +64,7 @@ atalaya-bridge's design intent (measured wire facts W1-W6, client principles P1-
 
 | Entry / role | Package | Pin | Released | 14 days old on |
 |---|---|---|---|---|
-| peer (optional) of `/effect`, `/mcp`; dev | `effect` | 4.1.2 (hub pin) | 2026-11-02 | 2026-11-16: phases 6a/6c start after this date |
+| peer (optional) of `/effect`; dev | `effect` | 4.1.2 (hub pin) | 2026-11-02 | 2026-11-16: phase 6a starts after this date |
 | dev | `typescript` | 7.0.2 (hub pin) | 2026-07-08 | ok |
 | dev | `@types/bun` | 1.4.4 (hub pin) | 2026-10-23 | 2026-11-06 |
 | dev | `@types/node` | 22.20.5 | 2026-10-01 | ok |
@@ -92,11 +92,10 @@ packages/herdr/
     effect/                Effect entry: Herdr service, Layers, tagged errors, Stream subscribe, watchPaneSet
     drift/                 inventory, drift, schema-source (pure)
     test-kit/              createFakeHerdr (node:net), default replies, request checker
-    mcp/                   read-only toolkit, bearer guard, token file, toolResult
-    index.ts read-only.ts admin.ts effect.ts drift.ts test-kit.ts mcp.ts   (one file per subpath export; dist/ is their compiled tree, plan 10.1)
+    index.ts read-only.ts admin.ts effect.ts drift.ts test-kit.ts schema.ts   (one file per subpath export; dist/ is their compiled tree, plan 9.1)
   bin/herdr-drift.js        Node-run shim: spawns the herdr CLI, calls dist/drift/cli.js
   contract/herdr-22/       recorded goldens (confirm generated defaults)
-  examples/*.ts            source of the README snippets (section 8)
+  examples/*.ts            source of the README snippets (section 7)
   rules/                   dependency-cruiser + ast-grep templates (layers; consumer-single-adapter.dependency-cruiser.cjs: only one consumer adapter file imports @homelab/herdr, HERDR-ADR-0016 P7)
   scripts/                 check-pins.ts, check-size.ts (+ size-constants.ts, size-measure.ts), rewrite-dts.ts (build), check-readme.ts, check-layers.ts (+ import-specifiers.ts)
   test/  test/types/       bun:test (also node --test over dist); negative type fixtures
@@ -104,7 +103,7 @@ packages/herdr/
   docs/decisions/          HERDR-ADR-0001..
 ```
 
-**Dependency rule** (`rules/layers.dependency-cruiser.cjs`; phase 1b implements it as data in `rules/layers.ts` checked by `scripts/check-layers.ts`, with no dependency; the table can move to dependency-cruiser later): `generated <- wire <- client <- {effect, mcp}`; `test-kit` imports `wire` and `generated` only; nothing imports `test-kit` or `mcp` except tests; only `effect/` and `mcp/` import `effect`. All literals live in `src/constants.ts`; comparisons use generated `Method`, `EventKind`, `SubscriptionType`, `ResultTag`, `AgentStatus` and the hand `WatchKind` objects, never string literals.
+**Dependency rule** (`rules/layers.dependency-cruiser.cjs`; phase 1b implements it as data in `rules/layers.ts` checked by `scripts/check-layers.ts`, with no dependency; the table can move to dependency-cruiser later): `generated <- wire <- client <- effect`; `test-kit` imports `wire` and `generated` only; nothing imports `test-kit` except tests; only `effect/` imports `effect`. All literals live in `src/constants.ts`; comparisons use generated `Method`, `EventKind`, `SubscriptionType`, `ResultTag`, `AgentStatus` and the hand `WatchKind` objects, never string literals.
 
 ### 3.1 Wire (layer 1)
 
@@ -134,7 +133,7 @@ Wire shapes are **plain TS types** (erased). Runtime validation in the core is l
 
 `connect(options?)` → `Client`: namespace tree for classes R-meta, R-content, W, I, H, L, C (section 4), `call(method, params)`, `events.subscribe`, `watch`, `hold`, `capabilities`, `close()`. Options: `socketPath`, `timeoutMs` (10 s from `constants.ts`), `protocolPolicy`, `onCall` hook (`{ method, durationMs, outcome }`).
 
-The namespace tree is built **once, eagerly, from the allow-list** by a small loop (no Proxy, no getters); the library does not import the generated `METHODS` table (plan 10.1 step 2). This is honest about size: every client carries the name table once. A tree-shakeable path is not offered in 1.0; if phase 2b measurement shows the table matters for a consumer, standalone functions (`@homelab/herdr/methods`) are added as a minor.
+The namespace tree is built **once, eagerly, from the allow-list** by a small loop (no Proxy, no getters); the library does not import the generated `METHODS` table (plan 9.1 step 2). This is honest about size: every client carries the name table once. A tree-shakeable path is not offered in 1.0; if phase 2b measurement shows the table matters for a consumer, standalone functions (`@homelab/herdr/methods`) are added as a minor.
 
 ### 3.4 Capability-scoped clients
 
@@ -144,7 +143,7 @@ The namespace tree is built **once, eagerly, from the allow-list** by a small lo
 |---|---|---|
 | `connectReadOnly()` (`/read-only`) | R-meta + L | Default set. Terminal content (R-content) only with `{ content: true }` |
 | `connectReadOnly({ methods })` | exactly the listed methods | runtime-only filter; the type stays `ReadOnlyClient`; long-poll methods are excluded unless listed |
-| `connectReadOnly({ preset: Presets.SessionsReader })` | `session.snapshot`, `agent.list`, `agent.get`, `pane.get`, `pane.list` | named preset with its own small generated type (S7 allow-list, `src/contexts/sessions/adapters/driven/constants.ts`, hub ADR-0026) |
+| `connectReadOnly({ preset: Presets.SessionsReader })` | `session.snapshot`, `agent.list`, `agent.get`, `pane.get`, `pane.list` | named preset with its own small generated type (sessions allow-list, `src/contexts/sessions/adapters/driven/constants.ts`, hub ADR-0026) |
 | `connectPrompt()` | R-meta + `agent.prompt` | hub voice path |
 | `connect()` (`.`) | R-meta, R-content, W, I, H, L, C | the README zero-config entry; **no** D, S, X |
 | `connectAdmin()` (`/admin`) | all 102 | D (close/remove/unlink/uninstall), S (server control), X (spawn/execute) |
@@ -252,7 +251,7 @@ Each row records its source (`seed`, `name`, `docs`, `recorded`). `LOOSE` is all
 
 → [HERDR-ADR-0008](../decisions/HERDR-ADR-0008-test-kit-and-contract-test-policy.md)
 
-- `createFakeHerdr({ protocol?, socketPath?, capabilities? })` on `node:net`: `reply`, `replySequence`, `fail`, `silent`, `rawReply`, typed `push`, `closeSubscribers`, `receivedMethods`, `requests`, `subscriberCount`, `connectionCount`, `holdPushes`, `splitAck`, `strayLine`, `stop`. Ported from the **post-S7** hub fake (S7 adds 9 lines to `test/fakes/fake-herdr-server.ts`); if S7 has not merged when phase 2a starts, port main and apply S7's diff in phase 5a.
+- `createFakeHerdr({ protocol?, socketPath?, capabilities? })` on `node:net`: `reply`, `replySequence`, `fail`, `silent`, `rawReply`, typed `push`, `closeSubscribers`, `receivedMethods`, `requests`, `subscriberCount`, `connectionCount`, `holdPushes`, `splitAck`, `strayLine`, `stop`. Ported from the hub fake (`test/fakes/fake-herdr-server.ts`).
 - Defaults: every method answers with the generated default reply (3.2); goldens in `contract/herdr-22/` only confirm. Requests are checked against the params shape table; a bad request gets an error envelope (`invalid_params`).
 - `capabilities` option advertises or omits server capabilities in `pong`.
 - Measured herdr behaviour (HERDR-ADR-0016 W1-W6): close after each non-subscribe response; `id:""` + close for an unparseable line; no history replay on subscribe; `invalid_params` for a per-pane subscription without `pane_id`; `push` of an unknown kind; `api.schema` returns `{}`. Each has a test in `test/test-kit`.
@@ -273,23 +272,17 @@ Each row records its source (`seed`, `name`, `docs`, `recorded`). `LOOSE` is all
 
 Drift runs in the owner's delivery gate (mise task), not CI.
 
-## 7. MCP add-on
-
-→ [HERDR-ADR-0010](../decisions/HERDR-ADR-0010-mcp-add-on-boundary.md)
-
-`/mcp`, built on `effect/ai` `McpServer` + `Toolkit` exactly as S7 does (`sessions-mcp` worktree: `hub/src/contexts/sessions/adapters/driving/mcp-http.ts` imports `McpServer` from `effect/ai`; `sessions-toolkit.ts` imports `Tool, Toolkit`). No `@modelcontextprotocol/sdk`, no zod. This **amends hub ADR-0028**'s edge rule ("zod stays for the MCP tool schemas"), recorded in [HERDR-ADR-0013](../decisions/HERDR-ADR-0013-hub-adr-amendments-draft.md). Exports: `readOnlyToolkit({ methods })` (one `herdr_<method>` tool per allowed R-meta method, `readOnlyHint: true`), `bearerGuard`, `tokenFile`, `toolResult` (one helper that turns a result or a tagged error into MCP content, the Effect-AI equivalent of atalaya's `src/messaging/mcp/tool-result.ts`). Ships only after S7 merges (phase 6c). If S7 lands without `effect/ai`, `/mcp` is dropped from 1.0.
-
-## 8. Documentation
+## 7. Documentation
 
 → [HERDR-ADR-0014](../decisions/HERDR-ADR-0014-executable-docs.md)
 
 `examples/*.ts` are the source of truth for README code. The README includes them by marked regions (`<!-- example:script -->`); `scripts/check-readme.ts` fails if the README text differs from the region. Examples compile in CI; the ones marked `run` execute against `createFakeHerdr()`. Helper names used in snippets (`metrics`, `render`, `apply`) are declared in `examples/_stubs.ts`. Generated references: `docs/api/methods.md`, `docs/api/events.md`. This plan, the C4 model in `c4/` (`npx -y likec4@1.60.0 validate .`), ADRs in `../decisions/`.
 
-## 9. Migration
+## 8. Migration
 
 → [HERDR-ADR-0011](../decisions/HERDR-ADR-0011-consumer-migration.md)
 
-**Hub** (hub slice S8; entry criterion: **S7 merged**):
+**Hub** (hub slice S8):
 
 | Before | After |
 |---|---|
@@ -299,22 +292,17 @@ Drift runs in the owner's delivery gate (mise task), not CI.
 | `src/shared/kernel/herdr-errors.ts` | re-export of the library's tagged errors |
 | attention `herdr-agent-fleet.ts` generation loop | `watchPaneSet`; FleetChange mapping stays |
 | sessions `herdr-agent-sessions.ts` `ReadRequest` + `driven/constants.ts` allow-list | `HerdrReadOnly` with `Presets.SessionsReader` |
-| sessions `driving/mcp-http.ts` bearer check | uses `bearerGuard` from `/mcp`; routing and HTTP server stay |
-| sessions `driven/mcp-token-file.ts`, `mcp-token-constants.ts` | replaced by `tokenFile` from `/mcp` |
-| sessions `driving/sessions-toolkit.ts` | kept (domain SessionView tools) |
-| control `adapters/driven/token-file.ts`, `shared/infra/token-match.ts` | kept: they serve the control API, not herdr; `/mcp`'s `tokenFile` uses its own copy (documented duplication, revisited in a later hub slice) |
 | `test/fakes/fake-herdr-server.ts`, `test/shared/herdr-client.test.ts` | `createFakeHerdr`; client tests deleted (now library tests) |
 | `test/shared/herdr-mapping.test.ts` | kept (tests `mappers.ts`) |
 | `Containerfile` | `COPY vendor ./vendor` before `bun install` |
 
-**Hub ADR changes** (draft text in [HERDR-ADR-0013](../decisions/HERDR-ADR-0013-hub-adr-amendments-draft.md), copied into the hub in phase 6b, **not edited here**):
+**Hub ADR changes** (copied into the hub in phase 6b, **not edited here**):
 
 | Hub ADR | Change |
 |---|---|
 | hub ADR-0030 (new; last hub ADR is 0029) | "Depend on the extracted @homelab/herdr package"; **supersedes ADR-0003** |
 | hub ADR-0012 | protocol policy comes from the library (`exact`) |
 | hub ADR-0022 | watch/backoff helper comes from the library |
-| hub ADR-0028 | MCP tool schemas via `effect/ai`, not zod |
 | hub ADR-0029 | herdr fake comes from `@homelab/herdr/test-kit` |
 
 Also: hub `docs/delivery.md` S8 row; repo-root README entry for `packages/`.
@@ -323,7 +311,7 @@ Also: hub `docs/delivery.md` S8 row; repo-root README entry for `packages/`.
 
 **Legacy Python**: stays on the CLI until retired.
 
-## 10. Delivery phases
+## 9. Delivery phases
 
 Each slice follows the hub pattern: Opus-low architect spec → Haiku implement (each < 100k tokens) → Haiku check x3 → Sonnet review x3 → fix → Sonnet gate.
 
@@ -333,8 +321,7 @@ Each slice follows the hub pattern: Opus-low architect spec → Haiku implement 
 now:        P2a (review fixes) ──► P5a (takes over the fake files)
             P2b (slice P2b-1 first: tree builder, allow-list), P3, P4a, P4b, P5c   in parallel (P4b on P4a's stubs)
 2026-11-06: A0 (@types/bun pinned; every test dir type-checked)
-2026-11-16: amendment A1 (effect pinned; Effect/MCP types; effect/services.ts stubs) ──► P6a
-            A1 + S7 merged ──► P6c (parallel to P6a, on A1's tags)
+2026-11-16: amendment A1 (effect pinned; Effect types; effect/services.ts stubs) ──► P6a
             all lanes integrated ──► 6b hub migration (S8)
 ```
 
@@ -342,24 +329,23 @@ Gate for every lane, in addition to its row: `bun run typecheck && bun run typec
 
 | Phase | Delivers | Acceptance (command) |
 |---|---|---|
-| 0 Baseline | measurement study (research skill) on a clean checkout + a generator prototype emitting only `METHODS` | numbers in section 10.1 filled; `bun run study:size` reproduces them |
+| 0 Baseline | measurement study (research skill) on a clean checkout + a generator prototype emitting only `METHODS` | numbers in section 9.1 filled; `bun run study:size` reproduces them |
 | 1a Schema + gen port | package.json/tsconfig/LICENSE/NOTICE, 0.9.5 capture, ported gen with path params, construct fixtures | `bun gen/index.ts && git diff --exit-code`; `bun test test/gen`; `bun scripts/check-pins.ts` |
 | 1b New emitters | method table, names, namespaces types, defaults, shapes, docs, `constants.ts`, layer rule | `bun gen/index.ts && git diff --exit-code`; `bun run lint:layers` (layers + consumer-single-adapter template self-test); every file in `src/generated` starts with the generated banner (P2); `scripts/check-entries.ts`: each `package.json` export maps to a named consumer (P8) |
 | 2a Wire + rpc + fake | wire/, `rpc`, `connect()` with capabilities, minimal node:net fake (reply/fail/silent/rawReply/receivedMethods), ported hub rpc/connect tests | `bun test test/wire test/connect` (incl. connection reuse fails, `id:""` rejects without hanging, no `child_process` import) and `node --test "dist-test/test/wire/**/*.test.js" "dist-test/test/connect/**/*.test.js"` green (Node 22 does not take a directory argument; the compiled tree keeps `test/` under `dist-test/`) |
-| 2b Namespaces + scoped clients | namespace tree, `/read-only`, `/admin`, `connectPrompt`, classes, examples 1 and 3 | `bun test test/scoped`; `tsc -p test/types`; `bun run check:size` (budgets set here; the no-leak rows pass after plan 10.1 steps 2 and 3) |
+| 2b Namespaces + scoped clients | namespace tree, `/read-only`, `/admin`, `connectPrompt`, classes, examples 1 and 3 | `bun test test/scoped`; `tsc -p test/types`; `bun run check:size` (budgets set here; the no-leak rows pass after plan 9.1 steps 2 and 3) |
 | 3 Result map | complete mapping (4.2), coverage test, `docs/api/*.md` | `bun test test/coverage.test.ts` |
 | 4a Subscribe + long-poll | subscribe, push frames, overrides, long-poll typing; ported hub subscribe tests | `bun test test/subscribe test/long-poll` (incl. unknown-kind frame → `UnknownFrame`); `tsc -p test/types` |
 | 4b Watch + held | watch with replay rule and backoff, `hold()` for class C | `bun test test/watch test/held` (incl. snapshot removal fails the suite, `watchPaneSet` follows created/closed panes, frames between ack and snapshot, overflow policy, held connection stays open then closes) |
-| 5a Full fake | full fake from post-S7 hub fake, request checker, default replies, `capabilities` option | `bun test test/test-kit` x3 |
+| 5a Full fake | full fake from the hub fake, request checker, default replies, `capabilities` option | `bun test test/test-kit` x3 |
 | 5b Goldens | goldens from a scratch 0.9.5 (owner OK), F4/F6 pinned or OPEN | `bun run test:contract` (owner-run) |
 | 5c Drift | drift CLI with shapes and version | `bun test test/drift.test.ts` (incl. no herdr on PATH → 3) |
 | 6a `/effect` | Effect entry, error mapping, `watchPaneSet` | `bun test test/effect`; hub tests unchanged and green against a local `bun link` |
-| 6b Hub migration (S8) | entry: S7 merged; table in section 9; hub ADR-0030 + amendments copied | hub `bun test` green; image builds from tarball; `herdr:pack` checksum matches; size table hub rows met |
-| 6c `/mcp` | toolkit, bearerGuard, tokenFile, toolResult; entry: S7 merged | `bun test test/mcp`; no-leak test passes |
+| 6b Hub migration (S8) | table in section 8; hub ADR-0030 copied | hub `bun test` green; image builds from tarball; `herdr:pack` checksum matches; size table hub rows met |
 | 7 Registry + atalaya + `/model` | registry job (fallback: release asset), atalaya switch, `/model` with atalaya reducers | in a clean atalaya checkout `pnpm install` resolves the exact version from the registry (or asset) and `node --test` is green |
 | 8 Docs | examples complete, CHANGELOG 1.0, ADR statuses | `bun scripts/check-readme.ts`; ADRs whose code landed moved to accepted |
 
-### 10.1 Size table
+### 9.1 Size table
 
 The library ships compiled, unbundled ESM with declarations (`dist/`, built by `tsc -p tsconfig.build.json`; HERDR-ADR-0012). A consumer's bundler or Node loads only the modules it reaches. Sizes are measured on `dist/`, never on `src/`. The gate is `bun run check:size`: it runs `bun run build`, then `scripts/check-size.ts`, which measures each row and fails when a row is over its budget or contains a forbidden input (the no-leak check, HERDR-ADR-0015).
 
@@ -373,7 +359,6 @@ Bytes, minified. "Before (src)" is the study baseline (2026-11-02, package expor
 | dist `/read-only` | 37,809 | 37,640 | 18,691 | 20,600 | 24,000 | ok |
 | dist `/admin` | 37,291 | 37,122 | 15,561 | 17,200 | 26,000 | ok |
 | dist `/effect` | 4,358 | 4,198 | 4,198 | 4,700 | — | ok |
-| dist `/mcp` (add-on, not budgeted) | 3,021 | 2,859 | 2,859 | — | — | ok |
 | lazy chunks of `.` (the streams chunk) | none | 0 | 7,672 | 8,500 | 9,000 | ok |
 | scenario a (read-only, 1 method) | 37,572 | 37,403 | 17,513 | 19,000 | 19,000 | ok |
 | scenario a-preset (read-only preset, no `Method`) | 37,612 | 37,443 | 14,221 | 15,000 | 15,000 | ok |
@@ -395,9 +380,7 @@ Working commands:
 
 Hub and atalaya rows are unchanged from the 2026-11-02 study (`docs/research/studies/2026-11-02-herdr-size-baseline`).
 
-No-leak test (phase 6c): the minified hub bundle contains none of `createFakeHerdr`, `readOnlyToolkit`'s test strings, or `test-kit` paths.
-
-## 11. Decisions, risks
+## 10. Decisions, risks
 
 | ADR | Title | Governs |
 |---|---|---|
@@ -410,20 +393,17 @@ No-leak test (phase 6c): the minified hub bundle contains none of `createFakeHer
 | [HERDR-ADR-0007](../decisions/HERDR-ADR-0007-subscriptions-and-long-poll-design.md) | Subscriptions, long-poll and held connections | 3.6 |
 | [HERDR-ADR-0008](../decisions/HERDR-ADR-0008-test-kit-and-contract-test-policy.md) | Test kit and contract-test policy | 5 |
 | [HERDR-ADR-0009](../decisions/HERDR-ADR-0009-schema-drift-and-protocol-tied-versioning.md) | Schema drift and protocol-tied versioning | 2, 6 |
-| [HERDR-ADR-0010](../decisions/HERDR-ADR-0010-mcp-add-on-boundary.md) | MCP add-on boundary | 7 |
-| [HERDR-ADR-0011](../decisions/HERDR-ADR-0011-consumer-migration.md) | Consumer migration and distribution | 2, 9 |
+| [HERDR-ADR-0011](../decisions/HERDR-ADR-0011-consumer-migration.md) | Consumer migration and distribution | 2, 8 |
 | [HERDR-ADR-0012](../decisions/HERDR-ADR-0012-runtime-targets-and-build-output.md) | Runtime targets and build output | 2 |
-| [HERDR-ADR-0013](../decisions/HERDR-ADR-0013-hub-adr-amendments-draft.md) | Hub ADR-0030 and amendments (draft for the hub) | 7, 9 |
-| [HERDR-ADR-0014](../decisions/HERDR-ADR-0014-executable-docs.md) | Docs are executable: README-first, examples compiled and run | 8 |
-| [HERDR-ADR-0015](../decisions/HERDR-ADR-0015-dependency-policy-and-size-budget.md) | Dependency policy and size budget | 2, 10.1 |
+| [HERDR-ADR-0014](../decisions/HERDR-ADR-0014-executable-docs.md) | Docs are executable: README-first, examples compiled and run | 7 |
+| [HERDR-ADR-0015](../decisions/HERDR-ADR-0015-dependency-policy-and-size-budget.md) | Dependency policy and size budget | 2, 9.1 |
 | [HERDR-ADR-0016](../decisions/HERDR-ADR-0016-design-intent-inherited-from-atalaya.md) | Design intent inherited from atalaya: measured wire facts and client principles | 1, 3.1, 3.6, 5 |
 
-**C4 views** ([c4/](c4/)): `1 · Context` (HERDR-ADR-0001, 0011), `2 · Containers` (0003, 0004, 0005, 0008, 0009, 0010), `3 · Components / Core client` (0002, 0005, 0007), `3 · Components / Effect client` (0004, 0007). No view: 0006 (deferred `/model` entry is shown in Containers), 0012 and 0015 (build output and policy are not C4 elements), 0013 and 0014 (documents), 0016 (policy and rules, no element changes).
+**C4 views** ([c4/](c4/)): `1 · Context` (HERDR-ADR-0001, 0011), `2 · Containers` (0003, 0004, 0005, 0008, 0009), `3 · Components / Core client` (0002, 0005, 0007), `3 · Components / Effect client` (0004, 0007). No view: 0006 (deferred `/model` entry is shown in Containers), 0012 and 0015 (build output and policy are not C4 elements), 0014 (documents), 0016 (policy and rules, no element changes).
 
 | Risk | Mitigation |
 |---|---|
 | Provenance of jsHerdrSDK (MIT only in package.json) | `LICENSE` + `NOTICE.md` chain; open question 2 |
-| S7 in flight edits the fake, constants, harness | phases 1 to 5 stay in `packages/herdr`; fake port from post-S7; 6b/6c gated on S7 merged |
 | Weak typing until phase 3 | coverage test + reasoned `LOOSE` list |
 | uint64 above 2^53 | documented; revisit if seen |
 | Misuse of input/destructive methods | D/S/X only on `/admin`; JSDoc carries herdr skill safety rules |
@@ -431,14 +411,13 @@ No-leak test (phase 6c): the minified hub bundle contains none of `createFakeHer
 | Effect 4 churn | exact peer, bumped with the hub |
 | `pane.output_matched` flood | bounded queue with explicit overflow policy |
 
-## 12. Open questions and rejected review points
+## 11. Open questions and rejected review points
 
 **Open questions for the owner.**
 1. Registry: enable the GitLab package registry on `homelab/omarchylab` (fallback: release asset, section 2)?
 2. Ask upstream (brooswit) to add a LICENSE, or rely on the package.json declaration?
 3. Version start: `0.1.0` until phase 6b, then `1.0.0`?
-4. Does atalaya need an SDK/zod MCP variant on Node?
-5. May `pane.copy_motion` / `pane.copy_search` be probed on a scratch herdr to move them from W to R-content?
+4. May `pane.copy_motion` / `pane.copy_search` be probed on a scratch herdr to move them from W to R-content?
 
 **Rejected or partly rejected review points (2026-11-02 review).**
 - *Option B, tree-shakeable standalone functions now*: rejected for 1.0 (one honest eager table, 3.3); revisited if 2b measurement shows a need.
@@ -481,8 +460,6 @@ Disposition: **P** portable as-is, **C** after the named change, **A** app-speci
 | `ci/domain-types/*` | ~570 | A | extract the predicate only | `rules/` |
 | `ci/dependency-cruiser.cjs`, `ci/boundaries.sh` | — | C | template | `rules/` |
 | `rules/bridge-herdr-raw-only-in-adapter.yml` | — | C | generalise | `rules/` |
-| `src/messaging/mcp/{server,tool-result}.ts` | 147 | C | `toolResult` pattern | `src/mcp/` |
-| `src/messaging/mcp/*-tools.ts`, `client.ts`, `main.ts` | ~560 | A | atalaya proxy | stays |
 | `contract/core-v1/*` | — | P (pattern) | goldens + validator pattern | `contract/herdr-22/` |
 | `test/messaging/herdr.contract.ts` | — | P (pattern) | one contract, two subjects | test-kit practice |
 | `NOTICE.md` | — | C | rewrite chain | `LICENSE`, `NOTICE.md` |
@@ -501,9 +478,7 @@ Disposition: **P** portable as-is, **C** after the named change, **A** app-speci
 | attention `herdr-agent-fleet.ts` 96-165 | ~70 | C | backoff injectable | `src/effect/watch.ts` + Promise twin |
 | same file, FleetChange mapping | ~100 | A | attention domain | stays |
 | sessions `herdr-agent-sessions.ts` `ReadRequest` | ~20 | C | -> `Presets.SessionsReader` | `src/client/read-only.ts` |
-| sessions `mcp-http.ts` bearer guard, `mcp-token-file.ts` (S7) | ~110 | C | generic pieces | `src/mcp/` |
-| control `token-file.ts`, `shared/infra/token-match.ts` | — | A | control API secrets | stays (section 9) |
-| `test/fakes/fake-herdr-server.ts` (post-S7) | 262 | C | node:net, scripted, typed push | `src/test-kit/` |
+| `test/fakes/fake-herdr-server.ts` | 262 | C | node:net, scripted, typed push | `src/test-kit/` |
 | `test/shared/herdr-client.test.ts` | 489 | P | split: rpc/connect -> 2a, subscribe -> 4a | `test/` |
 | `test/attention/herdr-agent-fleet.test.ts` | 241 | C | watch cases move | `test/watch` |
 | `test/contract/probe/fake-herdr.probe.ts` | 37 | C | opt-in live run | `test/contract/` |

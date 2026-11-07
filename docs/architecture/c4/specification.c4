@@ -2,7 +2,7 @@
 // Colour legend (one meaning per colour)
 //   primary   the library and its entry points (ours)
 //   green     consumers in omarchylab or the owner's repos (voice-hub, scripts)
-//   gray      external software (herdr, atalaya-bridge as a separate repo, MCP clients)
+//   gray      external software (herdr, atalaya-bridge as a separate repo)
 //   indigo    generated code and the domain model
 //   amber     subscriptions and events
 //   slate     dev-only parts: test kit, generator, drift tooling (never in production bundles)
