@@ -111,6 +111,10 @@ model {
       summary 'Adds destructive, server-control and spawn methods.'
       description '**Decisions:** HERDR-ADR-0005'
     }
+    schemaEntry = entry '/schema' {
+      #planned
+      summary 'Exposes the method table and parameter shapes of the generated API.'
+    }
     domainModel = entry '/model' {
       #planned
       summary 'Folds snapshots and events into readonly entities (deferred to phase 7).'
@@ -198,6 +202,9 @@ model {
     #planned
   }
   lib.domainModel -> lib.core.generatedTypes 'maps from' {
+    #planned
+  }
+  lib.schemaEntry -> lib.core.generatedTypes 'reads the method table of' {
     #planned
   }
   lib.testKit -> lib.core.generatedTypes 'types fake replies with' {
