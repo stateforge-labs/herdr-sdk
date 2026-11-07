@@ -3,7 +3,8 @@
 import { describe, expect, test } from 'bun:test';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ALL_LAYERS, ALLOWED_IMPORTS, Layer, RuleId } from '../../rules/layers.ts';
+import { readFileSync } from 'node:fs';
+import { ALL_LAYERS, ALLOWED_IMPORTS, ENTRY_FILES, Layer, RuleId } from '../../rules/layers.ts';
 import { checkLayers, formatViolation, layerOf } from '../../scripts/check-layers.ts';
 
 const TEST_DIR = dirname(fileURLToPath(import.meta.url));
@@ -21,6 +22,7 @@ const FIXTURE_RULES = [
   { name: 'bun-global', rules: [RuleId.text] },
   { name: 'node-in-generated', rules: [RuleId.nodeBuiltin] },
   { name: 'unknown-folder', rules: [RuleId.unknownLayer] },
+  { name: 'unknown-top-level-file', rules: [RuleId.unknownLayer] },
   { name: 'no-ts-extension', rules: [RuleId.explicitTs] },
   { name: 'trailing-comment-ok', rules: [] },
   { name: 'block-opener-in-string', rules: [RuleId.layer] },
@@ -63,9 +65,22 @@ describe('layerOf', () => {
     ['model/entities.ts', Layer.Model],
     ['generated/names.ts', Layer.Generated],
     ['effect.ts', Layer.Entry],
+    ['index.ts', Layer.Entry],
+    ['helper.ts', undefined],
     ['mystery/a.ts', undefined],
   ] as const)('%s is in layer %p', (rel, expected) => {
     expect(layerOf(rel)).toBe(expected);
+  });
+});
+
+describe('entry files', () => {
+  test('they are exactly the files behind the package.json exports', () => {
+    const exportsMap = JSON.parse(readFileSync(join(PACKAGE_ROOT, 'package.json'), 'utf8')).exports as Record<string, unknown>;
+    const targets = Object.values(exportsMap)
+      .map((value) => (typeof value === 'object' && value !== null ? (value as { default?: string }).default : undefined))
+      .filter((target): target is string => target !== undefined)
+      .map((target) => target.replace('./dist/', '').replace(/\.js$/, '.ts'));
+    expect([...ENTRY_FILES].sort()).toEqual(targets.sort());
   });
 });
 

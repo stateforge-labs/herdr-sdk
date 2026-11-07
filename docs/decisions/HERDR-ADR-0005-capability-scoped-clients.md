@@ -1,7 +1,7 @@
 ---
 id: HERDR-ADR-0005
 title: "Capability-scoped clients and the admin subpath"
-status: proposed
+status: accepted
 date: 2026-11-02
 decision-makers: owner
 summary: "Every method has a class; connect() excludes destructive, server-control and spawning methods, which live in /admin; read-only defaults to structure, not terminal content; enforced by flat types, a runtime allow-list and a test."

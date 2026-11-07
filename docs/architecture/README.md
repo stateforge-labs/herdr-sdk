@@ -33,6 +33,6 @@ c4/
 - `3 · Components / Core client` (`coreComponents`): generated, wire, client layers, subscribe, watch and held connections.
 - `3 · Components / Effect client` (`effectComponents`): Herdr service, layers, tagged errors, Stream subscribe, watchPaneSet.
 
-Validate: `cd packages/herdr/docs/architecture/c4 && npx -y likec4@1.60.0 validate .`
+Validate: `cd docs/architecture/c4 && npx -y likec4@1.60.0 validate .`
 
 One server serves one folder, so the voice engine's model is the separate `likec4` server.

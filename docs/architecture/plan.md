@@ -6,6 +6,8 @@ date: 2026-11-02
 summary: "Extract and complete the herdr client (protocol 22, herdr 0.9.5: 102 methods, 26 event kinds, 27 subscription types) into packages/herdr: a zero-dependency Promise core, an admin subpath for destructive and server-control methods, an Effect entry, capability-scoped clients and a test kit, ported from atalaya-bridge 097adfd and the voice hub."
 ---
 
+> **Historical (2026-11-07):** this plan was written when the library was `packages/herdr` in omarchylab. Where it says `packages/herdr`, read the root of `homelab/herdr-sdk`; where it describes tarball or release-asset distribution, [HERDR-ADR-0019](../decisions/HERDR-ADR-0019-publish-to-the-gitlab-npm-registry-on-a-tag.md) supersedes it (GitLab npm registry). The `/mcp` entry was removed from the library (see HERDR-ADR-0009, amendment 2026-11-07).
+
 > Model: [`c4/`](c4/) · decisions: [../decisions/](../decisions/README.md) · guide: [../../README.md](../../README.md). Status rule as in the voice engine: everything here is **proposed** until the code lands.
 > Sources: atalaya-bridge = `~/src/delivery-handbook/atalaya-bridge` (097adfd), HUB = `plugins/crisap94.voice-engine/hub`, schema = `herdr api schema --json` from herdr 0.9.5.
 > ADR ids: this library's records are **HERDR-ADR-NNNN**; the voice engine's are always written **hub ADR-NNNN**.

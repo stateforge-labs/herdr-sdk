@@ -1,7 +1,7 @@
 ---
 id: HERDR-ADR-0002
 title: "Generate the client from herdr's published schema"
-status: proposed
+status: accepted
 date: 2026-11-02
 decision-makers: owner
 summary: "Types, name constants, the namespace tree, capability sets and coverage data are emitted from herdr api schema --json by the ported atalaya generator."

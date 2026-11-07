@@ -1,7 +1,7 @@
 ---
 id: HERDR-ADR-0001
 title: "Library scope and location: packages/herdr in omarchylab, @homelab/herdr"
-status: proposed
+status: accepted
 date: 2026-11-02
 decision-makers: owner
 summary: "One private package in omarchylab holds the whole herdr socket API client for hub, atalaya and scripts; app domain stays in the consumers."
@@ -26,3 +26,7 @@ Rejected: inside the hub (not reusable), inside atalaya's workspace (hub would d
 - Good: one copy; the owner's documentation lives beside it (omarchylab convention).
 - Bad: the hub image context is `hub/` only (`hub/compose.yaml:52-53`), so consumption needs a tarball first ([HERDR-ADR-0011](HERDR-ADR-0011-consumer-migration.md)).
 - Note: licence and provenance (port of brooswit/jsHerdrSDK) are a plan risk row and open question 2, not an ADR.
+
+## Amendment 2026-11-07: the library has its own repository
+
+Decided "revisit after phase 6" and done: `packages/herdr` was split out with its history into `homelab/herdr-sdk` on gitlab.example.internal, and `@homelab/herdr` is published (no longer private) to that project's npm registry ([HERDR-ADR-0019](HERDR-ADR-0019-publish-to-the-gitlab-npm-registry-on-a-tag.md)). The hub-image-context consequence above is gone: consumers install from the registry. Paths in the plan that start with `packages/herdr` are relative to this repository's root today.

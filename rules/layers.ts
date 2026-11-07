@@ -43,6 +43,10 @@ export const EntryFile = {
   TestKit: 'test-kit.ts',
 } as const;
 
+// Every top-level file under src/ that is an entry: one per package.json "exports" subpath (a test checks the two agree).
+// Only these get the entry layer's right to import every layer; any other top-level file is an unknown layer and fails the gate.
+export const ENTRY_FILES: readonly string[] = ['index.ts', 'read-only.ts', 'admin.ts', 'effect.ts', 'schema.ts', 'drift.ts', 'test-kit.ts'];
+
 export const PackageName = {
   Effect: 'effect',
   NodeBuiltinPrefix: 'node:',

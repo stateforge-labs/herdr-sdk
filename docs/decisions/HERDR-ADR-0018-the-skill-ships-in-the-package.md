@@ -1,7 +1,7 @@
 ---
 id: HERDR-ADR-0018
 title: "The agent skill ships in the package, with a bin to install it"
-status: proposed
+status: accepted
 date: 2026-11-07
 decision-makers: owner
 summary: "skills/herdr-sdk lives in the npm package and is the single source; herdr-skill prints or copies it; drift is caught by a test that type-checks and runs every code block."
@@ -9,7 +9,7 @@ summary: "skills/herdr-sdk lives in the npm package and is the single source; he
 
 # HERDR-ADR-0018: The agent skill ships in the package
 
-Evidence: research study R-2026-11-07-01 (`docs/research/studies/2026-11-07-sdk-skill-best-practices/` in omarchylab, branch research-sdk-skill; confidence low, the study was stopped before its reconcile step, and it has no live discovery probe).
+Evidence: research study R-2026-11-07-01 (`docs/research/studies/2026-11-07-sdk-skill-best-practices/` in the omarchylab repository, branch research-sdk-skill; confidence low, the study was stopped before its reconcile step, and it has no live discovery probe).
 
 ## Context and problem statement
 
