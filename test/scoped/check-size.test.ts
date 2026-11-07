@@ -78,7 +78,7 @@ describe('rowFails and formatRow', () => {
 });
 
 describe('SizeBudget', () => {
-  test('budgets the dist rows, the lazy row and the four scenarios, and not the mcp add-on', () => {
+  test('budgets the dist rows, the lazy row and the four scenarios, and no measured-only row', () => {
     assert.deepEqual(Object.keys(SizeBudget).sort(), [
       SizeRow.Core,
       SizeRow.Admin,

@@ -243,13 +243,6 @@ export const EffectErrorTag = {
 } as const;
 export type EffectErrorTag = (typeof EffectErrorTag)[keyof typeof EffectErrorTag];
 
-// MCP tool naming: herdr_<method with dots as underscores> (plan 7).
-export const McpToolName = {
-  Prefix: 'herdr_',
-  MethodSeparator: '.',
-  ToolSeparator: '_',
-} as const;
-
 // Measured herdr wire facts the full fake reproduces (HERDR-ADR-0016 W1-W6).
 export const WireFact = {
   W1CloseAfterResponse: 'W1',
@@ -271,7 +264,6 @@ export const Lane = {
   P5a: 'P5a',
   P5c: 'P5c',
   P6a: 'P6a',
-  P6c: 'P6c',
 } as const;
 export type Lane = (typeof Lane)[keyof typeof Lane];
 
@@ -373,30 +365,3 @@ export const EffectFallbackMessage = {
 
 // --- end P6a ---
 
-// --- lane P6c ---
-// HTTP Authorization scheme of the MCP bearer token (hub mcp-http.ts).
-export const McpAuth = {
-  Scheme: 'Bearer',
-  SchemeSeparator: ' ',
-} as const;
-
-// Token format and file modes of the MCP token file (hub mcp-token-file.ts, shared/infra/constants.ts).
-export const McpToken = {
-  Bytes: 32,
-  HexLength: 64,
-  Encoding: 'hex',
-  FileMode: 0o600,
-  DirMode: 0o700,
-} as const;
-
-// Texts of the token-file errors. The token itself is never in a message (HERDR-ADR-0017 / hub ADR-0019).
-export const McpTokenMessage = {
-  ReadFailed: 'mcp token file could not be read',
-  WriteFailed: 'mcp token file could not be written',
-} as const;
-
-// Node error codes the token file checks (hub shared/infra/constants.ts ErrnoCode).
-export const ErrnoCode = {
-  NoEntry: 'ENOENT',
-} as const;
-// --- end P6c ---
