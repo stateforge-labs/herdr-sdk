@@ -5,7 +5,7 @@ description: Write TypeScript or JavaScript that talks to a running herdr server
 
 # @homelab/herdr
 
-Typed client for herdr's socket API. Zero runtime dependencies, Bun and Node 22.18+. Targets **@homelab/herdr 0.1.0 = herdr protocol 22 (herdr 0.9.5)**.
+Typed client for herdr's socket API. Zero runtime dependencies, Bun and Node 22.18+. Targets **@homelab/herdr 0.2.0 = herdr protocol 22 (herdr 0.9.5)**.
 
 ## First: check the version
 

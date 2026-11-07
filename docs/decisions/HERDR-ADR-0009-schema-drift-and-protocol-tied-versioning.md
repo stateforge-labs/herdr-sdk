@@ -27,3 +27,7 @@ Hub ADR-0012 pins protocol 22, not the binary (`hub/src/shared/infra/herdr/proto
 
 - Good: upgrades are a documented sequence, not a surprise in production.
 - Bad: drift is only as frequent as the owner runs the gate.
+
+## Amendment 2026-11-07: 0.2.0
+
+0.2.0 removes the `/mcp` subpath and its bearer guard, token file and tool-name helper, which moved to the separate herdr-mcp repo (a removed API, so a new minor while the version is below 1.0.0), and adds the `/schema` entry and the `skills/herdr-sdk` agent skill (HERDR-ADR-0018). Protocol 22 and schema version 1 are unchanged.
