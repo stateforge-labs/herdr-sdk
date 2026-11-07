@@ -67,6 +67,14 @@ describe('createInvoke', () => {
     assert.equal(calls[0]?.options.timeoutMs, LONG_POLL_MS);
   });
 
+  test('a long-poll call keeps a timeoutMs the caller set: the call option wins over the computed one', async () => {
+    const { core, calls } = stubCore();
+    const { deps } = stubDeps();
+    const invoke = createInvoke(core, new Set([Method.AgentWait]), deps);
+    await invoke(Method.AgentWait, { target: 'reviewer', timeout_ms: 1_000 }, { timeoutMs: 5 });
+    assert.equal(calls[0]?.options.timeoutMs, 5);
+  });
+
   test('a long-poll call that fails its bounds check is never sent', async () => {
     const { core, calls } = stubCore();
     const deps: InvokeDeps = {

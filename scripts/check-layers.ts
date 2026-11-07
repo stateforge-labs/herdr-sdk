@@ -5,6 +5,7 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   ALLOWED_IMPORTS,
+  ENTRY_FILES,
   ENTRY_PACKAGE_ALLOWED,
   EntryFile,
   FOLDER_LAYERS,
@@ -80,7 +81,7 @@ export function layerOf(rel: string): Layer | undefined {
   }
   const parts = rel.split(PATH.posixSeparator);
   if (parts.length === DEPTH.topLevel) {
-    return Layer.Entry;
+    return ENTRY_FILES.includes(rel) ? Layer.Entry : undefined;
   }
   return FOLDER_LAYERS.find((layer) => layer === parts[0]);
 }

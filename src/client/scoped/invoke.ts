@@ -45,6 +45,7 @@ function isLongPoll(method: Method): boolean {
   return Object.hasOwn(LONG_POLL, method);
 }
 
+// The computed long-poll timeout is a default: a timeoutMs the caller set on this call wins (connect-core.callRpcOptions says the same).
 function withTimeout(options: CallOptions, timeoutMs: number | undefined): CallOptions {
-  return timeoutMs === undefined ? options : { ...options, timeoutMs };
+  return timeoutMs === undefined || options.timeoutMs !== undefined ? options : { ...options, timeoutMs };
 }
