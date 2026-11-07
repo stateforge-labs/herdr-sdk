@@ -17,7 +17,7 @@ model {
   }
 
   voiceHub = consumer 'voice-hub' {
-    summary 'Watches agent status and serves the read-only sessions MCP.'
+    summary 'Watches agent status and reads agent sessions.'
     technology 'Effect 4.1.2 on Bun 1.4.4'
     metadata {
       evidence 'plugins/crisap94.voice-engine/hub'
@@ -34,16 +34,12 @@ model {
     summary 'Run one-off herdr queries and prompts without the CLI.'
     technology 'Bun or Node'
   }
-  mcpClient = external 'MCP client' {
-    summary 'Reads agent sessions through MCP tools.'
-    technology 'Hermes, Claude Code'
-  }
 
   lib = system '@homelab/herdr' {
     #planned
     summary 'Gives typed, capability-scoped access to the whole herdr socket API.'
     description '''
-      **Responsibilities:** wire, generated API, scoped clients, domain model, Effect entry, test kit, drift, read-only MCP.
+      **Responsibilities:** wire, generated API, scoped clients, domain model, Effect entry, test kit, drift.
       **Does not:** reimplement herdr state, carry app domains, wrap the CLI.
       **Decisions:** HERDR-ADR-0001, HERDR-ADR-0003
     '''
@@ -153,13 +149,6 @@ model {
         summary 'Streams the live pane set with resubscribe and backoff.'
       }
     }
-    mcp = entry '/mcp' {
-      #planned
-      #effectPeer
-      summary 'Generates read-only MCP tools with a bearer guard.'
-      technology 'effect/ai McpServer'
-      description '**Decisions:** HERDR-ADR-0010'
-    }
     testKit = devEntry '/test-kit' {
       #planned
       #devOnly
@@ -185,9 +174,6 @@ model {
   voiceHub -> lib.effectEntry 'watches panes and calls herdr through' {
     #planned
   }
-  voiceHub -> lib.mcp 'serves session tools with' {
-    #planned
-  }
   voiceHub -> lib.testKit 'tests against the fake from' {
     #planned
   }
@@ -203,7 +189,6 @@ model {
   scripts -> lib.core 'prompts agents through' {
     #planned
   }
-  mcpClient -> voiceHub 'reads sessions from' 'MCP over HTTP'
   owner -> lib.tooling 'captures and checks the schema with' {
     #planned
   }
@@ -213,9 +198,6 @@ model {
     #planned
   }
   lib.domainModel -> lib.core.generatedTypes 'maps from' {
-    #planned
-  }
-  lib.mcp -> lib.readOnly 'reads herdr only through' {
     #planned
   }
   lib.testKit -> lib.core.generatedTypes 'types fake replies with' {

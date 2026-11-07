@@ -10,16 +10,15 @@ views {
     title '1 · Context / @homelab/herdr'
     order 1
     description '''
-      Who uses the library and what does it talk to? voice-hub (Effect), atalaya-bridge (Node, Promise), scripts and, through the hub,
-      MCP clients; herdr is the only system the library calls. **Click the library** for its entry points.
+      Who uses the library and what does it talk to? voice-hub (Effect), atalaya-bridge (Node, Promise) and scripts; herdr is the
+      only system the library calls. **Click the library** for its entry points.
     '''
-    include owner, herdr, voiceHub, atalaya, scripts, mcpClient
+    include owner, herdr, voiceHub, atalaya, scripts
     include lib with {
       navigateTo entries
     }
     rank source {
-      owner,
-      mcpClient
+      owner
     }
     rank sink {
       herdr
@@ -31,9 +30,9 @@ views {
     title '2 · Containers / @homelab/herdr'
     order 1
     description '''
-      Which entry points exist and who imports which? One subpath export each (/admin adds destructive and server-control methods); the core has zero runtime dependencies, /effect and /mcp
-      need effect as a peer, test-kit and the generator/drift tooling (slate) never reach a production bundle.
-      **Decisions:** HERDR-ADR-0003, HERDR-ADR-0004, HERDR-ADR-0005, HERDR-ADR-0008, HERDR-ADR-0009, HERDR-ADR-0010
+      Which entry points exist and who imports which? One subpath export each (/admin adds destructive and server-control methods); the core has zero runtime dependencies, only /effect
+      needs effect as a peer, test-kit and the generator/drift tooling (slate) never reach a production bundle.
+      **Decisions:** HERDR-ADR-0003, HERDR-ADR-0004, HERDR-ADR-0005, HERDR-ADR-0008, HERDR-ADR-0009
     '''
     include *
     include herdr, voiceHub, atalaya, scripts, owner
@@ -43,7 +42,6 @@ views {
     include lib.effectEntry with {
       navigateTo effectComponents
     }
-    exclude mcpClient
     rank source {
       voiceHub,
       atalaya,

@@ -13,7 +13,7 @@ Plan: [section 3.4](../architecture/plan.md#34-capability-scoped-clients), class
 
 ## Context and problem statement
 
-The hub limits reads by hand (`hub/src/contexts/sessions/adapters/driven/constants.ts` in S7: 5 methods; hub ADR-0026 excludes scrollback reads). Agents are untrusted (hub ADR-0017). herdr has `server.stop`, `*.close`, `plugin.link`, `command.invoke`; the schema carries no capability data. A README example that grants all of them by default invites misuse.
+The hub limits reads by hand (`hub/src/contexts/sessions/adapters/driven/constants.ts`: 5 methods; hub ADR-0026 excludes scrollback reads). Agents are untrusted (hub ADR-0017). herdr has `server.stop`, `*.close`, `plugin.link`, `command.invoke`; the schema carries no capability data. A README example that grants all of them by default invites misuse.
 
 ## Decision outcome
 

@@ -9,7 +9,7 @@ summary: "The README is written before the code; its snippets come from examples
 
 # HERDR-ADR-0014: Docs are executable: README-first, examples compiled and run
 
-Plan: [section 8](../architecture/plan.md#8-documentation). C4: none (document).
+Plan: [section 7](../architecture/plan.md#7-documentation). C4: none (document).
 
 ## Context and problem statement
 

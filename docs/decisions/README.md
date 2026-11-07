@@ -15,13 +15,11 @@ Ids are **HERDR-ADR-NNNN** (the library's own sequence). The voice engine's reco
 | [HERDR-ADR-0007](HERDR-ADR-0007-subscriptions-and-long-poll-design.md) | Subscriptions, long-poll and held connections | proposed |
 | [HERDR-ADR-0008](HERDR-ADR-0008-test-kit-and-contract-test-policy.md) | Test kit and contract-test policy: no live endpoint by default | proposed |
 | [HERDR-ADR-0009](HERDR-ADR-0009-schema-drift-and-protocol-tied-versioning.md) | Schema drift and protocol-tied versioning | proposed |
-| [HERDR-ADR-0010](HERDR-ADR-0010-mcp-add-on-boundary.md) | MCP add-on boundary: Effect-AI, read-only, out of the core | proposed |
 | [HERDR-ADR-0011](HERDR-ADR-0011-consumer-migration.md) | Consumer migration and distribution (tarball, then registry) | proposed |
 | [HERDR-ADR-0012](HERDR-ADR-0012-runtime-targets-and-build-output.md) | Runtime targets (Bun first, Node) and compiled build output | proposed |
-| [HERDR-ADR-0013](HERDR-ADR-0013-hub-adr-amendments-draft.md) | Hub ADR-0030 and amendments: draft text for the voice hub | proposed |
 | [HERDR-ADR-0014](HERDR-ADR-0014-executable-docs.md) | Docs are executable: README-first, examples compiled and run | proposed |
 | [HERDR-ADR-0015](HERDR-ADR-0015-dependency-policy-and-size-budget.md) | Dependency policy and size budget | proposed |
 | [HERDR-ADR-0016](HERDR-ADR-0016-design-intent-inherited-from-atalaya.md) | Design intent inherited from atalaya: measured wire facts and client principles | proposed |
 | [HERDR-ADR-0017](HERDR-ADR-0017-interfaces-locked-before-parallel-implementation.md) | Interfaces are locked before parallel implementation | proposed |
 
-Cross-project (not written here): hub ADR-0030 "Depend on the extracted @homelab/herdr package" supersedes hub ADR-0003 and amends hub ADR-0012, 0022, 0028 and 0029; its draft text is [HERDR-ADR-0013](HERDR-ADR-0013-hub-adr-amendments-draft.md) (see [plan section 9](../architecture/plan.md#9-migration)).
+Cross-project (not written here): hub ADR-0030 "Depend on the extracted @homelab/herdr package" supersedes hub ADR-0003 and amends hub ADR-0012, 0022 and 0029; the hub ADR changes are listed in [plan section 8](../architecture/plan.md#8-migration).

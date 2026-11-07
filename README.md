@@ -2,7 +2,7 @@
 
 A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22, herdr 0.9.5: 102 methods, 26 event kinds, 27 subscription types), for Bun and Node.
 
-> **Status: lanes P2a to P6c integrated on feat/herdr-lib (interfaces locked, HERDR-ADR-0017). `/effect` and `/mcp` expose only the effect-free contract until amendment A1 (effect pin); the full fake (P5a) and executable README snippets are not yet done. Treat the API below as the target.** This README is written first so the code is shaped by how it is used. When the code lands, every snippet comes from `examples/*.ts` (checked by `scripts/check-readme.ts`), compiles in CI, and the ones marked "runs" execute against the fake herdr ([HERDR-ADR-0014](docs/decisions/HERDR-ADR-0014-executable-docs.md)). Plan: [docs/architecture/plan.md](docs/architecture/plan.md) · decisions: [docs/decisions/](docs/decisions/README.md).
+> **Status: lanes P2a to P6a integrated on feat/herdr-lib (interfaces locked, HERDR-ADR-0017). `/effect` exposes only the effect-free contract until amendment A1 (effect pin); the full fake (P5a) and executable README snippets are not yet done. Treat the API below as the target.** This README is written first so the code is shaped by how it is used. When the code lands, every snippet comes from `examples/*.ts` (checked by `scripts/check-readme.ts`), compiles in CI, and the ones marked "runs" execute against the fake herdr ([HERDR-ADR-0014](docs/decisions/HERDR-ADR-0014-executable-docs.md)). Plan: [docs/architecture/plan.md](docs/architecture/plan.md) · decisions: [docs/decisions/](docs/decisions/README.md).
 
 ## Entry points
 
@@ -13,7 +13,7 @@ A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22,
 | `@homelab/herdr/admin` | `connectAdmin()`: adds destructive, server-control and spawn/execute methods | none |
 | `@homelab/herdr/effect` | `Herdr` service, Layers, tagged errors, Streams | peer `effect` 4.1.2 |
 | `@homelab/herdr/test-kit` | `createFakeHerdr()` (tests only) | none |
-| `@homelab/herdr/mcp` | read-only MCP toolkit (Effect AI) | peer `effect` 4.1.2 |
+| `@homelab/herdr/schema` | method table and parameter shapes of the generated API | none |
 | `herdr-drift` (bin) | compare the committed schema with the installed herdr | none |
 
 `@homelab/herdr/model` (domain entities) arrives later, with atalaya as its first user.
@@ -164,17 +164,6 @@ test("lists agents", async () => {
 ```
 
 The fake runs on `node:net`, answers every method with a schema-valid default, rejects malformed params with an error envelope, and supports `fail`, `silent`, `replySequence`, `push(frame)`, `closeSubscribers()`, `subscriberCount()`, `connectionCount()` and `capabilities`. A real herdr is used only by `bun run test:contract`, with the owner's OK.
-
-## 6. MCP add-on
-
-```ts
-import { Method } from "@homelab/herdr"
-import { readOnlyToolkit } from "@homelab/herdr/mcp"
-
-const tools = readOnlyToolkit({ methods: [Method.SessionSnapshot, Method.AgentList] }) // herdr_session_snapshot, herdr_agent_list; readOnlyHint
-```
-
-It never registers a write method.
 
 ## Drift
 
