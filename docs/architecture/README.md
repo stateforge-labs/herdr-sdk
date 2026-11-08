@@ -1,4 +1,4 @@
-# Architecture of @homelab/herdr (C4, LikeC4)
+# Architecture of @stateforge-labs/herdr (C4, LikeC4)
 
 Modelled with [LikeC4](https://likec4.dev) following the voice engine's conventions (`plugins/crisap94.voice-engine/docs/architecture/c4-guide.md`, hub ADR-0015: StateForge subset, folders 1 to 6, one meaning per colour, one model). Everything is **proposed** until the code lands.
 
@@ -28,8 +28,8 @@ c4/
 
 ## Views
 
-- `1 · Context / @homelab/herdr` (`index`): consumers (voice-hub, atalaya-bridge, scripts) and herdr.
-- `2 · Containers / @homelab/herdr` (`entries`): entry points core, read-only, admin, model (deferred), effect, schema, test-kit, drift tooling and generator.
+- `1 · Context / @stateforge-labs/herdr` (`index`): consumers (voice-hub, atalaya-bridge, scripts) and herdr.
+- `2 · Containers / @stateforge-labs/herdr` (`entries`): entry points core, read-only, admin, model (deferred), effect, schema, test-kit, drift tooling and generator.
 - `3 · Components / Core client` (`coreComponents`): generated, wire, client layers, subscribe, watch and held connections.
 - `3 · Components / Effect client` (`effectComponents`): Herdr service, layers, tagged errors, Stream subscribe, watchPaneSet.
 

@@ -16,8 +16,8 @@ export const SkillLimit = {
 export const NAME_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 export const FENCE_TS = /^```ts( run)?\n([\s\S]*?)^```$/gm;
 export const IMPORT_REWRITES: readonly (readonly [string, string])[] = [
-  ['@homelab/herdr/read-only', '../../../src/read-only.ts'],
-  ['@homelab/herdr/test-kit', '../../../src/test-kit.ts'],
-  ['@homelab/herdr/admin', '../../../src/admin.ts'],
-  ['@homelab/herdr', '../../../src/index.ts'],
+  ['@stateforge-labs/herdr/read-only', '../../../src/read-only.ts'],
+  ['@stateforge-labs/herdr/test-kit', '../../../src/test-kit.ts'],
+  ['@stateforge-labs/herdr/admin', '../../../src/admin.ts'],
+  ['@stateforge-labs/herdr', '../../../src/index.ts'],
 ];

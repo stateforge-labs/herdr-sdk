@@ -1,7 +1,8 @@
 ---
 id: HERDR-ADR-0019
 title: "Publish @homelab/herdr to the GitLab npm registry on a protected tag"
-status: accepted
+status: superseded
+superseded_by: HERDR-ADR-0022
 date: 2026-11-07
 decision-makers: owner
 summary: "Consumers install @homelab/herdr from the homelab GitLab npm registry, not from a vendored tarball. A Maintainers-only v* tag runs the fleet-standard pipeline and publishes with the job token. This diverges from homelab-cli's semantic-release flow on purpose."

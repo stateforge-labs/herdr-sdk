@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22.18'
+          package-manager-cache: false
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun run typecheck:types
+      - run: bun run lint:layers
+      - run: bun test
+      - run: bun run test:node
+      - run: bun run check:size
+      - run: bash ci/build.sh

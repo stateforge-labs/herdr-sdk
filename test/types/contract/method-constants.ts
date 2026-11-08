@@ -1,10 +1,10 @@
 // Role: the standalone method constants (generated names/method.ts) are the same literals as the Method object members, and the entry lists type as before.
 // Informs HERDR-ADR-0017 (contract tests), HERDR-ADR-0002 and the 2026-11-02 build amendment (library code imports MethodX, not the Method object). Compiled, never run.
-import { ENTRY_METHODS } from '../../../src/generated/entry-methods.ts';
-import { Method } from '../../../src/generated/index.ts';
-import type { MethodName } from '../../../src/generated/method-table.ts';
-import { MethodEventsSubscribe, MethodPing } from '../../../src/generated/names/method.ts';
-import { READ_ONLY_METHODS } from '../../../src/generated/entries/read-only.ts';
+import { ENTRY_METHODS } from '../../../src/herdr/generated/entry-methods.ts';
+import { Method } from '../../../src/herdr/generated/index.ts';
+import type { MethodName } from '../../../src/herdr/generated/method-table.ts';
+import { MethodEventsSubscribe, MethodPing } from '../../../src/herdr/generated/names/method.ts';
+import { READ_ONLY_METHODS } from '../../../src/herdr/generated/entries/read-only.ts';
 
 type Equal<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 

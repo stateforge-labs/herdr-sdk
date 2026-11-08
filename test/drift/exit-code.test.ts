@@ -3,7 +3,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DriftExitCode, DriftOutcomeKind } from '../../src/constants.ts';
-import { exitCodeFor } from '../../src/drift/exit-code.ts';
+import { exitCodeFor } from '../../src/drift/diff.ts';
 import type { DriftOutcome, DriftReport } from '../../src/drift/types.ts';
 
 const NO_MOVEMENT = { added: [], removed: [] } as const;

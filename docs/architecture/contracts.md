@@ -6,6 +6,8 @@ date: 2026-11-02
 summary: "The contract files every parallel lane builds on (P2a, P2b, P3, P4a, P4b, P5a, P5c, P6a, then 6b), who implements and who consumes each, and the files each lane may touch. Contract files are owned by no lane (HERDR-ADR-0017)."
 ---
 
+> Layout note (2026-11-08): the paths in this document are the layout of 2026-11-02. [HERDR-ADR-0021](../decisions/HERDR-ADR-0021-one-folder-per-product.md) moved them: `src/<layer>/` is now `src/herdr/<layer>/`, `src/core-test-kit/` is `src/core/test-kit/`, and `gen/`, `scripts/`, `rules/` are under `tools/`.
+
 # Contracts and lane ownership
 
 > Decision: [HERDR-ADR-0017](../decisions/HERDR-ADR-0017-interfaces-locked-before-parallel-implementation.md). Plan: [section 9](plan.md#9-delivery-phases). Contract tests: `bun run typecheck:types` (`tsc -p test/types`).

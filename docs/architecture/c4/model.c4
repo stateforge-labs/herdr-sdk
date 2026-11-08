@@ -35,7 +35,7 @@ model {
     technology 'Bun or Node'
   }
 
-  lib = system '@homelab/herdr' {
+  lib = system '@stateforge-labs/herdr' {
     #planned
     summary 'Gives typed, capability-scoped access to the whole herdr socket API.'
     description '''
@@ -44,7 +44,7 @@ model {
       **Decisions:** HERDR-ADR-0001, HERDR-ADR-0003
     '''
 
-    core = entry '@homelab/herdr (core)' {
+    core = entry '@stateforge-labs/herdr (core)' {
       #planned
       summary 'Connects with zero config and calls every method by namespace.'
       technology 'TypeScript, Promise API, zero runtime deps'
@@ -164,7 +164,7 @@ model {
       #planned
       #devOnly
       summary 'Captures the schema, generates code and reports drift.'
-      technology 'bun gen/index.ts, herdr-drift'
+      technology 'bun tools/gen/index.ts, herdr-drift'
       description '**Decisions:** HERDR-ADR-0002, HERDR-ADR-0009'
     }
     schemaFile = store 'schema' {

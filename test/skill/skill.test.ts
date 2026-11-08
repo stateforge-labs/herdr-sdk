@@ -7,7 +7,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { METHODS } from '../../src/schema.ts';
-import type { Method } from '../../src/generated/index.ts';
+import type { Method } from '../../src/herdr/generated/index.ts';
 import { createFakeHerdr } from '../../src/test-kit.ts';
 import { FENCE_TS, IMPORT_REWRITES, NAME_PATTERN, SkillLimit, SkillPath } from './constants.ts';
 
@@ -53,7 +53,7 @@ describe('skill frontmatter', () => {
 
 describe('skill content stays true', () => {
   test('the version line equals package.json (version and protocol)', () => {
-    assert.ok(skill.includes(`@homelab/herdr ${pkg.version} = herdr protocol ${pkg.herdr.protocol}`), 'update the "Targets" line in SKILL.md');
+    assert.ok(skill.includes(`@stateforge-labs/herdr ${pkg.version} = herdr protocol ${pkg.herdr.protocol}`), 'update the "Targets" line in SKILL.md');
   });
   test('every relative link resolves to a file', () => {
     for (const file of markdownFiles) {

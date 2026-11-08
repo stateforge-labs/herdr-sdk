@@ -4,11 +4,11 @@ import { describe, expect, test } from 'bun:test';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { DEFAULT_RESULT, METHOD_RESULT, METHODS } from '../src/generated/index.ts';
-import { checkResultMap } from '../gen/check-result-map.ts';
-import { DOC_FILES, renderOutputs, runGenerator } from '../gen/index.ts';
-import { isLoose, methodResultTags, METHOD_RESULT_MAP, RESULT_KIND, RESULT_SOURCE } from '../gen/method-result-map.ts';
-import { GEN_PATHS, loadSchema } from '../gen/schema.ts';
+import { DEFAULT_RESULT, METHOD_RESULT, METHODS } from '../src/herdr/generated/index.ts';
+import { checkResultMap } from '../tools/gen/check-result-map.ts';
+import { DOC_FILES, renderOutputs, runGenerator } from '../tools/gen/index.ts';
+import { isLoose, methodResultTags, METHOD_RESULT_MAP, RESULT_KIND, RESULT_SOURCE } from '../tools/gen/method-result-map.ts';
+import { GEN_PATHS, loadSchema } from '../tools/gen/schema.ts';
 
 const EXPECTED_METHODS = 102;
 // Sources a typed row may name without a ref (a name match or an atalaya seed); every other typed source needs a ref.
@@ -114,7 +114,7 @@ describe('coverage of the committed schema', () => {
     }
   });
 
-  test('a fresh generator run reproduces src/generated and docs/api byte for byte', () => {
+  test('a fresh generator run reproduces src/herdr/generated and docs/api byte for byte', () => {
     const scratch = mkdtempSync(join(tmpdir(), 'herdr-coverage-gen-'));
     try {
       const outDir = join(scratch, 'generated');

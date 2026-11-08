@@ -1,37 +1,39 @@
-# @homelab/herdr
+# @stateforge-labs/herdr
 
 A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22, herdr 0.9.5: 102 methods, 26 event kinds, 27 subscription types), for Bun and Node.
 
-> **Status: 0.2.0, published to the homelab GitLab npm registry.** The Promise API, the three capability-scoped clients, the fake herdr (`/test-kit`), the schema and drift tools and the agent skill are built and tested against the fake herdr. The `/effect` entry exposes only the effect-free part (`toTaggedError`, the layer option and error types): the `Herdr` service and Layers wait for amendment A1 (the `effect` pin, due 2026-11-16). Every snippet marked "runs" is executed in CI; section 4 shows the planned Effect surface, not code you can import today.
+> **Status: 0.3.0 on npm.** ESM only, Node 22.18+ and Bun. The Promise API, the herdr-core client (`/core`, `/core/test-kit`), the three capability-scoped clients, the fake herdr (`/test-kit`), the schema and drift tools and the agent skill are built and tested against the fake herdr. The `/effect` entry exposes only the effect-free part (`toTaggedError`, the layer option and error types): the `Herdr` service and Layers wait for amendment A1 (the `effect` pin, due 2026-11-16). Every snippet marked "runs" is executed in CI; section 4 shows the planned Effect surface, not code you can import today.
 
 ## Entry points
 
 | Import | What | Runtime deps |
 |---|---|---|
-| `@homelab/herdr` | `connect()`: reads, writes, input, hooks, long-poll, `hold()`; errors; generated types and constants | none |
-| `@homelab/herdr/read-only` | `connectReadOnly()`: structure reads only; terminal content on opt-in | none |
-| `@homelab/herdr/admin` | `connectAdmin()`: adds destructive, server-control and spawn/execute methods | none |
-| `@homelab/herdr/effect` | `toTaggedError` and the Effect layer types now; the `Herdr` service, Layers and Streams after amendment A1 | none now (peer `effect` 4.1.2 after A1) |
-| `@homelab/herdr/test-kit` | `createFakeHerdr()` (tests only) | none |
-| `@homelab/herdr/schema` | method table and parameter shapes of the generated API (what a generator such as herdr-mcp builds its tools from) | none |
-| `@homelab/herdr/drift` | `driftBetween`, `inventoryOf`, `exitCodeFor`: the library behind `herdr-drift`, for your own tooling | none |
+| `@stateforge-labs/herdr` | `connect()`: reads, writes, input, hooks, long-poll, `hold()`; errors; generated types and constants | none |
+| `@stateforge-labs/herdr/read-only` | `connectReadOnly()`: structure reads only; terminal content on opt-in | none |
+| `@stateforge-labs/herdr/admin` | `connectAdmin()`: adds destructive, server-control and spawn/execute methods | none |
+| `@stateforge-labs/herdr/effect` | `toTaggedError` and the Effect layer types now; the `Herdr` service, Layers and Streams after amendment A1 | none now (peer `effect` 4.1.2 after A1) |
+| `@stateforge-labs/herdr/test-kit` | `createFakeHerdr()` (tests only) | none |
+| `@stateforge-labs/herdr/schema` | method table and parameter shapes of the generated API (what a generator, such as an MCP server, builds its tools from) | none |
+| `@stateforge-labs/herdr/core` | `CoreLink`, `CoreEvents`, the wire parsers and the socket path rule: a client of the herdr-core (`hc`) socket, standalone from the protocol-22 client | none |
+| `@stateforge-labs/herdr/core/test-kit` | `FakeHcCore`, `setupTest(t)`, `openWorld()` (tests only) | none |
+| `@stateforge-labs/herdr/drift` | `driftBetween`, `inventoryOf`, `exitCodeFor`: the library behind `herdr-drift`, for your own tooling | none |
 | `herdr-drift` (bin) | compare the committed schema with the installed herdr | none |
 | `herdr-skill` (bin) | print or install the agent skill that ships in `skills/herdr-sdk` | none |
 
-`@homelab/herdr/model` (domain entities) arrives later, with atalaya as its first user.
+`@stateforge-labs/herdr/model` (domain entities) arrives later.
 
 Wire types are `export type` only. Raw strings are accepted by the types, but these docs always use the generated constants (`Method`, `EventKind`, `SubscriptionType`, `AgentStatus`, `WatchKind`).
 
 ## Install
 
-From the homelab GitLab registry ([HERDR-ADR-0019](docs/decisions/HERDR-ADR-0019-publish-to-the-gitlab-npm-registry-on-a-tag.md)). In the consumer's `bunfig.toml`:
-
-```toml
-[install.scopes]
-"@homelab" = { url = "https://gitlab.example.internal/api/v4/projects/518/packages/npm/", token = "$HOMELAB_NPM_TOKEN" }
+```sh
+npm install @stateforge-labs/herdr
+# or
+bun add @stateforge-labs/herdr
 ```
 
-`HOMELAB_NPM_TOKEN` is a read-only token (`read_package_registry`). A release younger than 14 days needs an entry in `minimumReleaseAgeExcludes`. Releases are protected `v*` tags (Maintainers only); the pipeline checks the tag equals the `package.json` version.
+Releases are published from GitHub Actions with npm trusted publishing, so every version carries a provenance attestation
+(`npm audit signatures` checks it). The release tag equals the `package.json` version.
 
 ## Footprint
 
@@ -41,9 +43,9 @@ Measured on 2026-11-02, minified (`bun run check:size`, which builds `dist/` and
 
 | What a consumer imports | Bytes |
 |---|---|
-| `@homelab/herdr` (every method, `connect()`) | 26,887 |
-| `@homelab/herdr/read-only` | 18,691 |
-| `@homelab/herdr/admin` | 15,561 |
+| `@stateforge-labs/herdr` (every method, `connect()`) | 26,887 |
+| `@stateforge-labs/herdr/read-only` | 18,691 |
+| `@stateforge-labs/herdr/admin` | 15,561 |
 | a read-only script that narrows to one method | 17,513 |
 | the streams chunk (`events.subscribe`, `watch`, `hold`), loaded on first use | 7,672 |
 
@@ -52,7 +54,7 @@ The declarations use `AbortSignal` and `AsyncDisposable`. Consumers need `@types
 ## 1. A small script (Promise API)
 
 ```ts
-import { connect, HerdrError } from "@homelab/herdr"
+import { connect, HerdrError } from "@stateforge-labs/herdr"
 
 const herdr = await connect() // finds the socket (HERDR_SOCKET, else ~/.config/herdr/herdr.sock), pings, checks protocol 22
 
@@ -69,12 +71,12 @@ try {
 herdr.close()
 ```
 
-Methods are nested by their dotted name: `herdr.pane.list({})`, `herdr.agent.view.set({...})`. `connect()` has no destructive or server-control methods (`*.close`, `server.stop`, `plugin.link`...); those need `connectAdmin()` from `@homelab/herdr/admin`.
+Methods are nested by their dotted name: `herdr.pane.list({})`, `herdr.agent.view.set({...})`. `connect()` has no destructive or server-control methods (`*.close`, `server.stop`, `plugin.link`...); those need `connectAdmin()` from `@stateforge-labs/herdr/admin`.
 
 A protocol mismatch fails fast; a method the server does not support fails before sending:
 
 ```ts
-import { connect, ProtocolMismatchError } from "@homelab/herdr"
+import { connect, ProtocolMismatchError } from "@stateforge-labs/herdr"
 
 try {
   await connect()
@@ -83,10 +85,10 @@ try {
 }
 ```
 
-## 2. Subscriptions, long-poll and held connections (atalaya on Node)
+## 2. Subscriptions, long-poll and held connections
 
 ```ts
-import { connect, SubscriptionType, EventKind, AgentStatus, WatchKind } from "@homelab/herdr"
+import { connect, SubscriptionType, EventKind, AgentStatus, WatchKind } from "@stateforge-labs/herdr"
 
 const herdr = await connect({ onCall: ({ method, durationMs, outcome }) => metrics.record(method, durationMs, outcome) })
 
@@ -119,7 +121,7 @@ A timeout is not proof that a prompt was not delivered: never resend blindly.
 ## 3. Read-only and prompt-only clients
 
 ```ts
-import { connectReadOnly, Presets } from "@homelab/herdr/read-only"
+import { connectReadOnly, Presets } from "@stateforge-labs/herdr/read-only"
 
 const herdr = await connectReadOnly({ preset: Presets.SessionsReader }) // session.snapshot, agent.list, agent.get, pane.get, pane.list
 const snapshot = await herdr.session.snapshot({})
@@ -129,13 +131,13 @@ await herdr.agent.prompt({ target: "x", text: "y" })
 
 Without options it allows structure reads and long-poll; terminal content (`pane.read`, `agent.read`) needs `{ content: true }`. `{ methods: [Method.AgentList, ...] }` narrows at runtime. `connectPrompt()` adds exactly `agent.prompt`.
 
-## 4. The hub (Effect): planned, not in 0.2.0
+## 4. Effect: planned, not in 0.3.0
 
 The error table below is built (`toTaggedError`). The service and layers in the snippet need amendment A1 and are not importable yet.
 
 ```ts
 import { Effect, Stream } from "effect"
-import { Herdr, HerdrReadOnly, watchPaneSet } from "@homelab/herdr/effect"
+import { Herdr, HerdrReadOnly, watchPaneSet } from "@stateforge-labs/herdr/effect"
 
 const program = Effect.gen(function* () {
   const herdr = yield* Herdr
@@ -162,8 +164,8 @@ Layers: `Herdr.layer`, `Herdr.layerReadOnly`, `Herdr.layerPrompt`, `Herdr.layerA
 
 ```ts
 import { test, expect } from "bun:test"
-import { connect, Method, ResultTag } from "@homelab/herdr"
-import { createFakeHerdr } from "@homelab/herdr/test-kit"
+import { connect, Method, ResultTag } from "@stateforge-labs/herdr"
+import { createFakeHerdr } from "@stateforge-labs/herdr/test-kit"
 
 test("lists agents", async () => {
   const fake = await createFakeHerdr()
@@ -182,15 +184,17 @@ The fake runs on `node:net`, answers `ping` and every method you script with `re
 
 ## Drift
 
+`herdr-drift` ships as a bin. Refreshing the schema and regenerating the client happen in a clone of the repository:
+
 ```sh
 bun run capture      # herdr api schema --json > schema/herdr-api.schema.json
-bun run gen          # regenerate src/generated and docs/api
+bun run gen          # regenerate src/herdr/generated and docs/api
 herdr-drift          # exit 0 clean, 1 drift, 2 usage, 3 herdr not found
 ```
 
 ## For coding agents (the skill)
 
-The package ships an Agent Skill, `skills/herdr-sdk/` ([HERDR-ADR-0018](docs/decisions/HERDR-ADR-0018-the-skill-ships-in-the-package.md)): which entry point to pick, recipes, errors, version facts. Its code blocks are type-checked and run against the fake in `test/skill/`.
+The package ships an Agent Skill, `skills/herdr-sdk/` ([HERDR-ADR-0018](https://github.com/stateforge-labs/herdr-sdk/blob/main/docs/decisions/HERDR-ADR-0018-the-skill-ships-in-the-package.md)): which entry point to pick, recipes, errors, version facts. Its code blocks are type-checked and run against the fake in the repository's `test/skill/`.
 
 ```sh
 herdr-skill install              # copies it to .claude/skills/herdr-sdk (or: herdr-skill install ~/.claude/skills)
@@ -199,12 +203,27 @@ herdr-skill print                # prints SKILL.md, for agents that take a promp
 
 Claude Code does not look inside `node_modules`, so `install` copies the skill to a skills directory. For other agents, add this to the project's `AGENTS.md`:
 
-> Code that uses `@homelab/herdr`: read `node_modules/@homelab/herdr/skills/herdr-sdk/SKILL.md` first.
+> Code that uses `@stateforge-labs/herdr`: read `node_modules/@stateforge-labs/herdr/skills/herdr-sdk/SKILL.md` first.
 
 ## Using it from your own domain
 
-The library conforms to herdr's wire vocabulary. Keep your own domain language behind your own port, and let one adapter file import `@homelab/herdr`. `scripts/check-layers.ts` enforces the library's own layers; the one-adapter rule for consumers is a convention (idea from atalaya-bridge, spine AD-10). Snapshot before you subscribe, because a subscription delivers changes, not the present. `watch()` does this for you ([HERDR-ADR-0016](docs/decisions/HERDR-ADR-0016-design-intent-inherited-from-atalaya.md)).
+The library conforms to herdr's wire vocabulary. Keep your own domain language behind your own port, and let one adapter file import `@stateforge-labs/herdr`. `tools/scripts/check-layers.ts` enforces the library's own layers; the one-adapter rule for consumers is a convention. Snapshot before you subscribe, because a subscription delivers changes, not the present. `watch()` does this for you (see the [decision records](https://github.com/stateforge-labs/herdr-sdk/tree/main/docs/decisions)).
+
+## Repository layout
+
+This section describes the [GitHub repository](https://github.com/stateforge-labs/herdr-sdk); the npm package ships only `dist/`, the bins, the skill, the schema and the API docs.
+
+One folder per product ([HERDR-ADR-0021](https://github.com/stateforge-labs/herdr-sdk/blob/main/docs/decisions/HERDR-ADR-0021-one-folder-per-product.md)); the entry files at the top of `src/` are the published subpaths.
+
+| Folder | What it is |
+| --- | --- |
+| `src/herdr/` | The herdr server client (protocol 22): `errors.ts` (every error it throws), `wire/`, `client/` (one module per feature: `connect`, `scoped`, `subscribe`, `watch`, `watch-pane-set`, `held`, `long-poll`, and `streams`, loaded on first use), `generated/` (output of `tools/gen/`), `effect/`, `test-kit/` |
+| `src/core/` | The herdr-core client (`./core`): `errors.ts` (every failure it returns), `kernel.ts` (its value types), `wire`, `link`, `events`, `backoff`, `constants`; its fake core in `test-kit/` (`./core/test-kit`) |
+| `src/drift/` | The schema-drift tool behind `herdr-drift`: `schema`, `diff`, `cli`, `constants`, `types` |
+| `test/` | Mirrors `src/` (`test/herdr/`, `test/core/`, `test/drift/`), plus `test/tools/`, `integration/` and `types/` |
+| `tools/` | Build time only, never published: `gen/` (the generator), `scripts/` (gates, capture, build helpers), `rules/` (the layer rule) |
+| `bin/`, `skills/`, `schema/`, `docs/` | The bins, the agent skill, the captured schema, the docs and decisions |
 
 ## Licence
 
-MIT. Derived from brooswit/jsHerdrSDK (e34fd3f) via atalaya-bridge (097adfd); see `NOTICE.md`.
+MIT. Derived from [brooswit-factory/jsHerdrSDK](https://github.com/brooswit-factory/jsHerdrSDK) (e34fd3f) through an intermediate private port (097adfd); see `NOTICE.md`.

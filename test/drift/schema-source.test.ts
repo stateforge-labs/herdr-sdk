@@ -4,7 +4,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SchemaReadKind } from '../../src/constants.ts';
 import { ReasonText } from '../../src/drift/constants.ts';
-import { committedSource, installedSource, parseSchemaText } from '../../src/drift/schema-source.ts';
+import { committedSource, installedSource, parseSchemaText } from '../../src/drift/schema.ts';
 import type { SchemaDocument } from '../../src/drift/types.ts';
 import { miniSchema } from './support/mini-schema.ts';
 
