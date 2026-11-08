@@ -26,12 +26,14 @@ self-hosted GitLab (https://docs.npmjs.com/trusted-publishers, read 2026-11-08).
 - On npmjs.com the package has one trusted publisher (GitHub Actions, `stateforge-labs/herdr-sdk`, `publish.yml`) and publishing
   access "require two-factor authentication and disallow tokens".
 - The very first version (0.3.0) is published by hand by the owner, `npm publish --provenance=false` after `npm login`: the trusted
-  publisher is set on the package's settings page, so the package must exist first, and provenance needs CI. No `v0.3.0` tag is
-  pushed (the workflow would fail on an existing version); 0.3.1 is the first release through the workflow, with provenance.
+  publisher is set on the package's settings page, so the package must exist first, and provenance needs CI. The workflow skips a
+  version npm already has, so the `v0.3.0` tag can be pushed afterwards; 0.3.1 is the first release through the workflow, with provenance.
 - `.github/workflows/ci.yml` runs the same checks on every push to main and every pull request.
 
 ## Consequences
 
 - Installing needs no `.npmrc`, no token and no scope registry entry: `npm install @stateforge-labs/herdr`.
 - Provenance links each version to its commit and workflow run; it needs the repository to stay public.
-- The GitLab pipeline no longer publishes (its registry job belongs to HERDR-ADR-0019).
+- Amended 2026-11-08: the same `v<version>` tag also publishes to this project's GitLab npm registry (`publish:gitlab`,
+  `ci/publish-gitlab.sh`, job token, no provenance), so pipelines on the GitLab install without leaving the network. That job
+  also skips a version its registry already has. npmjs.org stays the public source; the GitLab copy is for CI.
