@@ -2,16 +2,16 @@
 // Informs HERDR-ADR-0020 (the herdr-core client); ported from the desktop work in herdr-plugins.
 import { createConnection } from 'node:net';
 import type { Socket } from 'node:net';
-import { must } from './kernel.ts';
+import { byKind, isErr, isOk, must, type KindMap } from './kernel.ts';
 import { AsyncQueue } from './kernel.ts';
 import { duration, type Duration } from './kernel.ts';
 import { Backoff } from './backoff.ts';
-import { HC_BACKOFF_BASE, HC_BACKOFF_CAP, HC_HEARTBEAT_EVERY, HC_HEARTBEAT_MISSES, HC_SUBSCRIBE_METHOD } from './constants.ts';
+import { HC_BACKOFF_BASE, HC_BACKOFF_CAP, HC_HEARTBEAT_EVERY, HC_HEARTBEAT_MISSES, HC_SUBSCRIBE_METHOD, EventsPhase, HcKind, Life, RetryPhase, SocketEvent, TimerHold } from './constants.ts';
 import { HcCoreLines, encodeHcCoreRequest, parseHcCallId, parseHcCoreMessage, parseHcParams, parseHcSnapshot, parseWireChunk } from './wire.ts';
 import type { HcCoreMessage, HcEvent, HcHeartbeat, HcMissed, HcParams, HcPayload, HcSnapshot, SocketPath } from './wire.ts';
 
 export interface HcSnapshotFeed {
-  readonly kind: 'snapshot';
+  readonly kind: typeof HcKind.Snapshot;
   readonly snapshot: HcSnapshot;
 }
 
@@ -29,9 +29,6 @@ export interface CoreEventsParts {
   readonly timing?: CoreEventsTiming;
 }
 
-type Phase = 'waiting' | 'subscribed';
-type Life = 'open' | 'closed';
-
 const SUBSCRIBE_ID = must(parseHcCallId(1));
 const NO_FILTER: HcParams = must(parseHcParams({}));
 const DEFAULT_TIMING: CoreEventsTiming = {
@@ -39,10 +36,6 @@ const DEFAULT_TIMING: CoreEventsTiming = {
   backoffCap: HC_BACKOFF_CAP,
   silence: duration(HC_HEARTBEAT_EVERY * HC_HEARTBEAT_MISSES),
 };
-
-function feedOf(message: HcCoreMessage): HcCoreFeed | null {
-  return message.kind === 'missed' || message.kind === 'heartbeat' || message.kind === 'event' ? message : null;
-}
 
 export class CoreEvents {
   readonly feed = new AsyncQueue<HcCoreFeed>();
@@ -52,24 +45,24 @@ export class CoreEvents {
   private socket: Socket | null = null;
   private watchdog: NodeJS.Timeout | null = null;
   private readonly backoff: Backoff;
-  private phase: Phase = 'waiting';
-  private life: Life = 'open';
+  private phase: EventsPhase = EventsPhase.Waiting;
+  private life: Life = Life.Open;
 
   constructor(parts: CoreEventsParts) {
     this.path = parts.path;
     this.filter = parts.filter ?? NO_FILTER;
     this.timing = parts.timing ?? DEFAULT_TIMING;
-    this.backoff = new Backoff(this.timing, 'holds-process');
+    this.backoff = new Backoff(this.timing, TimerHold.HoldsProcess);
   }
 
   start(): void {
-    if (this.socket === null && this.backoff.phase === 'idle' && this.life === 'open') {
+    if (this.socket === null && this.backoff.phase === RetryPhase.Idle && this.life === Life.Open) {
       this.connect();
     }
   }
 
   async close(): Promise<void> {
-    this.life = 'closed';
+    this.life = Life.Closed;
     this.clearTimers();
     this.feed.end();
     const socket = this.socket;
@@ -77,24 +70,24 @@ export class CoreEvents {
       return;
     }
     this.socket = null;
-    await new Promise<void>((resolve) => { socket.once('close', () => { resolve(); }); socket.destroy(); });
+    await new Promise<void>((resolve) => { socket.once(SocketEvent.Close, () => { resolve(); }); socket.destroy(); });
   }
 
   private connect(): void {
     const socket = createConnection(this.path);
     const lines = new HcCoreLines(() => { socket.destroy(); });
     this.socket = socket;
-    this.phase = 'waiting';
-    socket.on('data', (chunk) => {
+    this.phase = EventsPhase.Waiting;
+    socket.on(SocketEvent.Data, (chunk) => {
       const bytes = parseWireChunk(chunk);
       this.arm(socket);
-      if (bytes.kind === 'ok') {
+      if (isOk(bytes)) {
         this.receive(lines.feed(bytes.value), socket);
       }
     });
-    socket.on('error', () => undefined);
-    socket.on('close', () => { this.lost(socket); });
-    socket.once('connect', () => {
+    socket.on(SocketEvent.Error, () => undefined);
+    socket.on(SocketEvent.Close, () => { this.lost(socket); });
+    socket.once(SocketEvent.Connect, () => {
       this.arm(socket);
       socket.write(encodeHcCoreRequest(SUBSCRIBE_ID, HC_SUBSCRIBE_METHOD, this.filter));
     });
@@ -111,37 +104,41 @@ export class CoreEvents {
   private receive(values: readonly HcPayload[], socket: Socket): void {
     for (const value of values) {
       const parsed = parseHcCoreMessage(value);
-      if (parsed.kind === 'err') {
+      if (isErr(parsed)) {
         continue;
       }
       this.accept(parsed.value, socket);
     }
   }
 
+  private readonly acceptors: KindMap<HcCoreMessage, void, Socket> = {
+    [HcKind.Fault]: (_message, socket) => { socket.destroy(); },
+    [HcKind.Odd]: (_message, socket) => { socket.destroy(); },
+    [HcKind.Reply]: (message, socket) => { this.snapshotOf(message.result, socket); },
+    [HcKind.Event]: (message) => { this.forward(message); },
+    [HcKind.Heartbeat]: (message) => { this.forward(message); },
+    [HcKind.Missed]: (message) => { this.forward(message); },
+  };
+
   private accept(message: HcCoreMessage, socket: Socket): void {
-    if (message.kind === 'fault' || message.kind === 'odd') {
-      socket.destroy();
-      return;
-    }
-    if (message.kind === 'reply') {
-      this.snapshotOf(message.result, socket);
-      return;
-    }
-    const feed = this.phase === 'subscribed' ? feedOf(message) : null;
-    if (feed !== null) {
+    byKind(this.acceptors, message, socket);
+  }
+
+  private forward(feed: HcCoreFeed): void {
+    if (this.phase === EventsPhase.Subscribed) {
       this.feed.push(feed);
     }
   }
 
   private snapshotOf(result: HcPayload, socket: Socket): void {
     const snapshot = parseHcSnapshot(result);
-    if (snapshot.kind === 'err' || this.phase === 'subscribed') {
+    if (isErr(snapshot) || this.phase === EventsPhase.Subscribed) {
       socket.destroy();
       return;
     }
-    this.phase = 'subscribed';
+    this.phase = EventsPhase.Subscribed;
     this.backoff.survive();
-    this.feed.push({ kind: 'snapshot', snapshot: snapshot.value });
+    this.feed.push({ kind: HcKind.Snapshot, snapshot: snapshot.value });
   }
 
   private lost(socket: Socket): void {
@@ -150,7 +147,7 @@ export class CoreEvents {
     }
     this.socket = null;
     this.clearTimers();
-    if (this.life === 'closed') {
+    if (this.life === Life.Closed) {
       return;
     }
     this.backoff.schedule(() => { this.connect(); });

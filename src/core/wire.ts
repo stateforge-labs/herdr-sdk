@@ -2,13 +2,15 @@
 // Informs HERDR-ADR-0020 (the herdr-core client); ported from the desktop work in herdr-plugins.
 import { StringDecoder } from 'node:string_decoder';
 import { join } from 'node:path';
-import { err, must, ok, type Result } from './kernel.ts';
+import { err, isErr, isOk, must, ok, type Result } from './kernel.ts';
 import { brand, type Brand } from './kernel.ts';
 import { parseCount, type Count } from './kernel.ts';
 import { duration, type Duration } from './kernel.ts';
 import { parseNonEmptyText, parseText, type NonEmptyText, type Text } from './kernel.ts';
-import { isFields } from './kernel.ts';
+import { isFields, isNumber, isString } from './kernel.ts';
+import { ParseFailureKind } from './errors.ts';
 import type { ParseFailure } from './errors.ts';
+import { HC_JSONRPC_VERSION, HC_LINE_SEPARATOR, HcField, HcKind, HcNotificationMethod, UTF8 } from './constants.ts';
 import { HC_LINE_CAP, HC_DEFAULT_SESSION, HC_RUNTIME_ENV, HC_RUN_ROOT, HC_SESSION_ENV, HC_SOCKET_ENV, HC_SOCKET_FOLDER, HC_SOCKET_SUFFIX } from './constants.ts';
 
 export type HcCallId = Brand<number, 'HcCallId'>;
@@ -31,64 +33,65 @@ export interface HcCoreHello {
   readonly generation: Count;
 }
 
-export interface HcReply { readonly kind: 'reply'; readonly id: HcCallId; readonly result: HcPayload }
-export interface HcOdd { readonly kind: 'odd'; readonly id: HcCallId }
-export interface HcFault { readonly kind: 'fault'; readonly id: HcCallId; readonly code: RpcCode; readonly reason: Text; readonly message: Text }
-export interface HcEvent { readonly kind: 'event'; readonly seq: Count; readonly terminal: NonEmptyText | null; readonly type: NonEmptyText; readonly data: HcPayload }
-export interface HcHeartbeat { readonly kind: 'heartbeat'; readonly seq: Count }
-export interface HcMissed { readonly kind: 'missed'; readonly snapshot: HcSnapshot }
+export interface HcReply { readonly kind: typeof HcKind.Reply; readonly id: HcCallId; readonly result: HcPayload }
+export interface HcOdd { readonly kind: typeof HcKind.Odd; readonly id: HcCallId }
+export interface HcFault { readonly kind: typeof HcKind.Fault; readonly id: HcCallId; readonly code: RpcCode; readonly reason: Text; readonly message: Text }
+export interface HcEvent { readonly kind: typeof HcKind.Event; readonly seq: Count; readonly terminal: NonEmptyText | null; readonly type: NonEmptyText; readonly data: HcPayload }
+export interface HcHeartbeat { readonly kind: typeof HcKind.Heartbeat; readonly seq: Count }
+export interface HcMissed { readonly kind: typeof HcKind.Missed; readonly snapshot: HcSnapshot }
 
 export type HcNotification = HcEvent | HcHeartbeat | HcMissed;
 export type HcCoreMessage = HcReply | HcOdd | HcFault | HcNotification;
 
+const NOT_A_ROW: ParseFailure = { kind: ParseFailureKind.NotARow };
 const EMPTY = must(parseText(''));
 const NO_DATA: HcPayload = must(parseHcPayload({}));
 
 export function parseHcPayload(input: unknown): Result<HcPayload, ParseFailure> {
-  return typeof input === 'object' && input !== null ? ok(brand<object, 'HcPayload'>(input)) : err({ kind: 'not-a-row' });
+  return isFields(input) ? ok(brand<object, 'HcPayload'>(input)) : err(NOT_A_ROW);
 }
 
 export function parseHcParams(input: unknown): Result<HcParams, ParseFailure> {
-  return typeof input === 'object' && input !== null ? ok(brand<object, 'HcParams'>(input)) : err({ kind: 'not-a-row' });
+  return isFields(input) ? ok(brand<object, 'HcParams'>(input)) : err(NOT_A_ROW);
 }
 
 export function parseHcTransport(input: unknown): Result<HcTransport, ParseFailure> {
   const text = parseNonEmptyText(input);
-  return text.kind === 'err' ? text : ok(brand<string, 'HcTransport'>(text.value.trim().toLowerCase()));
+  return isErr(text) ? text : ok(brand<string, 'HcTransport'>(text.value.trim().toLowerCase()));
 }
 
 export function parseWireChunk(input: unknown): Result<WireChunk, ParseFailure> {
-  return Buffer.isBuffer(input) ? ok(brand<Buffer, 'WireChunk'>(input)) : err({ kind: 'not-a-row' });
+  return Buffer.isBuffer(input) ? ok(brand<Buffer, 'WireChunk'>(input)) : err(NOT_A_ROW);
 }
 
 export function parseWireLine(input: unknown): Result<WireLine, ParseFailure> {
   const text = parseText(input);
-  return text.kind === 'err' ? text : ok(brand<string, 'WireLine'>(text.value));
+  return isErr(text) ? text : ok(brand<string, 'WireLine'>(text.value));
 }
 
 export function parseSocketPath(input: unknown): Result<SocketPath, ParseFailure> {
   const text = parseNonEmptyText(input);
-  return text.kind === 'err' ? text : ok(brand<string, 'SocketPath'>(text.value));
+  return isErr(text) ? text : ok(brand<string, 'SocketPath'>(text.value));
 }
 
 export function parseHcCallId(input: unknown): Result<HcCallId, ParseFailure> {
   const count = parseCount(input);
-  return count.kind === 'err' ? count : ok(brand<number, 'HcCallId'>(count.value));
+  return isErr(count) ? count : ok(brand<number, 'HcCallId'>(count.value));
 }
 
 export function parseRpcCode(input: unknown): Result<RpcCode, ParseFailure> {
-  if (typeof input !== 'number') {
-    return err({ kind: 'not-a-number' });
+  if (!isNumber(input)) {
+    return err({ kind: ParseFailureKind.NotANumber });
   }
-  return Number.isInteger(input) ? ok(brand<number, 'RpcCode'>(input)) : err({ kind: 'not-an-integer' });
+  return Number.isInteger(input) ? ok(brand<number, 'RpcCode'>(input)) : err({ kind: ParseFailureKind.NotAnInteger });
 }
 
 export function encodeHcCoreRequest(id: HcCallId, method: NonEmptyText, params: HcParams): WireLine {
-  return must(parseWireLine(`${JSON.stringify({ jsonrpc: '2.0', id, method, params })}\n`));
+  return must(parseWireLine(`${JSON.stringify({ [HcField.JsonRpc]: HC_JSONRPC_VERSION, [HcField.Id]: id, [HcField.Method]: method, [HcField.Params]: params })}${HC_LINE_SEPARATOR}`));
 }
 
 export class HcCoreLines {
-  private readonly decoder = new StringDecoder('utf8');
+  private readonly decoder = new StringDecoder(UTF8);
   private readonly overrun: () => void;
   private readonly cap: Count;
   private rest: Text = EMPTY;
@@ -100,7 +103,7 @@ export class HcCoreLines {
 
   feed(chunk: WireChunk): readonly HcPayload[] {
     const fresh = this.decoder.write(chunk);
-    const cut = fresh.lastIndexOf('\n');
+    const cut = fresh.lastIndexOf(HC_LINE_SEPARATOR);
     const text = this.rest + (cut < 0 ? fresh : fresh.slice(0, cut));
     if (text.length > this.cap) {
       this.rest = EMPTY;
@@ -113,10 +116,10 @@ export class HcCoreLines {
     }
     this.rest = must(parseText(fresh.slice(cut + 1)));
     const found: HcPayload[] = [];
-    for (const line of text.split('\n')) {
+    for (const line of text.split(HC_LINE_SEPARATOR)) {
       try {
         const parsed = parseHcPayload(JSON.parse(line));
-        if (parsed.kind === 'ok') {
+        if (isOk(parsed)) {
           found.push(parsed.value);
         }
       } catch {
@@ -129,13 +132,13 @@ export class HcCoreLines {
 
 export function hcCoreSocketPath(): SocketPath {
   const direct = parseSocketPath(process.env[HC_SOCKET_ENV]);
-  if (direct.kind === 'ok') {
+  if (isOk(direct)) {
     return direct.value;
   }
   const runtime = parseNonEmptyText(process.env[HC_RUNTIME_ENV]);
-  const root = runtime.kind === 'ok' ? runtime.value : join(HC_RUN_ROOT, String(process.getuid?.() ?? 0));
+  const root = isOk(runtime) ? runtime.value : join(HC_RUN_ROOT, String(process.getuid?.() ?? 0));
   const session = parseNonEmptyText(process.env[HC_SESSION_ENV]);
-  const name = session.kind === 'ok' ? session.value : HC_DEFAULT_SESSION;
+  const name = isOk(session) ? session.value : HC_DEFAULT_SESSION;
   return must(parseSocketPath(join(root, HC_SOCKET_FOLDER, `${name}${HC_SOCKET_SUFFIX}`)));
 }
 
@@ -145,98 +148,110 @@ export function nextBackoff(failures: Count, base: Duration, cap: Duration): Dur
 
 export function parseHcSnapshot(input: unknown): Result<HcSnapshot, ParseFailure> {
   if (!isFields(input)) {
-    return err({ kind: 'not-a-row' });
+    return err(NOT_A_ROW);
   }
-  const seq = parseCount(input['seq']);
-  const rows = input['terminals'];
-  if (seq.kind === 'err' || !Array.isArray(rows)) {
-    return err({ kind: 'not-a-row' });
+  const seq = parseCount(input[HcField.Seq]);
+  const rows = input[HcField.Terminals];
+  if (isErr(seq) || !Array.isArray(rows)) {
+    return err(NOT_A_ROW);
   }
   const terminals = rows.flatMap((row): HcPayload[] => {
     const payload = parseHcPayload(row);
-    return payload.kind === 'ok' ? [payload.value] : [];
+    return isOk(payload) ? [payload.value] : [];
   });
   return ok({ seq: seq.value, terminals });
 }
 
 export function parseHcCoreHello(input: unknown): Result<HcCoreHello, ParseFailure> {
   if (!isFields(input)) {
-    return err({ kind: 'not-a-row' });
+    return err(NOT_A_ROW);
   }
-  const generation = parseCount(input['generation']);
-  const version = parseText(input['version']);
-  const names = input['methods'];
-  if (generation.kind === 'err' || version.kind === 'err' || !Array.isArray(names)) {
-    return err({ kind: 'not-a-row' });
+  const generation = parseCount(input[HcField.Generation]);
+  const version = parseText(input[HcField.Version]);
+  const names = input[HcField.Methods];
+  if (isErr(generation) || isErr(version) || !Array.isArray(names)) {
+    return err(NOT_A_ROW);
   }
   const methods = names.flatMap((name): NonEmptyText[] => {
     const method = parseNonEmptyText(name);
-    return method.kind === 'ok' ? [method.value] : [];
+    return isOk(method) ? [method.value] : [];
   });
   return ok({ version: version.value, methods, generation: generation.value });
 }
 
 export function parseHcFault(id: HcCallId, error: unknown): Result<HcFault, ParseFailure> {
   if (!isFields(error)) {
-    return err({ kind: 'not-a-row' });
+    return err(NOT_A_ROW);
   }
-  const code = parseRpcCode(error['code']);
-  const message = parseText(error['message']);
-  const data = error['data'];
-  const reason = parseText(isFields(data) ? data['kind'] : '');
-  if (code.kind === 'err' || message.kind === 'err' || reason.kind === 'err') {
-    return err({ kind: 'not-a-row' });
+  const code = parseRpcCode(error[HcField.Code]);
+  const message = parseText(error[HcField.Message]);
+  const data = error[HcField.Data];
+  const reason = parseText(isFields(data) ? data[HcField.Kind] : '');
+  if (isErr(code) || isErr(message) || isErr(reason)) {
+    return err(NOT_A_ROW);
   }
-  return ok({ kind: 'fault', id, code: code.value, reason: reason.value, message: message.value });
+  return ok({ kind: HcKind.Fault, id, code: code.value, reason: reason.value, message: message.value });
 }
 
 export function parseHcReply(input: unknown): Result<HcReply | HcOdd | HcFault, ParseFailure> {
   if (!isFields(input)) {
-    return err({ kind: 'not-a-row' });
+    return err(NOT_A_ROW);
   }
-  const id = parseHcCallId(input['id']);
-  if (id.kind === 'err') {
+  const id = parseHcCallId(input[HcField.Id]);
+  if (isErr(id)) {
     return id;
   }
-  if (Object.hasOwn(input, 'error')) {
-    return parseHcFault(id.value, input['error']);
+  if (Object.hasOwn(input, HcField.Error)) {
+    return parseHcFault(id.value, input[HcField.Error]);
   }
-  if (!Object.hasOwn(input, 'result')) {
-    return err({ kind: 'not-a-row' });
+  if (!Object.hasOwn(input, HcField.Result)) {
+    return err(NOT_A_ROW);
   }
-  const result = parseHcPayload(input['result']);
-  return ok(result.kind === 'ok' ? { kind: 'reply', id: id.value, result: result.value } : { kind: 'odd', id: id.value });
+  const result = parseHcPayload(input[HcField.Result]);
+  return ok(isOk(result) ? { kind: HcKind.Reply, id: id.value, result: result.value } : { kind: HcKind.Odd, id: id.value });
 }
 
 export function parseHcEvent(input: unknown): Result<HcEvent, ParseFailure> {
   if (!isFields(input)) {
-    return err({ kind: 'not-a-row' });
+    return err(NOT_A_ROW);
   }
-  const seq = parseCount(input['seq']);
-  const type = parseNonEmptyText(input['type']);
-  const terminal = parseNonEmptyText(input['terminal']);
-  const data = parseHcPayload(input['data']);
-  if (seq.kind === 'err' || type.kind === 'err') {
-    return err({ kind: 'not-a-row' });
+  const seq = parseCount(input[HcField.Seq]);
+  const type = parseNonEmptyText(input[HcField.Type]);
+  const terminal = parseNonEmptyText(input[HcField.Terminal]);
+  const data = parseHcPayload(input[HcField.Data]);
+  if (isErr(seq) || isErr(type)) {
+    return err(NOT_A_ROW);
   }
-  return ok({ kind: 'event', seq: seq.value, terminal: terminal.kind === 'ok' ? terminal.value : null, type: type.value, data: data.kind === 'ok' ? data.value : NO_DATA });
+  return ok({ kind: HcKind.Event, seq: seq.value, terminal: isOk(terminal) ? terminal.value : null, type: type.value, data: isOk(data) ? data.value : NO_DATA });
+}
+
+export function parseHcHeartbeat(input: unknown): Result<HcHeartbeat, ParseFailure> {
+  const seq = parseCount(isFields(input) ? input[HcField.Seq] : undefined);
+  return isErr(seq) ? seq : ok({ kind: HcKind.Heartbeat, seq: seq.value });
+}
+
+export function parseHcMissed(input: unknown): Result<HcMissed, ParseFailure> {
+  const snapshot = parseHcSnapshot(input);
+  return isErr(snapshot) ? snapshot : ok({ kind: HcKind.Missed, snapshot: snapshot.value });
+}
+
+const NOTIFICATIONS: Readonly<Record<HcNotificationMethod, (params: unknown) => Result<HcNotification, ParseFailure>>> = {
+  [HcNotificationMethod.Event]: parseHcEvent,
+  [HcNotificationMethod.Heartbeat]: parseHcHeartbeat,
+  [HcNotificationMethod.Missed]: parseHcMissed,
+};
+
+function isNotificationMethod(method: unknown): method is HcNotificationMethod {
+  return isString(method) && Object.hasOwn(NOTIFICATIONS, method);
 }
 
 export function parseHcNotification(method: unknown, params: unknown): Result<HcNotification, ParseFailure> {
-  if (method === 'event') {
-    return parseHcEvent(params);
-  }
-  if (method === 'heartbeat' && isFields(params)) {
-    const seq = parseCount(params['seq']);
-    return seq.kind === 'err' ? seq : ok({ kind: 'heartbeat', seq: seq.value });
-  }
-  const snapshot = method === 'missed' ? parseHcSnapshot(params) : err<ParseFailure>({ kind: 'not-a-row' });
-  return snapshot.kind === 'err' ? snapshot : ok({ kind: 'missed', snapshot: snapshot.value });
+  return isNotificationMethod(method) ? NOTIFICATIONS[method](params) : err(NOT_A_ROW);
 }
 
 export function parseHcCoreMessage(input: unknown): Result<HcCoreMessage, ParseFailure> {
   if (!isFields(input)) {
-    return err({ kind: 'not-a-row' });
+    return err(NOT_A_ROW);
   }
-  return Object.hasOwn(input, 'method') ? parseHcNotification(input['method'], input['params']) : parseHcReply(input);
+  return Object.hasOwn(input, HcField.Method) ? parseHcNotification(input[HcField.Method], input[HcField.Params]) : parseHcReply(input);
 }

@@ -6,11 +6,23 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { RECORDED_FRAMES } from './frames.ts';
-import { brand } from '../kernel.ts';
+import { brand, isString, JsType } from '../kernel.ts';
+import { HC_GET_METHOD, HC_HELLO_METHOD, HC_JSONRPC_VERSION, HC_LINE_SEPARATOR, HC_LIST_METHOD, HC_READ_METHOD, HC_SUBSCRIBE_METHOD, HcField, HcNotificationMethod, SocketEvent, UTF8 } from '../constants.ts';
 import type { SocketPath } from '../wire.ts';
 
 type Fields = Record<string, unknown>;
 export type Handler = (params: Fields) => unknown;
+type Serve = (socket: Socket, params: Fields) => unknown;
+
+// The JSON-RPC fault kinds the fake answers with.
+export const FakeFaultKind = { MethodNotFound: 'method_not_found', NotFound: 'not_found' } as const;
+
+const FakeRpcCode = { MethodNotFound: -32601, NotFound: -32000 } as const;
+const FAKE_DIR_PREFIX = 'herdr-core-fake-';
+const FAKE_SOCKET = 'default.sock';
+const SPLIT_AT = 7;
+const SPLIT_DELAY = 15;
+const TERMINAL_ADDRESS = 'address';
 
 export class FakeFault {
   readonly code: number;
@@ -30,13 +42,13 @@ export interface Seen {
   readonly connection: number;
 }
 
-const isFields = (input: unknown): input is Fields => typeof input === 'object' && input !== null && !Array.isArray(input);
+const isFields = (input: unknown): input is Fields => typeof input === JsType.Object && input !== null && !Array.isArray(input);
 const loaded: unknown = RECORDED_FRAMES;
 
 export function frame(name: string): Fields {
   const found = isFields(loaded) ? loaded[name] : undefined;
   if (!isFields(found)) {
-    throw new Error(`no scripted frame ${name}`);
+    throw new FakeFault(FakeRpcCode.NotFound, FakeFaultKind.NotFound, `no scripted frame ${name}`);
   }
   return found;
 }
@@ -87,15 +99,15 @@ export class FakeHcCore {
   }
 
   static async start(): Promise<FakeHcCore> {
-    const dir = mkdtempSync(join(tmpdir(), 'tab-recap-core-'));
-    const core = new FakeHcCore(dir, brand<string, 'SocketPath'>(join(dir, 'default.sock')));
+    const dir = mkdtempSync(join(tmpdir(), FAKE_DIR_PREFIX));
+    const core = new FakeHcCore(dir, brand<string, 'SocketPath'>(join(dir, FAKE_SOCKET)));
     await core.up();
     return core;
   }
 
   static unlistened(): FakeHcCore {
-    const dir = mkdtempSync(join(tmpdir(), 'tab-recap-core-'));
-    return new FakeHcCore(dir, brand<string, 'SocketPath'>(join(dir, 'default.sock')));
+    const dir = mkdtempSync(join(tmpdir(), FAKE_DIR_PREFIX));
+    return new FakeHcCore(dir, brand<string, 'SocketPath'>(join(dir, FAKE_SOCKET)));
   }
 
   get open(): number {
@@ -141,18 +153,18 @@ export class FakeHcCore {
 
   event(type: string, terminal: string | null, data?: Fields): number {
     this.seq += 1;
-    const base = section(frame(`event:${type}`), 'params');
-    this.send({ jsonrpc: '2.0', method: 'event', params: { seq: this.seq, terminal, type, data: data ?? section(base, 'data') } });
+    const base = section(frame(`event:${type}`), HcField.Params);
+    this.send(HcNotificationMethod.Event, { [HcField.Seq]: this.seq, [HcField.Terminal]: terminal, [HcField.Type]: type, [HcField.Data]: data ?? section(base, HcField.Data) });
     return this.seq;
   }
 
   heartbeat(): void {
-    this.send({ jsonrpc: '2.0', method: 'heartbeat', params: { seq: this.seq } });
+    this.send(HcNotificationMethod.Heartbeat, { [HcField.Seq]: this.seq });
   }
 
   missed(terminals: Fields[]): void {
     this.seq += 1;
-    this.send({ jsonrpc: '2.0', method: 'missed', params: { seq: this.seq, terminals } });
+    this.send(HcNotificationMethod.Missed, { [HcField.Seq]: this.seq, [HcField.Terminals]: terminals });
   }
 
   raw(text: string): void {
@@ -169,8 +181,8 @@ export class FakeHcCore {
     rmSync(this.dir, { recursive: true, force: true });
   }
 
-  private send(message: Fields): void {
-    const line = `${JSON.stringify(message)}\n`;
+  private send(method: HcNotificationMethod, params: Fields): void {
+    const line = `${JSON.stringify({ [HcField.JsonRpc]: HC_JSONRPC_VERSION, [HcField.Method]: method, [HcField.Params]: params })}${HC_LINE_SEPARATOR}`;
     for (const socket of this.subscribers) {
       socket.write(line);
     }
@@ -181,30 +193,30 @@ export class FakeHcCore {
     const connection = this.connections;
     this.sockets.add(socket);
     let rest = '';
-    socket.on('data', (chunk: Buffer) => {
-      const lines = (rest + chunk.toString('utf8')).split('\n');
+    socket.on(SocketEvent.Data, (chunk: Buffer) => {
+      const lines = (rest + chunk.toString(UTF8)).split(HC_LINE_SEPARATOR);
       rest = lines.pop() ?? '';
       for (const line of lines) {
         this.handle(socket, line, connection);
       }
     });
-    socket.on('error', () => undefined);
-    socket.on('close', () => { this.sockets.delete(socket); this.subscribers.delete(socket); });
+    socket.on(SocketEvent.Error, () => undefined);
+    socket.on(SocketEvent.Close, () => { this.sockets.delete(socket); this.subscribers.delete(socket); });
   }
 
   private handle(socket: Socket, line: string, connection: number): void {
     const request: unknown = JSON.parse(line);
-    if (!isFields(request) || typeof request['method'] !== 'string') {
+    if (!isFields(request) || !isString(request[HcField.Method])) {
       return;
     }
-    const method = request['method'];
-    const params = section(request, 'params');
+    const method = String(request[HcField.Method]);
+    const params = section(request, HcField.Params);
     this.seen.push({ method, params, connection });
     if (this.silent) {
       return;
     }
     const wait = this.delays.get(method) ?? 0;
-    const timer = setTimeout(() => { this.timers.delete(timer); this.reply(socket, request['id'], method, params); }, wait);
+    const timer = setTimeout(() => { this.timers.delete(timer); this.reply(socket, request[HcField.Id], method, params); }, wait);
     this.timers.add(timer);
   }
 
@@ -213,22 +225,22 @@ export class FakeHcCore {
       return;
     }
     const body = this.outcome(socket, method, params);
-    const line = `${JSON.stringify({ id, jsonrpc: '2.0', ...body })}\n`;
+    const line = `${JSON.stringify({ [HcField.Id]: id, [HcField.JsonRpc]: HC_JSONRPC_VERSION, ...body })}${HC_LINE_SEPARATOR}`;
     if (!this.splitReplies) {
       socket.write(line);
       return;
     }
-    socket.write(line.slice(0, 7));
-    const timer = setTimeout(() => { this.timers.delete(timer); socket.write(line.slice(7)); }, 15);
+    socket.write(line.slice(0, SPLIT_AT));
+    const timer = setTimeout(() => { this.timers.delete(timer); socket.write(line.slice(SPLIT_AT)); }, SPLIT_DELAY);
     this.timers.add(timer);
   }
 
   private outcome(socket: Socket, method: string, params: Fields): Fields {
     try {
-      return { result: this.resultOf(socket, method, params) };
+      return { [HcField.Result]: this.resultOf(socket, method, params) };
     } catch (cause) {
       if (cause instanceof FakeFault) {
-        return { error: { code: cause.code, message: cause.message, data: { kind: cause.kind } } };
+        return { [HcField.Error]: { [HcField.Code]: cause.code, [HcField.Message]: cause.message, [HcField.Data]: { [HcField.Kind]: cause.kind } } };
       }
       throw cause;
     }
@@ -239,27 +251,25 @@ export class FakeHcCore {
     if (custom !== undefined) {
       return custom(params);
     }
-    switch (method) {
-      case 'hello':
-        return this.helloResult;
-      case 'terminal.list':
-        return { hidden_finished: 0, terminals: this.terminals };
-      case 'terminal.get':
-        return this.getOf(params['terminal']);
-      case 'terminal.read':
-        return { text: `screen of ${String(params['terminal'])}`, complete: true, how: 'screen', why: null };
-      case 'events.subscribe':
-        this.subscribers.add(socket);
-        return { channel: null, seq: this.seq, terminals: this.terminals };
-      default:
-        throw new FakeFault(-32601, 'method_not_found', `no method ${method}`);
+    const serve = this.served.get(method);
+    if (serve === undefined) {
+      throw new FakeFault(FakeRpcCode.MethodNotFound, FakeFaultKind.MethodNotFound, `no method ${method}`);
     }
+    return serve(socket, params);
   }
 
+  private readonly served: ReadonlyMap<string, Serve> = new Map<string, Serve>([
+    [HC_HELLO_METHOD, () => this.helloResult],
+    [HC_LIST_METHOD, () => ({ hidden_finished: 0, [HcField.Terminals]: this.terminals })],
+    [HC_GET_METHOD, (_socket, params) => this.getOf(params[HcField.Terminal])],
+    [HC_READ_METHOD, (_socket, params) => ({ text: `screen of ${String(params[HcField.Terminal])}`, complete: true, how: 'screen', why: null })],
+    [HC_SUBSCRIBE_METHOD, (socket) => { this.subscribers.add(socket); return { channel: null, [HcField.Seq]: this.seq, [HcField.Terminals]: this.terminals }; }],
+  ]);
+
   private getOf(address: unknown): Fields {
-    const found = this.terminals.find((terminal) => terminal['address'] === address);
+    const found = this.terminals.find((terminal) => terminal[TERMINAL_ADDRESS] === address);
     if (found === undefined) {
-      throw new FakeFault(-32000, 'not_found', `no terminal "${String(address)}"`);
+      throw new FakeFault(FakeRpcCode.NotFound, FakeFaultKind.NotFound, `no terminal "${String(address)}"`);
     }
     return found;
   }

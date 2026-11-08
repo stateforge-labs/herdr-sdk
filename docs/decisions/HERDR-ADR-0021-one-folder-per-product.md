@@ -57,6 +57,16 @@ Two splits stay on purpose:
 
 Tests keep one file per concern; their folders name the module they test (`test/herdr/client/watch/` tests `client/watch.ts` and `client/watch-pane-set.ts`).
 
+### Kinds as objects, dispatch as maps
+
+- Every set of kinds, states and wire names is an `as const` object with a type of the same name (the server client's
+  `src/constants.ts` already worked this way; the core client now does too, in `src/core/constants.ts`, `src/core/errors.ts` and
+  `src/core/kernel.ts`): `HcKind`, `HcNotificationMethod`, `HcField`, `LinkState`, `EventsPhase`, `Life`, `RetryPhase`, `TimerHold`,
+  `ResultKind`, `ParseFailureKind`, `UnknownWhy`, `OutcomeKind`.
+- A choice over a tagged union is a lookup, not a chain of comparisons: a `KindMap<U, R, C>` has one handler per kind (the compiler
+  refuses a missing one), and `byKind(map, value, context)` runs it. Results and failures are tested with `isOk`, `isErr` and `isUnknown`.
+- The layer gate's `no-literal-compare` rule refuses a comparison with a string literal anywhere in `src/`.
+
 ## Consequences
 
 - Consumers see no change: the same subpaths, the same types.

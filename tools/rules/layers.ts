@@ -118,6 +118,11 @@ export const METHOD_VALUE_LAYERS: readonly Layer[] = [Layer.Client, Layer.Wire, 
 export const FORBIDDEN_TEXT: readonly { readonly id: string; readonly pattern: RegExp; readonly reason: string; readonly layers?: readonly Layer[] }[] = [
   { id: 'no-bun-global', pattern: /\bBun\./, reason: 'plan 2: no Bun.* in src/' },
   {
+    id: 'no-literal-compare',
+    pattern: /[!=]==\s*'[^']*'|'[^']*'\s*[!=]==|\bcase\s+'/,
+    reason: 'HERDR-ADR-0021: compare with an as-const object (or dispatch through a KindMap), never with a string literal',
+  },
+  {
     id: 'method-value-use',
     pattern: /\bMethod\.[A-Za-z]/,
     reason: 'plan 10.1 step 2: use the MethodX constant, not the Method object, in client, wire and effect',

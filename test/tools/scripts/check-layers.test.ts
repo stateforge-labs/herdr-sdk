@@ -28,6 +28,7 @@ const FIXTURE_RULES = [
   { name: 'block-opener-in-string', rules: [RuleId.layer] },
   { name: 'method-value-in-client', rules: [RuleId.text, RuleId.text] },
   { name: 'method-type-only', rules: [] },
+  { name: 'literal-compare', rules: [RuleId.text] },
 ] as const;
 
 function rulesOf(name: string): readonly string[] {

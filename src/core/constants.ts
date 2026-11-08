@@ -1,4 +1,4 @@
-// Role: the names, environment variables, timings and messages of the herdr-core client.
+// Role: the names, environment variables, timings, messages, wire fields, message kinds and states of the herdr-core client, as objects.
 // Informs HERDR-ADR-0020 (the herdr-core client); ported from the desktop work in herdr-plugins.
 import { must } from './kernel.ts';
 import { parseCount, type Count } from './kernel.ts';
@@ -31,3 +31,70 @@ export const HC_ODD_RESULT: Text = must(parseText('a result that is not an objec
 export const HC_LINE_CAP: Count = must(parseCount(33_554_432));
 export const HC_LIST_METHOD: NonEmptyText = must(parseNonEmptyText('terminal.list'));
 export const HC_READ_METHOD: NonEmptyText = must(parseNonEmptyText('terminal.read'));
+export const HC_GET_METHOD: NonEmptyText = must(parseNonEmptyText('terminal.get'));
+export const HC_JSONRPC_VERSION = '2.0';
+
+// The kinds of a parsed message and of a feed item (HERDR-ADR-0020).
+export const HcKind = {
+  Reply: 'reply',
+  Odd: 'odd',
+  Fault: 'fault',
+  Event: 'event',
+  Heartbeat: 'heartbeat',
+  Missed: 'missed',
+  Snapshot: 'snapshot',
+} as const;
+
+export type HcKind = (typeof HcKind)[keyof typeof HcKind];
+
+// The notification methods the core pushes on a subscription.
+export const HcNotificationMethod = { Event: 'event', Heartbeat: 'heartbeat', Missed: 'missed' } as const;
+
+export type HcNotificationMethod = (typeof HcNotificationMethod)[keyof typeof HcNotificationMethod];
+
+// The JSON fields of the core's wire.
+export const HcField = {
+  JsonRpc: 'jsonrpc',
+  Id: 'id',
+  Method: 'method',
+  Params: 'params',
+  Result: 'result',
+  Error: 'error',
+  Seq: 'seq',
+  Terminals: 'terminals',
+  Terminal: 'terminal',
+  Generation: 'generation',
+  Version: 'version',
+  Methods: 'methods',
+  Code: 'code',
+  Message: 'message',
+  Data: 'data',
+  Kind: 'kind',
+  Type: 'type',
+} as const;
+
+export const LinkState = { Idle: 'idle', Connecting: 'connecting', Ready: 'ready', Backoff: 'backoff', Closed: 'closed' } as const;
+
+export type LinkState = (typeof LinkState)[keyof typeof LinkState];
+
+export const EventsPhase = { Waiting: 'waiting', Subscribed: 'subscribed' } as const;
+
+export type EventsPhase = (typeof EventsPhase)[keyof typeof EventsPhase];
+
+export const Life = { Open: 'open', Closed: 'closed' } as const;
+
+export type Life = (typeof Life)[keyof typeof Life];
+
+export const RetryPhase = { Idle: 'idle', Waiting: 'waiting' } as const;
+
+export type RetryPhase = (typeof RetryPhase)[keyof typeof RetryPhase];
+
+// Whether a retry timer keeps the process alive.
+export const TimerHold = { HoldsProcess: 'holds-process', LetsProcessEnd: 'lets-process-end' } as const;
+
+export type TimerHold = (typeof TimerHold)[keyof typeof TimerHold];
+
+export const SocketEvent = { Data: 'data', Error: 'error', Close: 'close', Connect: 'connect' } as const;
+
+export const UTF8 = 'utf8';
+export const HC_LINE_SEPARATOR = '\n';

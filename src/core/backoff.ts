@@ -3,6 +3,7 @@
 import { must } from './kernel.ts';
 import { parseCount, type Count } from './kernel.ts';
 import type { Duration } from './kernel.ts';
+import { RetryPhase, TimerHold } from './constants.ts';
 import { nextBackoff } from './wire.ts';
 
 export interface BackoffTiming {
@@ -10,12 +11,13 @@ export interface BackoffTiming {
   readonly backoffCap: Duration;
 }
 
-export type RetryPhase = 'idle' | 'waiting';
-
-export type TimerHold = 'holds-process' | 'lets-process-end';
-
 const ZERO = must(parseCount(0));
 const ONE = must(parseCount(1));
+
+const HOLD: Readonly<Record<TimerHold, (timer: NodeJS.Timeout) => void>> = {
+  [TimerHold.HoldsProcess]: () => undefined,
+  [TimerHold.LetsProcessEnd]: (timer) => { timer.unref(); },
+};
 
 export class Backoff {
   private readonly timing: BackoffTiming;
@@ -30,7 +32,7 @@ export class Backoff {
   }
 
   get phase(): RetryPhase {
-    return this.retry === null ? 'idle' : 'waiting';
+    return this.retry === null ? RetryPhase.Idle : RetryPhase.Waiting;
   }
 
   schedule(run: () => void): void {
@@ -55,9 +57,7 @@ export class Backoff {
 
   private timer(run: () => void, delay: Duration): NodeJS.Timeout {
     const timer = setTimeout(run, delay);
-    if (this.hold === 'lets-process-end') {
-      timer.unref();
-    }
+    HOLD[this.hold](timer);
     return timer;
   }
 

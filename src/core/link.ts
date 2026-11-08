@@ -3,20 +3,20 @@
 import { createConnection } from 'node:net';
 import type { Socket } from 'node:net';
 import { parseCount, type Count } from './kernel.ts';
-import { must } from './kernel.ts';
+import { byKind, isErr, isOk, must, type KindMap } from './kernel.ts';
 import type { Duration } from './kernel.ts';
 import { parseText, type NonEmptyText, type Text } from './kernel.ts';
-import { unknown, type Unknown } from './errors.ts';
+import { isUnknown, OutcomeKind, unknown, UnknownWhy, type Unknown } from './errors.ts';
 import {
   HC_BACKOFF_BASE, HC_BACKOFF_CAP, HC_CLOSED, HC_CONNECTING, HC_DOWN, HC_DROPPED, HC_GENERATION, HC_HELLO_METHOD,
-  HC_HELLO_TIMEOUT, HC_HELLO_UNREADABLE, HC_NO_CONNECTION, HC_ODD_RESULT,
+  HC_HELLO_TIMEOUT, HC_HELLO_UNREADABLE, HC_NO_CONNECTION, HC_ODD_RESULT, HcKind, LinkState, SocketEvent, TimerHold,
 } from './constants.ts';
 import { Backoff } from './backoff.ts';
 import { HcCoreLines, encodeHcCoreRequest, parseHcCallId, parseHcCoreHello, parseHcCoreMessage, parseHcParams, parseWireChunk } from './wire.ts';
 import type { HcCallId, HcCoreHello, HcCoreMessage, HcParams, HcPayload, SocketPath } from './wire.ts';
 
 export interface HcAnswered {
-  readonly kind: 'answer';
+  readonly kind: typeof OutcomeKind.Answer;
   readonly value: HcPayload;
 }
 
@@ -33,7 +33,6 @@ export interface CoreLinkParts {
   readonly timing?: CoreLinkTiming;
 }
 
-type LinkState = 'idle' | 'connecting' | 'ready' | 'backoff' | 'closed';
 type Settle = (result: HcCallResult) => void;
 
 const ZERO = must(parseCount(0));
@@ -41,31 +40,34 @@ const ONE = must(parseCount(1));
 const HELLO_PARAMS: HcParams = must(parseHcParams({ generation: HC_GENERATION }));
 const DEFAULT_TIMING: CoreLinkTiming = { helloTimeout: HC_HELLO_TIMEOUT, backoffBase: HC_BACKOFF_BASE, backoffCap: HC_BACKOFF_CAP };
 
-const unreachable = (detail: Text): Unknown => unknown({ why: 'unreachable', detail });
+const unreachable = (detail: Text): Unknown => unknown({ why: UnknownWhy.Unreachable, detail });
+const timedOut = (after: Duration): Unknown => unknown({ why: UnknownWhy.Timeout, after });
+const none = (): null => null;
 
-function answerOf(message: HcCoreMessage): HcCallResult | null {
-  if (message.kind === 'reply') {
-    return { kind: 'answer', value: message.result };
-  }
-  if (message.kind === 'odd') {
-    return unknown({ why: 'unreadable', detail: HC_ODD_RESULT });
-  }
-  if (message.kind === 'fault') {
-    return unknown({ why: 'failed', code: message.code, detail: `${message.reason}: ${message.message}` });
-  }
-  return null;
-}
+const ANSWER_OF: KindMap<HcCoreMessage, HcCallResult | null> = {
+  [HcKind.Reply]: (message) => ({ kind: OutcomeKind.Answer, value: message.result }),
+  [HcKind.Odd]: () => unknown({ why: UnknownWhy.Unreadable, detail: HC_ODD_RESULT }),
+  [HcKind.Fault]: (message) => unknown({ why: UnknownWhy.Failed, code: message.code, detail: `${message.reason}: ${message.message}` }),
+  [HcKind.Event]: none,
+  [HcKind.Heartbeat]: none,
+  [HcKind.Missed]: none,
+};
 
-function idOf(message: HcCoreMessage): HcCallId | null {
-  return message.kind === 'reply' || message.kind === 'fault' || message.kind === 'odd' ? message.id : null;
-}
+const ID_OF: KindMap<HcCoreMessage, HcCallId | null> = {
+  [HcKind.Reply]: (message) => message.id,
+  [HcKind.Odd]: (message) => message.id,
+  [HcKind.Fault]: (message) => message.id,
+  [HcKind.Event]: none,
+  [HcKind.Heartbeat]: none,
+  [HcKind.Missed]: none,
+};
 
 export class CoreLink {
   private readonly path: SocketPath;
   private readonly timing: CoreLinkTiming;
   private readonly pending = new Map<HcCallId, Settle>();
   private socket: Socket | null = null;
-  private state: LinkState = 'idle';
+  private state: LinkState = LinkState.Idle;
   private connecting: Promise<Unknown | null> | null = null;
   private readonly backoff: Backoff;
   private issued: Count = ZERO;
@@ -74,7 +76,7 @@ export class CoreLink {
   constructor(parts: CoreLinkParts) {
     this.path = parts.path;
     this.timing = parts.timing ?? DEFAULT_TIMING;
-    this.backoff = new Backoff(this.timing, 'lets-process-end');
+    this.backoff = new Backoff(this.timing, TimerHold.LetsProcessEnd);
   }
 
   get hello(): HcCoreHello | null {
@@ -87,7 +89,7 @@ export class CoreLink {
 
   call(method: NonEmptyText, params: HcParams, timeout: Duration): Promise<HcCallResult> {
     return new Promise<HcCallResult>((resolve) => {
-      const timer = setTimeout(() => { resolve(unknown({ why: 'timeout', after: timeout })); }, timeout);
+      const timer = setTimeout(() => { resolve(timedOut(timeout)); }, timeout);
       timer.unref();
       void this.attempt(method, params, timeout).then((result) => {
         clearTimeout(timer);
@@ -103,7 +105,7 @@ export class CoreLink {
   }
 
   async close(): Promise<void> {
-    this.state = 'closed';
+    this.state = LinkState.Closed;
     this.backoff.stop();
     this.settleAll(unreachable(HC_CLOSED));
     const socket = this.socket;
@@ -111,26 +113,23 @@ export class CoreLink {
       return;
     }
     this.socket = null;
-    await new Promise<void>((resolve) => { socket.once('close', () => { resolve(); }); socket.destroy(); });
+    await new Promise<void>((resolve) => { socket.once(SocketEvent.Close, () => { resolve(); }); socket.destroy(); });
   }
 
+  private readonly readiness: Readonly<Record<LinkState, () => Promise<Unknown | null>>> = {
+    [LinkState.Ready]: () => Promise.resolve(null),
+    [LinkState.Connecting]: () => this.connecting ?? Promise.resolve(unreachable(HC_CONNECTING)),
+    [LinkState.Backoff]: () => Promise.resolve(unreachable(HC_DOWN)),
+    [LinkState.Closed]: () => Promise.resolve(unreachable(HC_CLOSED)),
+    [LinkState.Idle]: () => this.connect(),
+  };
+
   private ready(): Promise<Unknown | null> {
-    switch (this.state) {
-      case 'ready':
-        return Promise.resolve(null);
-      case 'connecting':
-        return this.connecting ?? Promise.resolve(unreachable(HC_CONNECTING));
-      case 'backoff':
-        return Promise.resolve(unreachable(HC_DOWN));
-      case 'closed':
-        return Promise.resolve(unreachable(HC_CLOSED));
-      default:
-        return this.connect();
-    }
+    return this.readiness[this.state]();
   }
 
   private connect(): Promise<Unknown | null> {
-    this.state = 'connecting';
+    this.state = LinkState.Connecting;
     const attempt = this.dial().finally(() => { this.connecting = null; });
     this.connecting = attempt;
     return attempt;
@@ -142,15 +141,15 @@ export class CoreLink {
       const lines = new HcCoreLines(() => { socket.destroy(); });
       let reason: Text = HC_DROPPED;
       this.socket = socket;
-      socket.on('data', (chunk) => {
+      socket.on(SocketEvent.Data, (chunk) => {
         const bytes = parseWireChunk(chunk);
-        if (bytes.kind === 'ok') {
+        if (isOk(bytes)) {
           this.receive(lines.feed(bytes.value));
         }
       });
-      socket.on('error', (cause) => { reason = must(parseText(cause.message)); });
-      socket.on('close', () => { this.lost(socket); resolve(unreachable(reason)); });
-      socket.once('connect', () => { void this.handshake(socket).then(resolve); });
+      socket.on(SocketEvent.Error, (cause) => { reason = must(parseText(cause.message)); });
+      socket.on(SocketEvent.Close, () => { this.lost(socket); resolve(unreachable(reason)); });
+      socket.once(SocketEvent.Connect, () => { void this.handshake(socket).then(resolve); });
     });
   }
 
@@ -161,21 +160,21 @@ export class CoreLink {
       socket.destroy();
       return refusal;
     }
-    this.state = 'ready';
+    this.state = LinkState.Ready;
     this.backoff.survive();
     return null;
   }
 
   private takeHello(reply: HcCallResult): Unknown | null {
-    if (reply.kind === 'unknown') {
+    if (isUnknown(reply)) {
       return reply;
     }
     const hello = parseHcCoreHello(reply.value);
-    if (hello.kind === 'err') {
-      return unknown({ why: 'unreadable', detail: HC_HELLO_UNREADABLE });
+    if (isErr(hello)) {
+      return unknown({ why: UnknownWhy.Unreadable, detail: HC_HELLO_UNREADABLE });
     }
     if (hello.value.generation !== HC_GENERATION) {
-      return unknown({ why: 'unreadable', detail: `generation ${hello.value.generation}` });
+      return unknown({ why: UnknownWhy.Unreadable, detail: `generation ${hello.value.generation}` });
     }
     this.info = hello.value;
     return null;
@@ -189,7 +188,7 @@ export class CoreLink {
     this.issued = must(parseCount(this.issued + ONE));
     const id = must(parseHcCallId(this.issued));
     return new Promise<HcCallResult>((resolve) => {
-      const timer = setTimeout(() => { this.pending.delete(id); resolve(unknown({ why: 'timeout', after: timeout })); }, timeout);
+      const timer = setTimeout(() => { this.pending.delete(id); resolve(timedOut(timeout)); }, timeout);
       timer.unref();
       this.pending.set(id, (result) => { clearTimeout(timer); resolve(result); });
       socket.write(encodeHcCoreRequest(id, method, params));
@@ -199,8 +198,8 @@ export class CoreLink {
   private receive(values: readonly HcPayload[]): void {
     for (const value of values) {
       const parsed = parseHcCoreMessage(value);
-      const id = parsed.kind === 'ok' ? idOf(parsed.value) : null;
-      const answer = parsed.kind === 'ok' ? answerOf(parsed.value) : null;
+      const id = isOk(parsed) ? byKind(ID_OF, parsed.value, undefined) : null;
+      const answer = isOk(parsed) ? byKind(ANSWER_OF, parsed.value, undefined) : null;
       const settle = id === null ? undefined : this.pending.get(id);
       if (id !== null && settle !== undefined && answer !== null) {
         this.pending.delete(id);
@@ -215,15 +214,15 @@ export class CoreLink {
     }
     this.socket = null;
     this.settleAll(unreachable(HC_DROPPED));
-    if (this.state === 'closed') {
+    if (this.state === LinkState.Closed) {
       return;
     }
-    this.state = 'backoff';
+    this.state = LinkState.Backoff;
     this.backoff.schedule(() => { void this.reconnect(); });
   }
 
   private reconnect(): Promise<Unknown | null> {
-    return this.state === 'backoff' ? this.connect() : Promise.resolve(null);
+    return this.state === LinkState.Backoff ? this.connect() : Promise.resolve(null);
   }
 
   private settleAll(result: Unknown): void {
