@@ -12,7 +12,7 @@ The chain below is complete from the upstream project to this package. Licence t
 
 ## 1. Intermediate port
 
-A private port by the same authors as this package, commit `097adfd662c4818a351c714e4863c1d606726822`.
+An unpublished intermediate port by the same authors as this package.
 Its changes to upstream, as stated in its own `NOTICE.md`:
 
 1. `Bun.file(path).text()` replaced by `readFileSync(path, 'utf8')`.

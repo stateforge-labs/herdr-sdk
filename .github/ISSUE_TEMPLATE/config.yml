@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Help and questions
+    url: https://github.com/stateforge-labs/herdr-sdk/blob/main/SUPPORT.md
+    about: Read SUPPORT.md. Questions are answered in issues.
+  - name: Security vulnerability
+    url: https://github.com/stateforge-labs/herdr-sdk/security/advisories/new
+    about: Report a vulnerability privately. Do not open a public issue for it.

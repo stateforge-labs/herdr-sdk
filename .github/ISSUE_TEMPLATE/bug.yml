@@ -1,0 +1,63 @@
+name: Bug report
+description: Report a problem with @stateforge-labs/herdr-sdk
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Do not include tokens, private paths or private hostnames. Security problems go to SECURITY.md, not here.
+  - type: input
+    id: herdr-version
+    attributes:
+      label: herdr version
+      description: The output of `herdr --version`.
+      placeholder: "0.9.5"
+    validations:
+      required: true
+  - type: input
+    id: sdk-version
+    attributes:
+      label: "@stateforge-labs/herdr-sdk version"
+      placeholder: "0.3.0"
+    validations:
+      required: true
+  - type: input
+    id: protocol
+    attributes:
+      label: herdr protocol
+      description: The `protocol` number the server reports (22 for this release line).
+      placeholder: "22"
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime and version
+      description: For example "Node 22.18.0" or "Bun 1.4.4".
+    validations:
+      required: true
+  - type: textarea
+    id: snippet
+    attributes:
+      label: Minimal reproduction
+      description: The smallest code that shows the problem.
+      render: typescript
+    validations:
+      required: true
+  - type: textarea
+    id: behaviour
+    attributes:
+      label: Expected and actual behaviour
+      description: What you expected, and what happened instead, including the error text or code.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched the existing issues.
+          required: true
+        - label: I read the README and SUPPORT.md.
+          required: true

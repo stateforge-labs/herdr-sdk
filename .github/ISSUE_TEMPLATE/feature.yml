@@ -1,0 +1,34 @@
+name: Feature request
+description: Suggest a change to @stateforge-labs/herdr-sdk
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you are trying to do, and what gets in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: The API or behaviour you would like. A short code sketch is welcome.
+      render: typescript
+    validations:
+      required: false
+  - type: input
+    id: herdr-version
+    attributes:
+      label: herdr version (if relevant)
+      placeholder: "0.9.5"
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched the existing issues.
+          required: true

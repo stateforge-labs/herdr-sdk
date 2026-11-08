@@ -17,6 +17,8 @@
   ],
   "author": "stateforge-labs",
   "homepage": "https://github.com/stateforge-labs/herdr-sdk#readme",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "bugs": {
     "url": "https://github.com/stateforge-labs/herdr-sdk/issues"
   },
@@ -83,6 +85,7 @@
     "skills",
     "docs/api",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "NOTICE.md"
   ],
