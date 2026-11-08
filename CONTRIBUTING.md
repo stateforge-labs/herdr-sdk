@@ -95,6 +95,6 @@ Renovate runs on the project's GitLab only, with `renovate.json`. Its release ag
 
 GitLab SAST and Secret Detection run in the merge request pipelines of the project. The GitHub mirror does not run a separate CodeQL workflow.
 
-## Licence
+## License
 
 By contributing you agree that your change is released under the MIT licence in [LICENSE](LICENSE).

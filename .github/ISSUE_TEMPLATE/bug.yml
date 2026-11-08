@@ -12,29 +12,27 @@ body:
     attributes:
       label: herdr version
       description: The output of `herdr --version`.
-      placeholder: "0.9.5"
     validations:
       required: true
   - type: input
     id: sdk-version
     attributes:
       label: "@stateforge-labs/herdr-sdk version"
-      placeholder: "0.3.0"
+      description: The output of `npm ls @stateforge-labs/herdr-sdk` or `bun pm ls`.
     validations:
       required: true
   - type: input
     id: protocol
     attributes:
       label: herdr protocol
-      description: The `protocol` number the server reports (22 for this release line).
-      placeholder: "22"
+      description: The `protocol` number the server reports.
     validations:
       required: true
   - type: input
     id: runtime
     attributes:
       label: Runtime and version
-      description: For example "Node 22.18.0" or "Bun 1.4.4".
+      description: The output of `node --version` or `bun --version`.
     validations:
       required: true
   - type: textarea

@@ -1,13 +1,13 @@
 # Provenance of `tools/gen/`, `src/herdr/generated/` and the schema
 
 `@stateforge-labs/herdr-sdk` is built on a **port of a third party's generator**, not on our own original work.
-The chain below is complete from the upstream project to this package. Licence text: [LICENSE](LICENSE).
+The chain below is complete from the upstream project to this package. License text: [LICENSE](LICENSE).
 
 | | |
 | --- | --- |
 | Upstream | `https://github.com/brooswit-factory/jsHerdrSDK`, commit `e34fd3f2cf32722ed570d1c232c35bdd83eef312` (2026-08-26), paths `scripts/gen/` and `src/` |
 | Published as | `@brooswit/herdr-sdk` 0.1.3 on npm. **Not depended on** by this package |
-| Licence | MIT, declared in the upstream `package.json`. The upstream repository has no LICENSE file |
+| License | MIT, declared in the upstream `package.json`. The upstream repository has no LICENSE file |
 | Author | brooswit `<brooswit@gmail.com>` |
 
 ## 1. Intermediate port
