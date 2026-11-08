@@ -2,7 +2,7 @@
 # lint → test → security → build (publishing moved to GitHub Actions, HERDR-ADR-0022)
 #
 # Follows the homelab fleet standard (homelab/ci-templates README): templates pinned to a vX.Y.Z tag,
-# the two ci/lib scripts it uses (common.sh, check-vendored.sh) vendored and checked against that tag (lint:vendored-lib), the canonical workflow: block copied
+# the ci/lib scripts it and the security template call vendored and checked against that tag (lint:vendored-lib), the canonical workflow: block copied
 # verbatim, images from the Harbor proxy and pinned, job names scoped by stage, shell in ci/*.sh.
 # Releases are not published from here: a v* tag on the GitHub repository publishes to npm (HERDR-ADR-0022).
 
@@ -53,7 +53,7 @@ lint:vendored-lib:
     - kubernetes
   needs: []
   variables:
-    VENDORED_PATHS: "ci/lib/common.sh ci/lib/check-vendored.sh"
+    VENDORED_PATHS: "ci/lib/common.sh ci/lib/check-vendored.sh ci/lib/scan-osv.sh ci/lib/scan-secrets.sh ci/lib/scan-trivy.sh ci/lib/scan-trivy-config.sh ci/lib/validate-kubeconform.sh"
   before_script:
     - bash ci/git-use-job-token.sh
   script:
