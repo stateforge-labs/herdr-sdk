@@ -1,5 +1,5 @@
 // Role: size scenario c (plan 10.1 row "c", script): a full client that lists workspaces and takes a snapshot. Bundled by tools/scripts/check-size.ts, never run.
-import { connect } from '@stateforge-labs/herdr';
+import { connect } from '@stateforge-labs/herdr-sdk';
 
 export async function scenarioC(): Promise<unknown> {
   const herdr = await connect();

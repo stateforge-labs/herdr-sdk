@@ -1,6 +1,6 @@
 # Provenance of `tools/gen/`, `src/herdr/generated/` and the schema
 
-`@stateforge-labs/herdr` is built on a **port of a third party's generator**, not on our own original work.
+`@stateforge-labs/herdr-sdk` is built on a **port of a third party's generator**, not on our own original work.
 The chain below is complete from the upstream project to this package. Licence text: [LICENSE](LICENSE).
 
 | | |

@@ -6,7 +6,7 @@ Every `ts` block below is type-checked against the package by `test/skill/skill.
 
 ```ts run
 // fake: agent.list {"type":"agent_list","agents":[{"agent_status":"idle","focused":false,"pane_id":"p_1","revision":1,"tab_id":"t_1","terminal_id":"term_1","workspace_id":"w_1","name":"reviewer"}]}
-import { connectReadOnly } from "@stateforge-labs/herdr/read-only"
+import { connectReadOnly } from "@stateforge-labs/herdr-sdk/read-only"
 
 const herdr = await connectReadOnly()
 const { agents } = await herdr.agent.list({})
@@ -20,7 +20,7 @@ herdr.close()
 
 ```ts run
 // fake: session.snapshot {"type":"session_snapshot","snapshot":{"agents":[],"layouts":[],"panes":[],"protocol":22,"tabs":[],"version":"0.9.5","workspaces":[]}}
-import { connectReadOnly } from "@stateforge-labs/herdr/read-only"
+import { connectReadOnly } from "@stateforge-labs/herdr-sdk/read-only"
 
 const herdr = await connectReadOnly()
 const { snapshot } = await herdr.session.snapshot({})
@@ -34,8 +34,8 @@ The timeout is required in practice: without it herdr waits forever.
 
 ```ts run
 // fake: agent.wait {"type":"agent_info","agent":{"agent_status":"idle","focused":false,"pane_id":"p_1","revision":1,"tab_id":"t_1","terminal_id":"term_1","workspace_id":"w_1","name":"reviewer"}}
-import { connectReadOnly } from "@stateforge-labs/herdr/read-only"
-import { AgentStatus } from "@stateforge-labs/herdr"
+import { connectReadOnly } from "@stateforge-labs/herdr-sdk/read-only"
+import { AgentStatus } from "@stateforge-labs/herdr-sdk"
 
 const herdr = await connectReadOnly()
 const info = await herdr.agent.wait({ target: "reviewer", until: [AgentStatus.Done], timeout_ms: 60_000 })
@@ -49,8 +49,8 @@ herdr.close()
 
 ```ts run
 // fake: agent.prompt {"type":"ok"}
-import { connectPrompt } from "@stateforge-labs/herdr/read-only"
-import { HerdrError, HerdrTransportError } from "@stateforge-labs/herdr"
+import { connectPrompt } from "@stateforge-labs/herdr-sdk/read-only"
+import { HerdrError, HerdrTransportError } from "@stateforge-labs/herdr-sdk"
 
 const herdr = await connectPrompt()
 try {
@@ -69,7 +69,7 @@ Terminal content is a separate capability: `connect()` has it, `connectReadOnly(
 
 ```ts run
 // fake: pane.read {"type":"pane_read","read":{"format":"text","pane_id":"p_1","revision":1,"source":"recent","tab_id":"t_1","text":"ok","truncated":false,"workspace_id":"w_1"}}
-import { connectReadOnly } from "@stateforge-labs/herdr/read-only"
+import { connectReadOnly } from "@stateforge-labs/herdr-sdk/read-only"
 
 const herdr = await connectReadOnly({ content: true })
 const { read } = await herdr.pane.read({ pane_id: "p_1", source: "recent", lines: 40 })
@@ -81,7 +81,7 @@ herdr.close()
 
 ```ts run
 // fake: pane.wait_for_output {"type":"ok"}
-import { connect } from "@stateforge-labs/herdr"
+import { connect } from "@stateforge-labs/herdr-sdk"
 
 const herdr = await connect()
 await herdr.pane.wait_for_output({
@@ -101,7 +101,7 @@ herdr.close()
 // fake: pane.split {"type":"ok"}
 // fake: pane.send_text {"type":"ok"}
 // fake: pane.send_keys {"type":"ok"}
-import { connect } from "@stateforge-labs/herdr"
+import { connect } from "@stateforge-labs/herdr-sdk"
 
 const herdr = await connect()
 await herdr.pane.split({ direction: "right", target_pane_id: "p_1", cwd: "/tmp" })
@@ -115,8 +115,8 @@ herdr.close()
 A subscription is an async iterable of frames. Subscribe, loop, `close()` when done.
 
 ```ts run
-import { connectReadOnly } from "@stateforge-labs/herdr/read-only"
-import { EventKind, SubscriptionType } from "@stateforge-labs/herdr/read-only"
+import { connectReadOnly } from "@stateforge-labs/herdr-sdk/read-only"
+import { EventKind, SubscriptionType } from "@stateforge-labs/herdr-sdk/read-only"
 
 const herdr = await connectReadOnly()
 const subscription = await herdr.events.subscribe([
@@ -137,8 +137,8 @@ herdr.close()
 `watch` takes a snapshot, subscribes, replays frames that arrived in between, and resubscribes with backoff after a drop. The first item is always `Live`. Frames can be replayed, so make your fold idempotent.
 
 ```ts
-import { connectReadOnly } from "@stateforge-labs/herdr/read-only"
-import { WatchKind } from "@stateforge-labs/herdr"
+import { connectReadOnly } from "@stateforge-labs/herdr-sdk/read-only"
+import { WatchKind } from "@stateforge-labs/herdr-sdk"
 
 const herdr = await connectReadOnly()
 const view = herdr.watch({ snapshot: () => herdr.session.snapshot({}) })
@@ -153,8 +153,8 @@ for await (const change of view) {
 The fake answers `ping`; every other method must be scripted with `fake.reply(method, result)`, otherwise herdr-style `unknown_method` is returned. It also lets you script failures, silence and pushes.
 
 ```ts run
-import { connect, Method, ResultTag } from "@stateforge-labs/herdr"
-import { createFakeHerdr } from "@stateforge-labs/herdr/test-kit"
+import { connect, Method, ResultTag } from "@stateforge-labs/herdr-sdk"
+import { createFakeHerdr } from "@stateforge-labs/herdr-sdk/test-kit"
 
 const fake = await createFakeHerdr()
 fake.reply(Method.AgentList, { type: ResultTag.AgentList, agents: [] })

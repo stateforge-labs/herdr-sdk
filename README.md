@@ -1,4 +1,4 @@
-# @stateforge-labs/herdr
+# @stateforge-labs/herdr-sdk
 
 A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22, herdr 0.9.5: 102 methods, 26 event kinds, 27 subscription types), for Bun and Node.
 
@@ -8,15 +8,15 @@ A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22,
 
 | Import | What | Runtime deps |
 |---|---|---|
-| `@stateforge-labs/herdr` | `connect()`: reads, writes, input, hooks, long-poll, `hold()`; errors; generated types and constants | none |
-| `@stateforge-labs/herdr/read-only` | `connectReadOnly()`: structure reads only; terminal content on opt-in | none |
-| `@stateforge-labs/herdr/admin` | `connectAdmin()`: adds destructive, server-control and spawn/execute methods | none |
-| `@stateforge-labs/herdr/effect` | `toTaggedError`, `EffectErrorTag` and the tagged error types, for mapping the Promise errors into an Effect program | none |
-| `@stateforge-labs/herdr/test-kit` | `createFakeHerdr()` (tests only) | none |
-| `@stateforge-labs/herdr/schema` | method table and parameter shapes of the generated API (what a generator, such as an MCP server, builds its tools from) | none |
-| `@stateforge-labs/herdr/core` | `CoreLink`, `CoreEvents`, the wire parsers and the socket path rule: a client of the herdr-core (`hc`) socket, standalone from the protocol-22 client | none |
-| `@stateforge-labs/herdr/core/test-kit` | `FakeHcCore`, `setupTest(t)`, `openWorld()` (tests only) | none |
-| `@stateforge-labs/herdr/drift` | `driftBetween`, `inventoryOf`, `exitCodeFor`: the library behind `herdr-drift`, for your own tooling | none |
+| `@stateforge-labs/herdr-sdk` | `connect()`: reads, writes, input, hooks, long-poll, `hold()`; errors; generated types and constants | none |
+| `@stateforge-labs/herdr-sdk/read-only` | `connectReadOnly()`: structure reads only; terminal content on opt-in | none |
+| `@stateforge-labs/herdr-sdk/admin` | `connectAdmin()`: adds destructive, server-control and spawn/execute methods | none |
+| `@stateforge-labs/herdr-sdk/effect` | `toTaggedError`, `EffectErrorTag` and the tagged error types, for mapping the Promise errors into an Effect program | none |
+| `@stateforge-labs/herdr-sdk/test-kit` | `createFakeHerdr()` (tests only) | none |
+| `@stateforge-labs/herdr-sdk/schema` | method table and parameter shapes of the generated API (what a generator, such as an MCP server, builds its tools from) | none |
+| `@stateforge-labs/herdr-sdk/core` | `CoreLink`, `CoreEvents`, the wire parsers and the socket path rule: a client of the herdr-core (`hc`) socket, standalone from the protocol-22 client | none |
+| `@stateforge-labs/herdr-sdk/core/test-kit` | `FakeHcCore`, `setupTest(t)`, `openWorld()` (tests only) | none |
+| `@stateforge-labs/herdr-sdk/drift` | `driftBetween`, `inventoryOf`, `exitCodeFor`: the library behind `herdr-drift`, for your own tooling | none |
 | `herdr-drift` (bin) | compare the committed schema with the installed herdr | none |
 | `herdr-skill` (bin) | print or install the agent skill that ships in `skills/herdr-sdk` | none |
 
@@ -25,9 +25,9 @@ Wire types are `export type` only. Raw strings are accepted by the types, but th
 ## Install
 
 ```sh
-npm install @stateforge-labs/herdr
+npm install @stateforge-labs/herdr-sdk
 # or
-bun add @stateforge-labs/herdr
+bun add @stateforge-labs/herdr-sdk
 ```
 
 Versions published from GitHub Actions with npm trusted publishing carry a provenance attestation
@@ -41,9 +41,9 @@ Measured on 2026-11-02, minified (`bun run check:size`, which builds `dist/` and
 
 | What a consumer imports | Bytes |
 |---|---|
-| `@stateforge-labs/herdr` (every method, `connect()`) | 26,887 |
-| `@stateforge-labs/herdr/read-only` | 18,691 |
-| `@stateforge-labs/herdr/admin` | 15,561 |
+| `@stateforge-labs/herdr-sdk` (every method, `connect()`) | 26,887 |
+| `@stateforge-labs/herdr-sdk/read-only` | 18,691 |
+| `@stateforge-labs/herdr-sdk/admin` | 15,561 |
 | a read-only script that narrows to one method | 17,513 |
 | the streams chunk (`events.subscribe`, `watch`, `hold`), loaded on first use | 7,672 |
 
@@ -52,7 +52,7 @@ The declarations use `AbortSignal` and `AsyncDisposable`. Consumers need `@types
 ## 1. A small script (Promise API)
 
 ```ts
-import { connect, HerdrError } from "@stateforge-labs/herdr"
+import { connect, HerdrError } from "@stateforge-labs/herdr-sdk"
 
 const herdr = await connect() // finds the socket (HERDR_SOCKET, else ~/.config/herdr/herdr.sock), pings, checks protocol 22
 
@@ -69,12 +69,12 @@ try {
 herdr.close()
 ```
 
-Methods are nested by their dotted name: `herdr.pane.list({})`, `herdr.agent.view.set({...})`. `connect()` has no destructive or server-control methods (`*.close`, `server.stop`, `plugin.link`...); those need `connectAdmin()` from `@stateforge-labs/herdr/admin`.
+Methods are nested by their dotted name: `herdr.pane.list({})`, `herdr.agent.view.set({...})`. `connect()` has no destructive or server-control methods (`*.close`, `server.stop`, `plugin.link`...); those need `connectAdmin()` from `@stateforge-labs/herdr-sdk/admin`.
 
 A protocol mismatch fails fast; a method the server does not support fails before sending:
 
 ```ts
-import { connect, ProtocolMismatchError } from "@stateforge-labs/herdr"
+import { connect, ProtocolMismatchError } from "@stateforge-labs/herdr-sdk"
 
 try {
   await connect()
@@ -86,7 +86,7 @@ try {
 ## 2. Subscriptions, long-poll and held connections
 
 ```ts
-import { connect, SubscriptionType, EventKind, AgentStatus, WatchKind } from "@stateforge-labs/herdr"
+import { connect, SubscriptionType, EventKind, AgentStatus, WatchKind } from "@stateforge-labs/herdr-sdk"
 
 const herdr = await connect({ onCall: ({ method, durationMs, outcome }) => metrics.record(method, durationMs, outcome) })
 
@@ -119,7 +119,7 @@ A timeout is not proof that a prompt was not delivered: never resend blindly.
 ## 3. Read-only and prompt-only clients
 
 ```ts
-import { connectReadOnly, Presets } from "@stateforge-labs/herdr/read-only"
+import { connectReadOnly, Presets } from "@stateforge-labs/herdr-sdk/read-only"
 
 const herdr = await connectReadOnly({ preset: Presets.SessionsReader }) // session.snapshot, agent.list, agent.get, pane.get, pane.list
 const snapshot = await herdr.session.snapshot({})
@@ -147,8 +147,8 @@ Every tagged error also has `message` (the Promise error's message).
 
 ```ts
 import { test, expect } from "bun:test"
-import { connect, Method, ResultTag } from "@stateforge-labs/herdr"
-import { createFakeHerdr } from "@stateforge-labs/herdr/test-kit"
+import { connect, Method, ResultTag } from "@stateforge-labs/herdr-sdk"
+import { createFakeHerdr } from "@stateforge-labs/herdr-sdk/test-kit"
 
 test("lists agents", async () => {
   const fake = await createFakeHerdr()
@@ -186,11 +186,11 @@ herdr-skill print                # prints SKILL.md, for agents that take a promp
 
 Claude Code does not look inside `node_modules`, so `install` copies the skill to a skills directory. For other agents, add this to the project's `AGENTS.md`:
 
-> Code that uses `@stateforge-labs/herdr`: read `node_modules/@stateforge-labs/herdr/skills/herdr-sdk/SKILL.md` first.
+> Code that uses `@stateforge-labs/herdr-sdk`: read `node_modules/@stateforge-labs/herdr-sdk/skills/herdr-sdk/SKILL.md` first.
 
 ## Using it from your own domain
 
-The library conforms to herdr's wire vocabulary. Keep your own domain language behind your own port, and let one adapter file import `@stateforge-labs/herdr`. `tools/scripts/check-layers.ts` enforces the library's own layers; the one-adapter rule for consumers is a convention. Snapshot before you subscribe, because a subscription delivers changes, not the present. `watch()` does this for you (see the [decision records](https://github.com/stateforge-labs/herdr-sdk/tree/main/docs/decisions)).
+The library conforms to herdr's wire vocabulary. Keep your own domain language behind your own port, and let one adapter file import `@stateforge-labs/herdr-sdk`. `tools/scripts/check-layers.ts` enforces the library's own layers; the one-adapter rule for consumers is a convention. Snapshot before you subscribe, because a subscription delivers changes, not the present. `watch()` does this for you (see the [decision records](https://github.com/stateforge-labs/herdr-sdk/tree/main/docs/decisions)).
 
 ## Repository layout
 

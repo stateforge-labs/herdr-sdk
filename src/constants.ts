@@ -188,7 +188,7 @@ export type ServedState = (typeof ServedState)[keyof typeof ServedState];
 // ---------------------------------------------------------------------------------------------
 
 // The `event` of a push frame whose kind this library does not know (HERDR-ADR-0016 P3). Not a herdr value, so it cannot collide.
-export const UNKNOWN_EVENT = '@stateforge-labs/herdr:unknown-event' as const;
+export const UNKNOWN_EVENT = '@stateforge-labs/herdr-sdk:unknown-event' as const;
 
 // Kinds of change watchPaneSet emits (plan 3.6, HERDR-ADR-0016 W6).
 export const PaneSetKind = {

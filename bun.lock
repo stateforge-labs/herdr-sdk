@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@stateforge-labs/herdr",
+      "name": "@stateforge-labs/herdr-sdk",
       "devDependencies": {
         "@types/node": "22.20.5",
         "typescript": "7.0.2",

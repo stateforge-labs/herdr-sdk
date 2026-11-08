@@ -1,4 +1,4 @@
-# Decisions (ADRs) for @stateforge-labs/herdr
+# Decisions (ADRs) for @stateforge-labs/herdr-sdk
 
 Architecture decision records, StateForge format (frontmatter id/title/status/date/decision-makers/summary; sections Context and problem statement, Decision outcome, Consequences). Source: [the architecture plan](../architecture/plan.md), 2026-11-02.
 Status moves to accepted when the code that implements the decision has landed; partial builds stay proposed and say what is built in the ADR.
@@ -6,7 +6,7 @@ Ids are **HERDR-ADR-NNNN** (the library's own sequence). The voice engine's reco
 
 | ADR | Title | Status |
 |---|---|---|
-| [HERDR-ADR-0001](HERDR-ADR-0001-library-scope-and-location.md) | Library scope and location: one package, @stateforge-labs/herdr (own repository since 2026-11-07) | accepted |
+| [HERDR-ADR-0001](HERDR-ADR-0001-library-scope-and-location.md) | Library scope and location: one package, @stateforge-labs/herdr-sdk (own repository since 2026-11-07) | accepted |
 | [HERDR-ADR-0002](HERDR-ADR-0002-generate-the-client-from-herdrs-published-schema.md) | Generate the client from herdr's published schema | accepted |
 | [HERDR-ADR-0003](HERDR-ADR-0003-layering-and-entry-points.md) | Layering and subpath entry points, zero-dependency core | proposed |
 | [HERDR-ADR-0004](HERDR-ADR-0004-promise-core-and-effect-client.md) | Promise core and Effect client, Effect as an optional peer | proposed |
@@ -25,6 +25,6 @@ Ids are **HERDR-ADR-NNNN** (the library's own sequence). The voice engine's reco
 | [HERDR-ADR-0019](HERDR-ADR-0019-publish-to-the-gitlab-npm-registry-on-a-tag.md) | Publish @homelab/herdr to the GitLab npm registry on a protected tag | superseded by 0022 |
 | [HERDR-ADR-0020](HERDR-ADR-0020-a-herdr-core-client.md) | A typed client of the herdr-core socket, as the ./core entry | accepted |
 | [HERDR-ADR-0021](HERDR-ADR-0021-one-folder-per-product.md) | One folder per product, tests mirror the sources, build tooling under tools/ (amends 0003) | proposed |
-| [HERDR-ADR-0022](HERDR-ADR-0022-publish-to-npm-with-trusted-publishing.md) | Publish @stateforge-labs/herdr to npm with trusted publishing (supersedes 0019) | accepted |
+| [HERDR-ADR-0022](HERDR-ADR-0022-publish-to-npm-with-trusted-publishing.md) | Publish @stateforge-labs/herdr-sdk to npm with trusted publishing (supersedes 0019) | accepted |
 
-Cross-project (not written here): hub ADR-0030 "Depend on the extracted @stateforge-labs/herdr package" supersedes hub ADR-0003 and amends hub ADR-0012, 0022 and 0029; the hub ADR changes are listed in [plan section 8](../architecture/plan.md#8-migration).
+Cross-project (not written here): hub ADR-0030 "Depend on the extracted @stateforge-labs/herdr-sdk package" supersedes hub ADR-0003 and amends hub ADR-0012, 0022 and 0029; the hub ADR changes are listed in [plan section 8](../architecture/plan.md#8-migration).

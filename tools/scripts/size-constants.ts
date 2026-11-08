@@ -25,7 +25,7 @@ export const SizeDistFile = {
   Schema: 'dist/schema.js',
 } as const;
 
-// Scenario sources, relative to the package root. Each is copied next to a node_modules symlink to the package, so it imports `@stateforge-labs/herdr/...` the way a consumer does.
+// Scenario sources, relative to the package root. Each is copied next to a node_modules symlink to the package, so it imports `@stateforge-labs/herdr-sdk/...` the way a consumer does.
 export const SizeScenarioFile = {
   A: 'test/size/scenarios/a.ts',
   APreset: 'test/size/scenarios/a-preset.ts',
@@ -33,11 +33,11 @@ export const SizeScenarioFile = {
   C: 'test/size/scenarios/c.ts',
 } as const;
 
-// Names used to link the package into a scenario's temporary node_modules (the scenario imports `@stateforge-labs/herdr/...`).
+// Names used to link the package into a scenario's temporary node_modules (the scenario imports `@stateforge-labs/herdr-sdk/...`).
 export const SizePackage = {
   NodeModules: 'node_modules',
   Scope: '@stateforge-labs',
-  PackageDir: 'herdr',
+  PackageDir: 'herdr-sdk',
   Scenario: 'scenario.ts',
 } as const;
 

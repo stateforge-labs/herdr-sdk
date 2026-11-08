@@ -1,6 +1,6 @@
 # API map
 
-The authoritative list is generated and ships with the package: `docs/api/methods.md` and `docs/api/events.md`, or in code `import { METHODS } from "@stateforge-labs/herdr/schema"`. This page only orients you.
+The authoritative list is generated and ships with the package: `docs/api/methods.md` and `docs/api/events.md`, or in code `import { METHODS } from "@stateforge-labs/herdr-sdk/schema"`. This page only orients you.
 
 ## Namespaces (method = `namespace.name`, called as `herdr.namespace.name(params)`)
 

@@ -58,7 +58,7 @@ function resultOf(row: SizeRow, measured: Measurement, readOnlyRule: boolean): S
   return { row, bytes: measured.bytes, budget: SizeBudget[row], leaks: rowLeaks(measured, readOnlyRule) };
 }
 
-// A scenario is copied next to a node_modules symlink to the package, so `@stateforge-labs/herdr/...` resolves through the package exports, as for a consumer.
+// A scenario is copied next to a node_modules symlink to the package, so `@stateforge-labs/herdr-sdk/...` resolves through the package exports, as for a consumer.
 function measureScenario(source: string): Measurement {
   const dir = mkdtempSync(join(tmpdir(), SizeTemp.DirPrefix));
   try {

@@ -1,5 +1,5 @@
 {
-  "name": "@stateforge-labs/herdr",
+  "name": "@stateforge-labs/herdr-sdk",
   "version": "0.3.0",
   "type": "module",
   "sideEffects": false,

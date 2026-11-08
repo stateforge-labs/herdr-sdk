@@ -1,11 +1,11 @@
 ---
 id: HERDR-ADR-0022
-title: "Publish @stateforge-labs/herdr to npm with trusted publishing"
+title: "Publish @stateforge-labs/herdr-sdk to npm with trusted publishing"
 status: accepted
 date: 2026-11-08
 decision-makers: owner
 supersedes: HERDR-ADR-0019
-summary: "The package moves from the private GitLab npm registry to the public npm registry as @stateforge-labs/herdr. Releases run from GitHub Actions (github.com/stateforge-labs/herdr-sdk) with npm trusted publishing (OIDC): no npm token is stored, and every version carries a provenance attestation."
+summary: "The package moves from the private GitLab npm registry to the public npm registry as @stateforge-labs/herdr-sdk. Releases run from GitHub Actions (github.com/stateforge-labs/herdr-sdk) with npm trusted publishing (OIDC): no npm token is stored, and every version carries a provenance attestation."
 ---
 
 # HERDR-ADR-0022: Publish to npm with trusted publishing
@@ -19,7 +19,7 @@ self-hosted GitLab (https://docs.npmjs.com/trusted-publishers, read 2026-11-08).
 
 ## Decision
 
-- The package is `@stateforge-labs/herdr` on https://registry.npmjs.org, public (`publishConfig.access`).
+- The package is `@stateforge-labs/herdr-sdk` on https://registry.npmjs.org, public (`publishConfig.access`).
 - The public repository is https://github.com/stateforge-labs/herdr-sdk. `.github/workflows/publish.yml` runs on a `v*.*.*` tag:
   it checks that the tag equals the `package.json` version, runs the typecheck, the layer gate, the Bun and Node tests, the size gate
   and the tarball check, then `npm publish` with OIDC (`id-token: write`, npm 11.5.1 or later). Provenance is attached automatically.
@@ -32,7 +32,7 @@ self-hosted GitLab (https://docs.npmjs.com/trusted-publishers, read 2026-11-08).
 
 ## Consequences
 
-- Installing needs no `.npmrc`, no token and no scope registry entry: `npm install @stateforge-labs/herdr`.
+- Installing needs no `.npmrc`, no token and no scope registry entry: `npm install @stateforge-labs/herdr-sdk`.
 - Provenance links each version to its commit and workflow run; it needs the repository to stay public.
 - Amended 2026-11-08: the same `v<version>` tag also publishes to this project's GitLab npm registry (`publish:gitlab`,
   `ci/publish-gitlab.sh`, job token, no provenance), so pipelines on the GitLab install without leaving the network. That job
