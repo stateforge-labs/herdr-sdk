@@ -34,6 +34,8 @@ variables:
   CI_TEMPLATES_URL: '${CI_SERVER_URL}/homelab/ci-templates.git'
   # The registry the job images are pulled through; the project's CI/CD variable of the same name points it at the mirror proxy.
   IMAGE_PROXY: 'docker.io'
+  # Pipelines here run for merge requests and the default branch only; this lets SAST and Secret Detection run in merge request pipelines.
+  AST_ENABLE_MR_PIPELINES: "true"
 
 default:
   interruptible: true
