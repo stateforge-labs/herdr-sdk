@@ -4,7 +4,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { driftBetween } from '../../src/drift/drift-between.ts';
 import { inventoryOf } from '../../src/drift/inventory.ts';
-import { METHOD_RESULT } from '../../src/generated/index.ts';
+import { METHOD_RESULT } from '../../src/herdr/generated/index.ts';
 import type { DriftReport, SchemaDocument } from '../../src/drift/types.ts';
 import { miniSchema } from './support/mini-schema.ts';
 import { committedSchemaDocument } from './support/real-schema.ts';

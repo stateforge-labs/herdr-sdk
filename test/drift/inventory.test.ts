@@ -2,7 +2,7 @@
 // Informs HERDR-ADR-0009 (drift compares the protocol and four facets by name) and plan 6; new test for lane P5c.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { METHOD_RESULT } from '../../src/generated/index.ts';
+import { METHOD_RESULT } from '../../src/herdr/generated/index.ts';
 import { inventoryOf } from '../../src/drift/inventory.ts';
 import { MalformedSchemaError } from '../../src/drift/malformed-schema-error.ts';
 import { miniSchema } from './support/mini-schema.ts';

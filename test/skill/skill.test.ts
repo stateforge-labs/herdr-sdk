@@ -7,7 +7,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { METHODS } from '../../src/schema.ts';
-import type { Method } from '../../src/generated/index.ts';
+import type { Method } from '../../src/herdr/generated/index.ts';
 import { createFakeHerdr } from '../../src/test-kit.ts';
 import { FENCE_TS, IMPORT_REWRITES, NAME_PATTERN, SkillLimit, SkillPath } from './constants.ts';
 

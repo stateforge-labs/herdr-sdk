@@ -1,0 +1,149 @@
+// Role: generator schema access (typed view of herdr's published schema; loading takes a path parameter).
+// Informs HERDR-ADR-0002 (generate the client from herdr's published schema), plan section 3.2 and appendix A.1.
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+export interface JSONSchema {
+  readonly $ref?: string;
+  readonly $defs?: Readonly<Record<string, JSONSchema>>;
+  readonly additionalProperties?: boolean | JSONSchema;
+  readonly allOf?: readonly JSONSchema[];
+  readonly anyOf?: readonly JSONSchema[];
+  readonly const?: unknown;
+  readonly default?: unknown;
+  readonly description?: string;
+  readonly enum?: readonly unknown[];
+  readonly format?: string;
+  readonly items?: JSONSchema;
+  readonly oneOf?: readonly JSONSchema[];
+  readonly pattern?: string;
+  readonly properties?: Readonly<Record<string, JSONSchema>>;
+  readonly propertyNames?: { readonly pattern?: string };
+  readonly required?: readonly string[];
+  readonly type?: string | readonly string[];
+}
+
+export interface ApiSchema {
+  readonly protocol: number;
+  readonly schema_version: number;
+  readonly schemas: Readonly<Record<string, JSONSchema>>;
+}
+
+// Top-level bundles of the published schema document (`schemas.<bundle>`).
+export const SCHEMA_NAMESPACE = {
+  request: 'request',
+  successResponse: 'success_response',
+  errorResponse: 'error_response',
+  event: 'event',
+  subscriptionEvent: 'subscription_event',
+} as const;
+
+// Property names the generator reads inside schema nodes, including the `$ref` keyword.
+export const SCHEMA_KEY = {
+  method: 'method',
+  params: 'params',
+  type: 'type',
+  ref: '$ref',
+  properties: 'properties',
+  required: 'required',
+  enum: 'enum',
+  propertyNames: 'propertyNames',
+  event: 'event',
+  pattern: 'pattern',
+  defs: '$defs',
+} as const;
+
+// Named definitions the generator looks up by name inside a bundle.
+export const SCHEMA_DEF = {
+  serverCapabilities: 'ServerCapabilities',
+  subscription: 'Subscription',
+  eventMatch: 'EventMatch',
+  responseResult: 'ResponseResult',
+  eventKind: 'EventKind',
+  agentStatus: 'AgentStatus',
+  subscriptionEventKind: 'SubscriptionEventKind',
+} as const;
+
+// Declared JSON type kinds, used by defaults and by the params shape table.
+export const JSON_KIND = {
+  string: 'string',
+  integer: 'integer',
+  number: 'number',
+  boolean: 'boolean',
+  null: 'null',
+  array: 'array',
+  object: 'object',
+} as const;
+
+// JavaScript typeof results, so no string literal is compared in code.
+export const JS_TYPE = { string: 'string', object: 'object' } as const;
+
+const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+// Default inputs and output of `bun tools/gen/index.ts`.
+export const GEN_PATHS = {
+  schemaPath: join(PACKAGE_ROOT, 'schema', 'herdr-api.schema.json'),
+  outDir: join(PACKAGE_ROOT, 'src', 'herdr', 'generated'),
+  docsDir: join(PACKAGE_ROOT, 'docs', 'api'),
+} as const;
+
+export function parseSchema(raw: string): ApiSchema {
+  return JSON.parse(raw) as ApiSchema;
+}
+
+export function loadSchema(path: string): ApiSchema {
+  return parseSchema(readFileSync(path, 'utf8'));
+}
+
+export function namespaceOf(schema: ApiSchema, name: string): JSONSchema {
+  const found = schema.schemas[name];
+  if (found === undefined) {
+    throw new Error(`the schema carries no '${name}' namespace`);
+  }
+  return found;
+}
+
+export function requestNamespace(schema: ApiSchema): JSONSchema {
+  return namespaceOf(schema, SCHEMA_NAMESPACE.request);
+}
+
+// The params type name a request branch points at (`#/schemas/request/$defs/<Name>` -> `<Name>`).
+export function methodParamsName(schema: ApiSchema, method: string): string {
+  const branch = branchesOf(requestNamespace(schema)).find((candidate) => constOf(candidate, SCHEMA_KEY.method) === method);
+  const ref = branch?.properties?.[SCHEMA_KEY.params]?.[SCHEMA_KEY.ref];
+  if (!isString(ref)) {
+    throw new Error(`method '${method}' has no params reference`);
+  }
+  return ref.split('/').at(-1) ?? ref;
+}
+
+export function definitionsOf(namespace: JSONSchema): Readonly<Record<string, JSONSchema>> {
+  return namespace.$defs ?? {};
+}
+
+export function branchesOf(namespace: JSONSchema): readonly JSONSchema[] {
+  return namespace.oneOf ?? [];
+}
+
+// Type guard: TypeScript narrows typeof only against a literal, so the check goes through a function.
+export function isString(value: unknown): value is string {
+  return typeof value === JS_TYPE.string;
+}
+
+export function constOf(schema: JSONSchema | undefined, property: string): string {
+  const value = schema?.properties?.[property]?.const;
+  if (!isString(value)) {
+    throw new Error(`expected a string const at '${property}'`);
+  }
+  return value;
+}
+
+export function propertyOf(schema: JSONSchema, property: string): JSONSchema {
+  return schema.properties?.[property] ?? {};
+}
+
+export function header(schema: ApiSchema): string {
+  return `// GENERATED by tools/gen/ from schema/herdr-api.schema.json. Do not edit.\n`
+    + `// herdr protocol ${schema.protocol}, schema_version ${schema.schema_version}.\n`;
+}

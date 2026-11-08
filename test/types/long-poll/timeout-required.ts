@@ -1,6 +1,6 @@
 // Role: compile-time check that every long-poll leaf needs its timeout_ms (agent.prompt only inside wait): without it the call does not compile, with it the call does.
 // Informs HERDR-ADR-0017 (contract tests, `tsc -p test/types`), HERDR-ADR-0007 and plan 3.6. Compiled, never run.
-import type { AdminNamespaces, ClientNamespaces, PromptNamespaces } from '../../../src/generated/namespaces.ts';
+import type { AdminNamespaces, ClientNamespaces, PromptNamespaces } from '../../../src/herdr/generated/namespaces.ts';
 
 export async function agentWaitNeedsTimeout(herdr: ClientNamespaces): Promise<void> {
   // @ts-expect-error agent.wait without timeout_ms does not compile

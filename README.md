@@ -186,7 +186,7 @@ The fake runs on `node:net`, answers `ping` and every method you script with `re
 
 ```sh
 bun run capture      # herdr api schema --json > schema/herdr-api.schema.json
-bun run gen          # regenerate src/generated and docs/api
+bun run gen          # regenerate src/herdr/generated and docs/api
 herdr-drift          # exit 0 clean, 1 drift, 2 usage, 3 herdr not found
 ```
 
@@ -205,7 +205,20 @@ Claude Code does not look inside `node_modules`, so `install` copies the skill t
 
 ## Using it from your own domain
 
-The library conforms to herdr's wire vocabulary. Keep your own domain language behind your own port, and let one adapter file import `@homelab/herdr`. `scripts/check-layers.ts` enforces the library's own layers; the one-adapter rule for consumers is a convention (idea from atalaya-bridge, spine AD-10). Snapshot before you subscribe, because a subscription delivers changes, not the present. `watch()` does this for you ([HERDR-ADR-0016](docs/decisions/HERDR-ADR-0016-design-intent-inherited-from-atalaya.md)).
+The library conforms to herdr's wire vocabulary. Keep your own domain language behind your own port, and let one adapter file import `@homelab/herdr`. `tools/scripts/check-layers.ts` enforces the library's own layers; the one-adapter rule for consumers is a convention (idea from atalaya-bridge, spine AD-10). Snapshot before you subscribe, because a subscription delivers changes, not the present. `watch()` does this for you ([HERDR-ADR-0016](docs/decisions/HERDR-ADR-0016-design-intent-inherited-from-atalaya.md)).
+
+## Repository layout
+
+One folder per product ([HERDR-ADR-0021](docs/decisions/HERDR-ADR-0021-one-folder-per-product.md)); the entry files at the top of `src/` are the published subpaths.
+
+| Folder | What it is |
+| --- | --- |
+| `src/herdr/` | The herdr server client (protocol 22): `wire/`, `client/`, `generated/` (output of `tools/gen/`), `effect/`, `test-kit/` |
+| `src/core/` | The herdr-core client (`./core`) and its fake core in `test-kit/` (`./core/test-kit`) |
+| `src/drift/` | The schema-drift tool behind `herdr-drift` |
+| `test/` | Mirrors `src/` (`test/herdr/`, `test/core/`, `test/drift/`), plus `test/tools/`, `integration/` and `types/` |
+| `tools/` | Build time only, never published: `gen/` (the generator), `scripts/` (gates, capture, build helpers), `rules/` (the layer rule) |
+| `bin/`, `skills/`, `schema/`, `docs/` | The bins, the agent skill, the captured schema, the docs and decisions |
 
 ## Licence
 

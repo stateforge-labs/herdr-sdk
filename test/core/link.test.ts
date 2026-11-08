@@ -9,8 +9,8 @@ import { parseHcParams } from '../../src/core/wire.ts';
 import { CoreLink } from '../../src/core/link.ts';
 import type { HcParams } from '../../src/core/wire.ts';
 import type { CoreLinkTiming, HcCallResult } from '../../src/core/link.ts';
-import { FakeHcCore, later } from '../../src/core-test-kit/fake-core.ts';
-import { openWorld } from '../../src/core-test-kit/setup-test.ts';
+import { FakeHcCore, later } from '../../src/core/test-kit/fake-core.ts';
+import { openWorld } from '../../src/core/test-kit/setup-test.ts';
 
 const name = (text: string): NonEmptyText => must(parseNonEmptyText(text));
 const FAST: CoreLinkTiming = { helloTimeout: duration(300), backoffBase: duration(40), backoffCap: duration(160) };

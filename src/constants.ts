@@ -1,9 +1,9 @@
 // Role: every literal the library uses outside the generated modules, as as-const objects; no consumers in phase 1b.
 // Informs HERDR-ADR-0003 (layering) and plan section 3 ("every literal lives in constants.ts"), 3.1, 3.3 and 3.6.
-import { ServerCapability, SubscriptionType } from './generated/index.ts';
-import type { ServerCapabilities } from './generated/results.ts';
+import { ServerCapability, SubscriptionType } from './herdr/generated/index.ts';
+import type { ServerCapabilities } from './herdr/generated/results.ts';
 
-export { TOKEN_NAME_PATTERN } from './generated/names/token-name-pattern.ts';
+export { TOKEN_NAME_PATTERN } from './herdr/generated/names/token-name-pattern.ts';
 
 // Environment variable names and the default socket location (hub constants.ts:59; atalaya socket-path.ts).
 export const HerdrEnv = {

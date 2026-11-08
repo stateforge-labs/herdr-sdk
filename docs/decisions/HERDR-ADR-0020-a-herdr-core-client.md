@@ -18,7 +18,7 @@ The SDK speaks herdr's server socket (protocol 22). The newer herdr-core (`hc`, 
 - A new layer `core` (`src/core/`) with its own small value types (`src/core/kernel/`: Result, brand, Count, Text, time, Unknown, an async queue). It imports only itself and `node:` builtins, so it can be split out again without touching the protocol-22 code.
 - `CoreLink`: one persistent connection, `hello` with the generation check, per-call timeouts, reconnect with capped backoff; failures are `Unknown` values, never thrown.
 - `CoreEvents`: the event feed, with a heartbeat watchdog (two missed beats reconnect) and `missed` handled as a fresh snapshot.
-- A new layer `core-test-kit` (`src/core-test-kit/`, only its entry imports it): `FakeHcCore` scripted from recorded frames, and `setupTest(t)` / `openWorld()` that close every link and stream with the test.
+- A new layer `core-test-kit` (`src/core/test-kit/`, only its entry imports it): `FakeHcCore` scripted from recorded frames, and `setupTest(t)` / `openWorld()` that close every link and stream with the test.
 - Entries `./core` and `./core/test-kit`.
 
 ## Consequences

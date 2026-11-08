@@ -8,7 +8,7 @@ import { duration } from '../../src/core/kernel/time.ts';
 import { parseNonEmptyText } from '../../src/core/kernel/text.ts';
 import type { WireChunk } from '../../src/core/wire.ts';
 import { HcCoreLines, encodeHcCoreRequest, hcCoreSocketPath, nextBackoff, parseHcCallId, parseHcCoreHello, parseHcCoreMessage, parseHcParams, parseHcSnapshot, parseWireChunk } from '../../src/core/wire.ts';
-import { frame } from '../../src/core-test-kit/fake-core.ts';
+import { frame } from '../../src/core/test-kit/fake-core.ts';
 
 const chunk = (input: string | Buffer): WireChunk => must(parseWireChunk(Buffer.from(input)));
 const method = must(parseNonEmptyText('terminal.get'));

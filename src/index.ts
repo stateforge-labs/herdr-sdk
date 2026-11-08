@@ -10,18 +10,18 @@ export {
   SCHEMA_VERSION,
   ServerCapability,
   SubscriptionType,
-} from './generated/index.ts';
-export type { ErrorBody, PushFrame, ResultByTag, Subscription } from './generated/index.ts';
-export { connect } from './client/connect.ts';
-export { watchPaneSet } from './client/watch/watch-pane-set.ts';
+} from './herdr/generated/index.ts';
+export type { ErrorBody, PushFrame, ResultByTag, Subscription } from './herdr/generated/index.ts';
+export { connect } from './herdr/client/connect.ts';
+export { watchPaneSet } from './herdr/client/watch/watch-pane-set.ts';
 export type {
   CallOptions,
   Client,
   ClientCapabilities,
   ConnectOptions,
   ServerInfo,
-} from './client/types.ts';
-export type { EventSubscription, QueueOptions, Subscribe, SubscribeOptions } from './client/subscribe/types.ts';
+} from './herdr/client/types.ts';
+export type { EventSubscription, QueueOptions, Subscribe, SubscribeOptions } from './herdr/client/subscribe/types.ts';
 export type {
   BackoffPolicy,
   PaneSetChange,
@@ -33,13 +33,13 @@ export type {
   WatchFn,
   WatchOptions,
   WatchPaneSetOptions,
-} from './client/watch/types.ts';
-export type { Hold, HeldConnection, HoldOptions } from './client/held/types.ts';
+} from './herdr/client/watch/types.ts';
+export type { Hold, HeldConnection, HoldOptions } from './herdr/client/held/types.ts';
 export {
   HerdrError,
   HerdrTransportError,
   ProtocolMismatchError,
   SubscriptionEnded,
   UnsupportedByServerError,
-} from './wire/errors.ts';
-export type { CallEvent, DecodedFrame, OnCall, UnknownFrame } from './wire/types.ts';
+} from './herdr/wire/errors.ts';
+export type { CallEvent, DecodedFrame, OnCall, UnknownFrame } from './herdr/wire/types.ts';

@@ -7,7 +7,7 @@ import { parseHcParams } from '../../src/core/wire.ts';
 import { duration } from '../../src/core/kernel/time.ts';
 import { CoreEvents } from '../../src/core/events.ts';
 import type { CoreEventsTiming, HcCoreFeed } from '../../src/core/events.ts';
-import { FakeFault, FakeHcCore, agentTerminal, later, nextWithin } from '../../src/core-test-kit/fake-core.ts';
+import { FakeFault, FakeHcCore, agentTerminal, later, nextWithin } from '../../src/core/test-kit/fake-core.ts';
 
 const FAST: CoreEventsTiming = { backoffBase: duration(30), backoffCap: duration(120), silence: duration(150) };
 const WAIT = 1500;

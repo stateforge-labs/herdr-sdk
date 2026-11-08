@@ -7,7 +7,7 @@ import { must } from '../../src/core/kernel/result.ts';
 import { duration } from '../../src/core/kernel/time.ts';
 import { parseNonEmptyText } from '../../src/core/kernel/text.ts';
 import { parseHcParams } from '../../src/core/wire.ts';
-import { FAST_LINK, openWorld, setupTest } from '../../src/core-test-kit/setup-test.ts';
+import { FAST_LINK, openWorld, setupTest } from '../../src/core/test-kit/setup-test.ts';
 
 const LIST = must(parseNonEmptyText('terminal.list'));
 const NOTHING = must(parseHcParams({}));

@@ -1,5 +1,5 @@
 // Role: pure readers of a schema document: a bundle, its definitions, the branches of a tagged union and a string const.
-// Informs HERDR-ADR-0009 (drift names come from the schema). Re-implements the minimal walk of atalaya's gen/schema.ts, because Layer.Drift may not import gen/ (rules/layers.ts).
+// Informs HERDR-ADR-0009 (drift names come from the schema). Re-implements the minimal walk of atalaya's tools/gen/schema.ts, because Layer.Drift may not import tools/gen/ (tools/rules/layers.ts).
 import { JsType, SchemaField, SchemaKey } from './constants.ts';
 import { MalformedSchemaError } from './malformed-schema-error.ts';
 import type { SchemaDocument } from './types.ts';

@@ -70,20 +70,20 @@
     "NOTICE.md"
   ],
   "scripts": {
-    "gen": "bun gen/index.ts",
-    "capture": "bun scripts/capture-schema.ts",
+    "gen": "bun tools/gen/index.ts",
+    "capture": "bun tools/scripts/capture-schema.ts",
     "test": "bun test",
-    "test:gen": "bun test test/gen",
-    "check:pins": "bun scripts/check-pins.ts",
-    "lint:layers": "bun scripts/check-layers.ts",
+    "test:gen": "bun test test/tools/gen",
+    "check:pins": "bun tools/scripts/check-pins.ts",
+    "lint:layers": "bun tools/scripts/check-layers.ts",
     "typecheck": "tsc --noEmit -p . && tsc --noEmit -p tsconfig.test.json",
     "typecheck:types": "tsc -p test/types",
     "build:test": "tsc -p tsconfig.dist-test.json",
     "test:node": "bun run build:test && node --test \"dist-test/test/wire/**/*.test.js\" \"dist-test/test/connect/**/*.test.js\"",
-    "test:wire": "bun test test/wire test/connect",
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && tsc -p tsconfig.build-test-kit.json && bun scripts/rewrite-dts.ts",
+    "test:wire": "bun test test/herdr/wire test/herdr/client/connect",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && tsc -p tsconfig.build-test-kit.json && bun tools/scripts/rewrite-dts.ts",
     "prepack": "bun run build",
-    "check:size": "bun run build && bun scripts/check-size.ts",
+    "check:size": "bun run build && bun tools/scripts/check-size.ts",
     "pretest": "bun run build"
   },
   "devDependencies": {

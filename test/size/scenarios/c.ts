@@ -1,4 +1,4 @@
-// Role: size scenario c (plan 10.1 row "c", script): a full client that lists workspaces and takes a snapshot. Bundled by scripts/check-size.ts, never run.
+// Role: size scenario c (plan 10.1 row "c", script): a full client that lists workspaces and takes a snapshot. Bundled by tools/scripts/check-size.ts, never run.
 import { connect } from '@homelab/herdr';
 
 export async function scenarioC(): Promise<unknown> {

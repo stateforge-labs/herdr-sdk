@@ -164,7 +164,7 @@ model {
       #planned
       #devOnly
       summary 'Captures the schema, generates code and reports drift.'
-      technology 'bun gen/index.ts, herdr-drift'
+      technology 'bun tools/gen/index.ts, herdr-drift'
       description '**Decisions:** HERDR-ADR-0002, HERDR-ADR-0009'
     }
     schemaFile = store 'schema' {
