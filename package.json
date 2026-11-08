@@ -49,6 +49,14 @@
       "types": "./dist/test-kit.d.ts",
       "default": "./dist/test-kit.js"
     },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "default": "./dist/core.js"
+    },
+    "./core/test-kit": {
+      "types": "./dist/core-test-kit.d.ts",
+      "default": "./dist/core-test-kit.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

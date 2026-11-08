@@ -11,6 +11,8 @@ export const Layer = {
   TestKit: 'test-kit',
   Model: 'model',
   ModelFromWire: 'model/from-wire',
+  Core: 'core',
+  CoreTestKit: 'core-test-kit',
   Entry: 'entry',
 } as const;
 
@@ -27,6 +29,8 @@ export const FOLDER_LAYERS: readonly Layer[] = [
   Layer.Drift,
   Layer.TestKit,
   Layer.Model,
+  Layer.Core,
+  Layer.CoreTestKit,
 ];
 
 // Single files under src/ that are not entries.
@@ -41,11 +45,12 @@ export const SourcePath = {
 export const EntryFile = {
   Effect: 'effect.ts',
   TestKit: 'test-kit.ts',
+  CoreTestKit: 'core-test-kit.ts',
 } as const;
 
 // Every top-level file under src/ that is an entry: one per package.json "exports" subpath (a test checks the two agree).
 // Only these get the entry layer's right to import every layer; any other top-level file is an unknown layer and fails the gate.
-export const ENTRY_FILES: readonly string[] = ['index.ts', 'read-only.ts', 'admin.ts', 'effect.ts', 'schema.ts', 'drift.ts', 'test-kit.ts'];
+export const ENTRY_FILES: readonly string[] = ['index.ts', 'read-only.ts', 'admin.ts', 'effect.ts', 'schema.ts', 'drift.ts', 'test-kit.ts', 'core.ts', 'core-test-kit.ts'];
 
 export const PackageName = {
   Effect: 'effect',
@@ -63,12 +68,16 @@ export const ALLOWED_IMPORTS: Readonly<Record<Layer, readonly Layer[]>> = {
   [Layer.TestKit]: [Layer.TestKit, Layer.Wire, Layer.Constants, Layer.Generated],
   [Layer.Model]: [Layer.Model],
   [Layer.ModelFromWire]: [Layer.Model, Layer.Generated],
+  // HERDR-ADR-0020: the herdr-core client stands alone; its test kit sees only it.
+  [Layer.Core]: [Layer.Core],
+  [Layer.CoreTestKit]: [Layer.CoreTestKit, Layer.Core],
   [Layer.Entry]: ALL_LAYERS,
 };
 
 // Folders that only their own entry file may import (nothing imports test-kit except tests).
 export const RESTRICTED_FOLDERS: Readonly<Partial<Record<Layer, string>>> = {
   [Layer.TestKit]: EntryFile.TestKit,
+  [Layer.CoreTestKit]: EntryFile.CoreTestKit,
 };
 
 // Bare package names each layer may import.
@@ -82,6 +91,8 @@ export const PACKAGE_ALLOWED: Readonly<Record<Layer, readonly string[]>> = {
   [Layer.TestKit]: [],
   [Layer.Model]: [],
   [Layer.ModelFromWire]: [],
+  [Layer.Core]: [],
+  [Layer.CoreTestKit]: [],
   [Layer.Entry]: [],
 };
 

@@ -14,6 +14,8 @@ A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22,
 | `@homelab/herdr/effect` | `toTaggedError` and the Effect layer types now; the `Herdr` service, Layers and Streams after amendment A1 | none now (peer `effect` 4.1.2 after A1) |
 | `@homelab/herdr/test-kit` | `createFakeHerdr()` (tests only) | none |
 | `@homelab/herdr/schema` | method table and parameter shapes of the generated API (what a generator such as herdr-mcp builds its tools from) | none |
+| `@homelab/herdr/core` | `CoreLink`, `CoreEvents`, the wire parsers and the socket path rule: a client of the herdr-core (`hc`) socket, standalone from the protocol-22 client (HERDR-ADR-0020) | none |
+| `@homelab/herdr/core/test-kit` | `FakeHcCore`, `setupTest(t)`, `openWorld()` (tests only) | none |
 | `@homelab/herdr/drift` | `driftBetween`, `inventoryOf`, `exitCodeFor`: the library behind `herdr-drift`, for your own tooling | none |
 | `herdr-drift` (bin) | compare the committed schema with the installed herdr | none |
 | `herdr-skill` (bin) | print or install the agent skill that ships in `skills/herdr-sdk` | none |
