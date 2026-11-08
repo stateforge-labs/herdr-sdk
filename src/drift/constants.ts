@@ -3,8 +3,6 @@
 
 export const DriftName = 'herdr-drift';
 
-export const DriftErrorName = { Malformed: 'MalformedSchemaError' } as const;
-
 export const SchemaField = { Protocol: 'protocol', Schemas: 'schemas' } as const;
 
 // The three bundles of the published schema that drift reads (schemas.<bundle>).

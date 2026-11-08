@@ -3,8 +3,8 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { GLOBAL_SUBSCRIPTION_TYPES, WatchKind } from '../../../../src/constants.ts';
-import { createWatch } from '../../../../src/herdr/client/watch/watch.ts';
-import type { Watch, WatchChange } from '../../../../src/herdr/client/watch/types.ts';
+import { createWatch } from '../../../../src/herdr/client/watch.ts';
+import type { Watch, WatchChange } from '../../../../src/herdr/client/watch.ts';
 import { waitUntil } from '../../../support/wait.ts';
 import { agentStatus, paneClosed, unknownFrame } from './support/frames.ts';
 import { recordingSleep } from './support/fake-sleep.ts';

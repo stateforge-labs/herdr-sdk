@@ -3,7 +3,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ProtocolPolicy } from '../../../src/constants.ts';
-import { isSupportedProtocol } from '../../../src/herdr/wire/protocol-policy.ts';
+import { isSupportedProtocol } from '../../../src/herdr/wire/codec.ts';
 import { PROTOCOL } from '../../../src/herdr/generated/index.ts';
 
 describe('isSupportedProtocol', () => {

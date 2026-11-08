@@ -93,6 +93,8 @@ export const ErrorName = {
   UnsupportedByServer: 'UnsupportedByServerError',
   SubscriptionEnded: 'SubscriptionEnded',
   NotImplemented: 'NotImplementedError',
+  MalformedSchema: 'MalformedSchemaError',
+  UnsupportedWatch: 'UnsupportedWatchError',
 } as const;
 
 // JSON field names of the NDJSON wire envelopes (hub wire.ts HerdrWireField).

@@ -3,11 +3,11 @@
 // ported from the hub vendor client/rpc.ts (settle-once, destroy on every exit, late-open destroyed, AbortSignal) with atalaya's timing hook.
 import { CallOutcome, EMPTY_REPLY_ID, ErrorText } from '../../constants.ts';
 import type { Method } from '../generated/index.ts';
-import { outcomeOf, reportCall } from './call-hook.ts';
+import { outcomeOf, reportCall } from './codec.ts';
 import { Connection } from './connection.ts';
-import { HerdrError, HerdrTransportError } from './errors.ts';
-import { encodeRequest, isErrorEnvelope, isObject, type ResponseEnvelope } from './envelope.ts';
-import { nextId } from './id.ts';
+import { HerdrError, HerdrTransportError } from '../errors.ts';
+import { encodeRequest, isErrorEnvelope, isObject, type ResponseEnvelope } from './codec.ts';
+import { nextId } from './codec.ts';
 import type { ParamsOf, ResultOf, Rpc, RpcOptions } from './types.ts';
 
 export type { RpcOptions } from './types.ts';

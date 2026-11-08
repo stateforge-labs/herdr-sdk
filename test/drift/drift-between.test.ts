@@ -2,8 +2,8 @@
 // Informs HERDR-ADR-0009 (drift is protocol, version, four facets, field shapes and unmapped methods) and plan 6; new test for lane P5c.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { driftBetween } from '../../src/drift/drift-between.ts';
-import { inventoryOf } from '../../src/drift/inventory.ts';
+import { driftBetween } from '../../src/drift/diff.ts';
+import { inventoryOf } from '../../src/drift/schema.ts';
 import { METHOD_RESULT } from '../../src/herdr/generated/index.ts';
 import type { DriftReport, SchemaDocument } from '../../src/drift/types.ts';
 import { miniSchema } from './support/mini-schema.ts';

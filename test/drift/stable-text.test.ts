@@ -2,7 +2,7 @@
 // Informs HERDR-ADR-0009 (drift reports a changed field shape; a wording change is not drift); new test for lane P5c.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { stableText } from '../../src/drift/stable-text.ts';
+import { stableText } from '../../src/drift/schema.ts';
 
 describe('stableText', () => {
   test('the schema keyword description is not part of the shape', () => {

@@ -39,9 +39,9 @@ describe('staticClosure with a chunk bun marks as an entry', () => {
       },
       './streams.js': {
         bytes: 25,
-        entryPoint: 'dist/herdr/client/scoped/streams.js',
+        entryPoint: 'dist/herdr/client/streams.js',
         imports: [],
-        inputs: { 'dist/herdr/client/scoped/streams.js': {} },
+        inputs: { 'dist/herdr/client/streams.js': {} },
       },
     },
   };

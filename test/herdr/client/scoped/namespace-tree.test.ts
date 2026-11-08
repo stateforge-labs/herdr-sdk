@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import { types } from 'node:util';
 import { EntryKey, METHOD_SEPARATOR, TypeofKind } from '../../../../src/constants.ts';
 import { ENTRY_METHODS, METHODS, Method } from '../../../../src/herdr/generated/index.ts';
-import { allowedMethods } from '../../../../src/herdr/client/scoped/allowed-methods.ts';
-import { buildNamespaceTree } from '../../../../src/herdr/client/scoped/namespace-tree.ts';
+import { allowedMethods } from '../../../../src/herdr/client/scoped.ts';
+import { buildNamespaceTree } from '../../../../src/herdr/client/scoped.ts';
 import type { Invoke, NamespaceTree } from '../../../../src/herdr/client/types.ts';
 
 type Call = { readonly method: string; readonly params: unknown };

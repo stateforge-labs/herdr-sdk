@@ -2,9 +2,9 @@
 // Informs HERDR-ADR-0005 (runtime allow-list), HERDR-ADR-0007 and plan 3.6; slice P2b. The P4a helpers are stubbed, so this runs before P4a lands.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { HerdrTransportError } from '../../../../src/herdr/wire/errors.ts';
+import { HerdrTransportError } from '../../../../src/herdr/errors.ts';
 import { Method } from '../../../../src/herdr/generated/index.ts';
-import { createInvoke, type InvokeDeps } from '../../../../src/herdr/client/scoped/invoke.ts';
+import { createInvoke, type InvokeDeps } from '../../../../src/herdr/client/scoped.ts';
 import { rejectionOf } from '../../../support/rejection.ts';
 import { stubCore, STUB_TIMEOUT_MS } from './support/stub-core.ts';
 

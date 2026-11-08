@@ -6,7 +6,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { RECORDED_FRAMES } from './frames.ts';
-import { brand } from '../kernel/brand.ts';
+import { brand } from '../kernel.ts';
 import type { SocketPath } from '../wire.ts';
 
 type Fields = Record<string, unknown>;

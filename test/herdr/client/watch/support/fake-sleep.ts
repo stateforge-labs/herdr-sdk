@@ -1,6 +1,6 @@
 // Role: a Sleep that records each requested delay and resolves at once; the held variant waits for the signal instead.
 // Informs plan 3.6 (backoff) and HERDR-ADR-0008 (no real time in tests); lane P4b test helper.
-import type { Sleep } from '../../../../../src/herdr/client/watch/types.ts';
+import type { Sleep } from '../../../../../src/herdr/client/watch.ts';
 
 export interface RecordingSleep {
   readonly sleep: Sleep;

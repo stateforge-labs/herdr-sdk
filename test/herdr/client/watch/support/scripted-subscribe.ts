@@ -1,7 +1,7 @@
 // Role: a scripted Subscribe: every call opens the next ScriptedSubscription (or rejects the ack when the test asks), and records its specs and options.
 // Informs HERDR-ADR-0007 and HERDR-ADR-0016 (W2 ack, then the held stream); lane P4b test helper. The client signal stands in for SubscribeDeps.signal.
 import assert from 'node:assert/strict';
-import type { Subscribe, SubscribeOptions } from '../../../../../src/herdr/client/subscribe/types.ts';
+import type { Subscribe, SubscribeOptions } from '../../../../../src/herdr/client/subscribe.ts';
 import type { Subscription } from '../../../../../src/herdr/generated/index.ts';
 import { ScriptedSubscription } from './scripted-subscription.ts';
 

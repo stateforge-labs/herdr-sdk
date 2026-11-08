@@ -3,7 +3,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DriftOutcomeKind, SchemaReadKind } from '../../src/constants.ts';
-import { outcomeOf, outcomeOrNotCovered } from '../../src/drift/outcome.ts';
+import { outcomeOf, outcomeOrNotCovered } from '../../src/drift/diff.ts';
 import type { DriftOutcome, SchemaRead } from '../../src/drift/types.ts';
 import { miniSchema } from './support/mini-schema.ts';
 

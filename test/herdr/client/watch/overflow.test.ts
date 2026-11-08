@@ -3,9 +3,9 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Overflow, WatchKind } from '../../../../src/constants.ts';
-import { createWatch } from '../../../../src/herdr/client/watch/watch.ts';
-import type { WatchChange } from '../../../../src/herdr/client/watch/types.ts';
-import type { QueueOptions } from '../../../../src/herdr/client/subscribe/types.ts';
+import { createWatch } from '../../../../src/herdr/client/watch.ts';
+import type { WatchChange } from '../../../../src/herdr/client/watch.ts';
+import type { QueueOptions } from '../../../../src/herdr/client/subscribe.ts';
 import { waitUntil } from '../../../support/wait.ts';
 import { deferred, settle } from './support/deferred.ts';
 import { recordingSleep } from './support/fake-sleep.ts';

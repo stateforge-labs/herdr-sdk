@@ -3,8 +3,8 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { METHOD_RESULT } from '../../src/herdr/generated/index.ts';
-import { inventoryOf } from '../../src/drift/inventory.ts';
-import { MalformedSchemaError } from '../../src/drift/malformed-schema-error.ts';
+import { inventoryOf } from '../../src/drift/schema.ts';
+import { MalformedSchemaError } from '../../src/herdr/errors.ts';
 import { miniSchema } from './support/mini-schema.ts';
 import { committedSchemaDocument } from './support/real-schema.ts';
 

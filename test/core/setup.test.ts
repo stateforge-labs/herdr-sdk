@@ -3,9 +3,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { must } from '../../src/core/kernel/result.ts';
-import { duration } from '../../src/core/kernel/time.ts';
-import { parseNonEmptyText } from '../../src/core/kernel/text.ts';
+import { must } from '../../src/core/kernel.ts';
+import { duration } from '../../src/core/kernel.ts';
+import { parseNonEmptyText } from '../../src/core/kernel.ts';
 import { parseHcParams } from '../../src/core/wire.ts';
 import { FAST_LINK, openWorld, setupTest } from '../../src/core/test-kit/setup-test.ts';
 

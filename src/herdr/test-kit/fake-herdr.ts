@@ -1,36 +1,128 @@
-// Role: createFakeHerdr(): a unix-socket server on node:net that speaks herdr's NDJSON request/response wire, with scripted answers, for tests only.
-// Informs HERDR-ADR-0008 (test kit on node:net), HERDR-ADR-0016 (fake facts F1-F6; wire facts W1-W6) and plan 5 (the full fake API); test-kit only.
-//
-// Protocol facts this fake relies on, with the source that proves each one (hub test/fakes/fake-herdr-server.ts header):
-//  F1  ping answers {id, result: {type: "pong", protocol, version}}. Source: generated/results.ts Result_pong. Implemented (fake-defaults).
-//  F2  events.subscribe acks {id, result: {type: "subscription_started"}} on its own connection. Implemented (fake-ack).
-//  F3  a refused request answers {id, error: {code, message}}. Source: generated/errors.ts ErrorBody. Implemented (fake-answer).
-//  F4  after the ack, push frames are NDJSON lines {event, data} with no id. Implemented (fake-subscribers, spec matching in fake-subscription).
-//  F5  one events.subscribe per connection; any close means resubscribe. Implemented (a subscriber takes no further request).
-//  F6  a method the server has no answer for gets an error envelope. Code "unknown_method" is this fake's own value, not a herdr code. OPEN: herdr's own answer is not measured here.
-//
-// Wire facts of HERDR-ADR-0016 that this fake reproduces, each with a test in test/herdr/test-kit/wire-facts.test.ts:
-//  W1  herdr closes after every response; a second request on the same connection is never answered. Class C (held) connections stay open (fake-held).
-//  W2  after the ack, pushes arrive on the same connection as id-less lines. splitAck and strayLine are the test switches.
-//  W3  an unparseable request gets {id: "", error} and then a close. The code and message are the fake's own values in constants.ts (not measured).
-//  W4  api.schema over the socket answers {} (fake-defaults).
-//  W5  no history is replayed after the ack (fake-ack writes nothing else).
-//  W6  a per-pane subscription needs pane_id, else invalid_params and a close; a push reaches only the matching spec (fake-subscription).
-//
-// Test conveniences, not herdr behaviour: silent (accepted, never answered), rawReply (a raw line, then a close), replySequence (scripted steps)
-// and holdPushes exist to drive client timeouts, malformed replies and ordering. Unscripted methods get no default answer except ping and api.schema,
-// so F6 keeps working (test/herdr/wire/fake.test.ts). The fake never touches a real herdr: it listens on a temp socket that the caller owns through stop().
-import { createServer, type Server, type Socket } from 'node:net';
-import { PROTOCOL } from '../generated/index.ts';
-import { AckSwitches } from './fake-ack.ts';
-import { serveConnection, type ServingContext } from './fake-connection.ts';
-import { HeldConnections } from './fake-held.ts';
-import { advertisedCapabilities, type PongSettings } from './fake-pong.ts';
-import { fakeSocketLocation, removeOwnedDir, type FakeSocketLocation } from './fake-socket-path.ts';
-import { FakeScript } from './fake-script.ts';
-import { Subscribers } from './fake-subscribers.ts';
-import { Fake, WireFact } from '../../constants.ts';
-import type { CreateFakeHerdr, FakeHerdr, FakeHerdrOptions } from './types.ts';
+// Role: createFakeHerdr(): a fake herdr on a temporary socket, serving each connection from the protocol in fake-protocol.ts.
+// Informs HERDR-ADR-0016, plan 5, HERDR-ADR-0008; merged by HERDR-ADR-0021 from fake-connection.ts, fake-herdr.ts.
+import { createServer } from 'node:net';
+import type { Socket, Server } from 'node:net';
+import { AnswerKind, EMPTY_REPLY_ID, ServedState, TEXT_ENCODING, WireField, Fake, WireFact } from '../../constants.ts';
+import { Method, PROTOCOL } from '../generated/index.ts';
+import { isObject, LineSplitter } from '../wire/codec.ts';
+import { answerFor, errorAnswer, invalidRequestAnswer, AckSwitches, FakeScript, HeldConnections, isHeldMethod, specsOf, subscribeRefusal, Subscribers, endSocket, lineOf, safeWrite, fieldOf, isText, advertisedCapabilities, fakeSocketLocation, removeOwnedDir } from './fake-protocol.ts';
+import type { Answer, PongSettings, FakeSocketLocation } from './fake-protocol.ts';
+import type { ReceivedRequest, CreateFakeHerdr, FakeHerdr, FakeHerdrOptions } from './types.ts';
+
+// What every connection of one fake shares.
+export interface ServingContext {
+  readonly script: FakeScript;
+  readonly pong: PongSettings;
+  readonly subscribers: Subscribers;
+  readonly acks: AckSwitches;
+  readonly held: HeldConnections;
+}
+
+export function serveConnection(socket: Socket, context: ServingContext): void {
+  const splitter = new LineSplitter();
+  let state: ServedState = ServedState.Fresh;
+  socket.setEncoding(TEXT_ENCODING);
+  // A client may destroy its socket at any time; the fake must not crash on the write that follows.
+  socket.on('error', () => undefined);
+  socket.on('close', () => {
+    context.subscribers.forget(socket);
+    context.held.forget(socket);
+  });
+  socket.on('data', (chunk: string) => {
+    for (const line of splitter.push(chunk)) {
+      state = serveLine(socket, line, state, context);
+    }
+  });
+}
+
+// Returns the state of the connection after this line. A subscriber and an answered connection take no more requests.
+function serveLine(socket: Socket, line: string, state: ServedState, context: ServingContext): ServedState {
+  if (state === ServedState.Answered || state === ServedState.Subscriber) {
+    return state;
+  }
+  const request = parseRequest(line);
+  if (request === undefined) {
+    // W3: the unparseable line gets the empty id and the connection ends, even when it was held.
+    writeAndEnd(socket, invalidRequestAnswer(), context);
+    return ServedState.Answered;
+  }
+  context.script.record(request);
+  if (request.method === Method.EventsSubscribe && !context.script.hasScriptedOutcome(request.method)) {
+    return subscribe(socket, request, context);
+  }
+  const answer = answerFor(context.script, request, context.pong);
+  return finish(socket, answer, state, context, request.method);
+}
+
+// An events.subscribe is refused (W6: invalid_params, then the connection ends) or acknowledged, and then the connection carries pushes (W2).
+function subscribe(socket: Socket, request: ReceivedRequest, context: ServingContext): ServedState {
+  const refusal = subscribeRefusal(request.params);
+  if (refusal !== undefined) {
+    writeAndEnd(socket, errorAnswer(request.id, refusal), context);
+    return ServedState.Answered;
+  }
+  context.held.forget(socket);
+  context.acks.acknowledge(socket, request.id);
+  context.subscribers.add(socket, specsOf(request.params));
+  return ServedState.Subscriber;
+}
+
+// Writes the answer. A result for a class C method (or on a held connection) keeps the connection open as held; anything else ends it (W1).
+// An error envelope always ends it: how herdr treats a refused class C request is not measured; the fake takes the conservative reading and ends the connection.
+function finish(socket: Socket, answer: Answer, state: ServedState, context: ServingContext, method: string): ServedState {
+  if (answer.kind === AnswerKind.Silent) {
+    return state;
+  }
+  writeAnswer(socket, answer);
+  const keepsOpen = answer.kind === AnswerKind.Envelope && WireField.Result in answer.body && (state === ServedState.Held || isHeldMethod(method));
+  if (!keepsOpen) {
+    closeConnection(socket, context);
+    return ServedState.Answered;
+  }
+  context.held.add(socket);
+  return ServedState.Held;
+}
+
+function writeAndEnd(socket: Socket, answer: Answer, context: ServingContext): void {
+  writeAnswer(socket, answer);
+  closeConnection(socket, context);
+}
+
+// Ends the connection from the server side and leaves the held set at once, so heldCount() never counts a connection the client has already lost.
+function closeConnection(socket: Socket, context: ServingContext): void {
+  context.held.forget(socket);
+  endSocket(socket);
+}
+
+// A silent answer writes nothing; a raw answer is written as it is; an envelope is serialised.
+function writeAnswer(socket: Socket, answer: Answer): void {
+  if (answer.kind === AnswerKind.Silent) {
+    return;
+  }
+  safeWrite(socket, lineOf(answer.kind === AnswerKind.Raw ? answer.line : answer.body));
+}
+
+// A request is a JSON object with a string method; anything else is not a request.
+function parseRequest(line: string): ReceivedRequest | undefined {
+  const parsed = parseJson(line);
+  if (!isObject(parsed)) {
+    return undefined;
+  }
+  const method = fieldOf(parsed, WireField.Method);
+  if (!isText(method)) {
+    return undefined;
+  }
+  const id = fieldOf(parsed, WireField.Id);
+  return { id: isText(id) ? id : EMPTY_REPLY_ID, method, params: fieldOf(parsed, WireField.Params) };
+}
+
+function parseJson(line: string): unknown {
+  try {
+    return JSON.parse(line);
+  } catch {
+    return undefined;
+  }
+}
 
 export const createFakeHerdr: CreateFakeHerdr = async function createFakeHerdr(options: FakeHerdrOptions = {}): Promise<FakeHerdr> {
   const location = fakeSocketLocation(options.socketPath);

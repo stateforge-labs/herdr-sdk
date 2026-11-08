@@ -2,7 +2,7 @@
 // Informs plan 3.3 and contract ClientBase.close (close aborts every stream of the client) and HERDR-ADR-0016; the plan 4b checklist row "client close ends watch and held".
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createWatch } from '../../../../src/herdr/client/watch/watch.ts';
+import { createWatch } from '../../../../src/herdr/client/watch.ts';
 import { recordingSleep } from './support/fake-sleep.ts';
 import { scriptedSubscribe } from './support/scripted-subscribe.ts';
 

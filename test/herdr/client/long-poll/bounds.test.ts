@@ -3,8 +3,8 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Method } from '../../../../src/herdr/generated/index.ts';
-import { assertLongPollBounds } from '../../../../src/herdr/client/long-poll/bounds.ts';
-import { HerdrTransportError } from '../../../../src/herdr/wire/errors.ts';
+import { assertLongPollBounds } from '../../../../src/herdr/client/long-poll.ts';
+import { HerdrTransportError } from '../../../../src/herdr/errors.ts';
 
 const START_MIN_EXCLUSIVE_MS = 3000;
 const START_MAX_MS = 300_000;

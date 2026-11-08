@@ -4,7 +4,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EntryKey, Presets } from '../../../../src/constants.ts';
 import { ENTRY_METHODS, Method, PRESET_METHODS } from '../../../../src/herdr/generated/index.ts';
-import { allowedMethods } from '../../../../src/herdr/client/scoped/allowed-methods.ts';
+import { allowedMethods } from '../../../../src/herdr/client/scoped.ts';
 
 const sorted = (values: Iterable<string>): string[] => [...values].sort();
 

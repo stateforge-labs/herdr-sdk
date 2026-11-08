@@ -1,9 +1,9 @@
 // Role: the names, environment variables, timings and messages of the herdr-core client.
 // Informs HERDR-ADR-0020 (the herdr-core client); ported from the desktop work in herdr-plugins.
-import { must } from './kernel/result.ts';
-import { parseCount, type Count } from './kernel/count.ts';
-import { parseNonEmptyText, parseText, type NonEmptyText, type Text } from './kernel/text.ts';
-import { duration, type Duration } from './kernel/time.ts';
+import { must } from './kernel.ts';
+import { parseCount, type Count } from './kernel.ts';
+import { parseNonEmptyText, parseText, type NonEmptyText, type Text } from './kernel.ts';
+import { duration, type Duration } from './kernel.ts';
 
 export const HC_SOCKET_ENV: NonEmptyText = must(parseNonEmptyText('HC_SOCKET'));
 export const HC_RUNTIME_ENV: NonEmptyText = must(parseNonEmptyText('XDG_RUNTIME_DIR'));

@@ -17,9 +17,9 @@ import type {
 import type { ServerCapabilities } from '../generated/results.ts';
 import type { EnvMap } from '../wire/socket-path.ts';
 import type { OnCall, ParamsOf, ResultOf, UnknownFrame } from '../wire/types.ts';
-import type { Hold } from './held/types.ts';
-import type { Subscribe } from './subscribe/types.ts';
-import type { WatchFn } from './watch/types.ts';
+import type { Hold } from './held.ts';
+import type { Subscribe } from './subscribe.ts';
+import type { WatchFn } from './watch.ts';
 
 export type { CallOptions } from '../generated/index.ts';
 

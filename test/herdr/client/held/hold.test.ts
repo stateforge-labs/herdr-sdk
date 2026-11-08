@@ -3,11 +3,11 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_CAPABILITIES, HeldText } from '../../../../src/constants.ts';
-import { createHold } from '../../../../src/herdr/client/held/hold.ts';
-import type { HoldDeps } from '../../../../src/herdr/client/held/types.ts';
+import { createHold } from '../../../../src/herdr/client/held.ts';
+import type { HoldDeps } from '../../../../src/herdr/client/held.ts';
 import type { ClientCapabilities } from '../../../../src/herdr/client/types.ts';
 import { Method } from '../../../../src/herdr/generated/index.ts';
-import { HerdrTransportError, UnsupportedByServerError } from '../../../../src/herdr/wire/errors.ts';
+import { HerdrTransportError, UnsupportedByServerError } from '../../../../src/herdr/errors.ts';
 import { rejectionOf } from '../../../support/rejection.ts';
 import { waitUntil } from '../../../support/wait.ts';
 import { memoryDedicated, type Answer } from './support/memory-dedicated.ts';

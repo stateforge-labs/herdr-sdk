@@ -2,8 +2,8 @@
 // Informs HERDR-ADR-0016 (W1 one connection per request) and plan 3.1 (connection); the hub vendor copy is the base (plan appendix A.1 "take the hub copy").
 import { createConnection, type Socket } from 'node:net';
 import { ErrorText, LINE_SEPARATOR, TEXT_ENCODING } from '../../constants.ts';
-import { HerdrTransportError } from './errors.ts';
-import { LineSplitter } from './line-splitter.ts';
+import { HerdrTransportError } from '../errors.ts';
+import { LineSplitter } from './codec.ts';
 
 export interface ConnectionHandlers {
   onLine(line: string): void;

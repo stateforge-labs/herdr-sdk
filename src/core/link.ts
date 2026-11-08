@@ -2,11 +2,11 @@
 // Informs HERDR-ADR-0020 (the herdr-core client); ported from the desktop work in herdr-plugins.
 import { createConnection } from 'node:net';
 import type { Socket } from 'node:net';
-import { parseCount, type Count } from './kernel/count.ts';
-import { must } from './kernel/result.ts';
-import type { Duration } from './kernel/time.ts';
-import { parseText, type NonEmptyText, type Text } from './kernel/text.ts';
-import { unknown, type Unknown } from './kernel/unknown.ts';
+import { parseCount, type Count } from './kernel.ts';
+import { must } from './kernel.ts';
+import type { Duration } from './kernel.ts';
+import { parseText, type NonEmptyText, type Text } from './kernel.ts';
+import { unknown, type Unknown } from './errors.ts';
 import {
   HC_BACKOFF_BASE, HC_BACKOFF_CAP, HC_CLOSED, HC_CONNECTING, HC_DOWN, HC_DROPPED, HC_GENERATION, HC_HELLO_METHOD,
   HC_HELLO_TIMEOUT, HC_HELLO_UNREADABLE, HC_NO_CONNECTION, HC_ODD_RESULT,

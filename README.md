@@ -213,9 +213,9 @@ One folder per product ([HERDR-ADR-0021](docs/decisions/HERDR-ADR-0021-one-folde
 
 | Folder | What it is |
 | --- | --- |
-| `src/herdr/` | The herdr server client (protocol 22): `wire/`, `client/`, `generated/` (output of `tools/gen/`), `effect/`, `test-kit/` |
-| `src/core/` | The herdr-core client (`./core`) and its fake core in `test-kit/` (`./core/test-kit`) |
-| `src/drift/` | The schema-drift tool behind `herdr-drift` |
+| `src/herdr/` | The herdr server client (protocol 22): `errors.ts` (every error it throws), `wire/`, `client/` (one module per feature: `connect`, `scoped`, `subscribe`, `watch`, `watch-pane-set`, `held`, `long-poll`, and `streams`, loaded on first use), `generated/` (output of `tools/gen/`), `effect/`, `test-kit/` |
+| `src/core/` | The herdr-core client (`./core`): `errors.ts` (every failure it returns), `kernel.ts` (its value types), `wire`, `link`, `events`, `backoff`, `constants`; its fake core in `test-kit/` (`./core/test-kit`) |
+| `src/drift/` | The schema-drift tool behind `herdr-drift`: `schema`, `diff`, `cli`, `constants`, `types` |
 | `test/` | Mirrors `src/` (`test/herdr/`, `test/core/`, `test/drift/`), plus `test/tools/`, `integration/` and `types/` |
 | `tools/` | Build time only, never published: `gen/` (the generator), `scripts/` (gates, capture, build helpers), `rules/` (the layer rule) |
 | `bin/`, `skills/`, `schema/`, `docs/` | The bins, the agent skill, the captured schema, the docs and decisions |

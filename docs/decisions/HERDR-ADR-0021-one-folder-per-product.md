@@ -5,7 +5,7 @@ status: proposed
 date: 2026-11-08
 decision-makers: owner
 amends: HERDR-ADR-0003
-summary: "The package holds two clients: the herdr server client (protocol 22) and the herdr-core client (HERDR-ADR-0020). Each gets one folder under src/ (src/herdr/, src/core/), test/ mirrors src/ one to one, and the build-time code (gen/, scripts/, rules/) moves under tools/. Entry files, subpath exports and the layer rules are unchanged."
+summary: "Errors are centralized per product and small files are merged by topic. The package holds two clients: the herdr server client (protocol 22) and the herdr-core client (HERDR-ADR-0020). Each gets one folder under src/ (src/herdr/, src/core/), test/ mirrors src/ one to one, and the build-time code (gen/, scripts/, rules/) moves under tools/. Entry files, subpath exports and the layer rules are unchanged."
 ---
 
 # HERDR-ADR-0021: One folder per product
@@ -33,6 +33,29 @@ The tests did not mirror the sources either (`test/connect`, `held`, `long-poll`
 The layer rule of HERDR-ADR-0003 is unchanged in substance. `tools/rules/layers.ts` now keys each layer by its folder path under `src/`
 (`herdr/wire`, `core/test-kit`, ...), and the gate picks the longest matching folder. The directories `src/` may never import are
 `tools`, `test`, `examples` and `bin`.
+
+### Errors, one module per product
+
+- `src/herdr/errors.ts` holds every error the server client and its tools throw: `HerdrError`, `HerdrTransportError`,
+  `ProtocolMismatchError`, `UnsupportedByServerError`, `SubscriptionEnded`, `UnsupportedWatchError` (a `TypeError`, for a per-pane type
+  watchPaneSet cannot follow yet), `MalformedSchemaError` (drift) and `NotImplementedError`. Names and messages stay in `src/constants.ts`
+  (`ErrorName`, `ErrorText`). It is its own layer, `errors`, which imports constants and generated only and which every herdr layer and drift may import.
+- `src/core/errors.ts` holds every failure of the core client: `Unknown` and `Unknowable` (failures as values; the core client never
+  throws on a call), `ParseFailure`, and `CoreInvariantError`, thrown by `must()` when a load-time constant fails its own parser.
+- No library code throws a bare `Error` or `TypeError`. The fake cores of the two test kits keep their own fault values.
+
+### Small files merged by topic
+
+The 150 files under `src/` (75 of them under 40 lines) became 77. Each folder of small helpers became one module named for its feature:
+`wire/codec.ts` (ids, envelopes, line splitter, protocol policy, typed helpers, call hook); `client/connect.ts`, `client/scoped.ts`,
+`client/subscribe.ts`, `client/watch.ts`, `client/watch-pane-set.ts`, `client/held.ts`, `client/long-poll.ts`;
+`test-kit/fake-protocol.ts` and `test-kit/fake-herdr.ts`; `drift/schema.ts`, `drift/diff.ts`, `drift/cli.ts`; `core/kernel.ts`.
+Two splits stay on purpose:
+- `client/streams.ts` stays apart from `client/scoped.ts`: it is loaded through `import()` on first use, so a client that never streams
+  does not carry subscribe, watch and held (plan 10.1 step 3; the size gate checks the lazy chunk).
+- `generated/` keeps one module per kind and per entry: each entry imports only its own method list, which keeps the bundles in budget.
+
+Tests keep one file per concern; their folders name the module they test (`test/herdr/client/watch/` tests `client/watch.ts` and `client/watch-pane-set.ts`).
 
 ## Consequences
 

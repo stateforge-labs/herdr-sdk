@@ -2,7 +2,7 @@
 // Informs HERDR-ADR-0009 (added and removed are listed separately); new test for lane P5c.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { hasMovement, nameDiff } from '../../src/drift/name-diff.ts';
+import { hasMovement, nameDiff } from '../../src/drift/diff.ts';
 
 describe('nameDiff', () => {
   test('lists names only the installed side has as added, sorted', () => {

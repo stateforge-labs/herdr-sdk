@@ -3,8 +3,8 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DriftOutcomeKind } from '../../src/constants.ts';
-import { renderJson, renderOutcome } from '../../src/drift/render.ts';
-import { driftBetween } from '../../src/drift/drift-between.ts';
+import { renderJson, renderOutcome } from '../../src/drift/cli.ts';
+import { driftBetween } from '../../src/drift/diff.ts';
 import { miniSchema } from './support/mini-schema.ts';
 
 describe('renderOutcome', () => {

@@ -4,12 +4,12 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ENTRY_METHODS, Method } from '../../../../src/herdr/generated/index.ts';
 import { openDedicated } from '../../../../src/herdr/wire/dedicated.ts';
-import type { CreateHold, HoldDeps } from '../../../../src/herdr/client/held/types.ts';
-import type { CreateSubscribe, Subscribe, SubscribeDeps } from '../../../../src/herdr/client/subscribe/types.ts';
-import type { CreateWatch, WatchFn } from '../../../../src/herdr/client/watch/types.ts';
-import { holdFor, subscribeFor, watchFor } from '../../../../src/herdr/client/scoped/streams.ts';
-import { buildNamespaceTree } from '../../../../src/herdr/client/scoped/namespace-tree.ts';
-import { allowedMethods } from '../../../../src/herdr/client/scoped/allowed-methods.ts';
+import type { CreateHold, HoldDeps } from '../../../../src/herdr/client/held.ts';
+import type { CreateSubscribe, Subscribe, SubscribeDeps } from '../../../../src/herdr/client/subscribe.ts';
+import type { CreateWatch, WatchFn } from '../../../../src/herdr/client/watch.ts';
+import { holdFor, subscribeFor, watchFor } from '../../../../src/herdr/client/streams.ts';
+import { buildNamespaceTree } from '../../../../src/herdr/client/scoped.ts';
+import { allowedMethods } from '../../../../src/herdr/client/scoped.ts';
 import { stubCore, STUB_TIMEOUT_MS } from './support/stub-core.ts';
 
 const unusedSubscribe: Subscribe = async () => {

@@ -4,7 +4,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { NameSeparator, PER_PANE_SUBSCRIPTION_TYPES } from '../../../src/constants.ts';
 import { EventKind, Method, SubscriptionType } from '../../../src/herdr/generated/index.ts';
-import { encodeRequest } from '../../../src/herdr/wire/envelope.ts';
+import { encodeRequest } from '../../../src/herdr/wire/codec.ts';
 import { withFake } from '../../support/fake.ts';
 import { linesAtLeast, openLineReader } from './support/lines.ts';
 

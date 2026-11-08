@@ -4,7 +4,7 @@ import { statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { ErrorText, HerdrEnv, SocketPathPart } from '../../constants.ts';
-import { HerdrTransportError } from './errors.ts';
+import { HerdrTransportError } from '../errors.ts';
 
 export type EnvMap = Readonly<Record<string, string | undefined>>;
 

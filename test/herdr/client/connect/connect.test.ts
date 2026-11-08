@@ -6,11 +6,11 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { CallOutcome, ErrorText, Fake, ProtocolPolicy, Timeout, WireField } from '../../../../src/constants.ts';
-import { connectCore as connect } from '../../../../src/herdr/client/connect-core.ts';
+import { connectCore as connect } from '../../../../src/herdr/client/connect.ts';
 import { Method, PROTOCOL, ResultTag, ServerCapability } from '../../../../src/herdr/generated/index.ts';
 import type { ResultOf } from '../../../../src/herdr/wire/types.ts';
-import type { CallEvent } from '../../../../src/herdr/wire/call-hook.ts';
-import { HerdrError, HerdrTransportError, ProtocolMismatchError, UnsupportedByServerError } from '../../../../src/herdr/wire/errors.ts';
+import type { CallEvent } from '../../../../src/herdr/wire/codec.ts';
+import { HerdrError, HerdrTransportError, ProtocolMismatchError, UnsupportedByServerError } from '../../../../src/herdr/errors.ts';
 import { withFake } from '../../../support/fake.ts';
 import { rejectionOf } from '../../../support/rejection.ts';
 

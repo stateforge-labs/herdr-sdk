@@ -7,7 +7,7 @@ import {
   ProtocolMismatchError,
   SubscriptionEnded,
   UnsupportedByServerError,
-} from '../wire/errors.ts';
+} from '../errors.ts';
 import type {
   HerdrRefusedShape,
   HerdrTaggedError,

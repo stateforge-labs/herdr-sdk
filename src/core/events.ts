@@ -2,9 +2,9 @@
 // Informs HERDR-ADR-0020 (the herdr-core client); ported from the desktop work in herdr-plugins.
 import { createConnection } from 'node:net';
 import type { Socket } from 'node:net';
-import { must } from './kernel/result.ts';
-import { AsyncQueue } from './kernel/async-queue.ts';
-import { duration, type Duration } from './kernel/time.ts';
+import { must } from './kernel.ts';
+import { AsyncQueue } from './kernel.ts';
+import { duration, type Duration } from './kernel.ts';
 import { Backoff } from './backoff.ts';
 import { HC_BACKOFF_BASE, HC_BACKOFF_CAP, HC_HEARTBEAT_EVERY, HC_HEARTBEAT_MISSES, HC_SUBSCRIBE_METHOD } from './constants.ts';
 import { HcCoreLines, encodeHcCoreRequest, parseHcCallId, parseHcCoreMessage, parseHcParams, parseHcSnapshot, parseWireChunk } from './wire.ts';

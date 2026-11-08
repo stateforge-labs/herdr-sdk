@@ -2,7 +2,7 @@
 // Informs HERDR-ADR-0016 (W2 framing) and plan 5 (socket tests); ported-and-extended from atalaya test coverage of transport/line-splitter.ts.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LineSplitter } from '../../../src/herdr/wire/line-splitter.ts';
+import { LineSplitter } from '../../../src/herdr/wire/codec.ts';
 
 describe('LineSplitter', () => {
   test('joins a line split across two chunks', () => {

@@ -3,7 +3,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Backoff } from '../../../../src/constants.ts';
-import { createBackoffState, nextDelayMs, resolveBackoff } from '../../../../src/herdr/client/watch/backoff.ts';
+import { createBackoffState, nextDelayMs, resolveBackoff } from '../../../../src/herdr/client/watch.ts';
 
 describe('backoff', () => {
   test('the defaults come from the Backoff constants', () => {

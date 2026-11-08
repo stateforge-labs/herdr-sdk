@@ -2,8 +2,8 @@
 // Informs HERDR-ADR-0016 (W6: pane.list is the snapshot of the pane set); lane P4b test helper.
 import { ResultTag } from '../../../../../src/herdr/generated/index.ts';
 import type { PaneInfo } from '../../../../../src/herdr/generated/events.ts';
-import type { PaneSetSource } from '../../../../../src/herdr/client/watch/types.ts';
-import type { Subscribe } from '../../../../../src/herdr/client/subscribe/types.ts';
+import type { PaneSetSource } from '../../../../../src/herdr/client/watch.ts';
+import type { Subscribe } from '../../../../../src/herdr/client/subscribe.ts';
 
 export interface PaneListing {
   ids: string[];

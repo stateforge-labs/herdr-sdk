@@ -1,8 +1,8 @@
 // Role: the capped exponential backoff of the core link and events.
 // Informs HERDR-ADR-0020 (the herdr-core client); ported from the desktop work in herdr-plugins.
-import { must } from './kernel/result.ts';
-import { parseCount, type Count } from './kernel/count.ts';
-import type { Duration } from './kernel/time.ts';
+import { must } from './kernel.ts';
+import { parseCount, type Count } from './kernel.ts';
+import type { Duration } from './kernel.ts';
 import { nextBackoff } from './wire.ts';
 
 export interface BackoffTiming {

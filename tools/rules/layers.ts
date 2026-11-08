@@ -13,6 +13,7 @@ export const Layer = {
   ModelFromWire: 'model/from-wire',
   Core: 'core',
   CoreTestKit: 'core-test-kit',
+  Errors: 'errors',
   Entry: 'entry',
 } as const;
 
@@ -37,8 +38,8 @@ export const FOLDER_LAYERS: Readonly<Record<string, Layer>> = {
 // Single files under src/ that are not entries.
 export const SourcePath = {
   Constants: 'constants.ts',
-  // HERDR-ADR-0017: the shared NotImplemented helper of the contract stubs; same layer as constants (importable by every layer but generated and model).
-  NotImplemented: 'not-implemented.ts',
+  // HERDR-ADR-0021: every error of the herdr server client and its tools, importable by every herdr layer and drift.
+  HerdrErrors: 'herdr/errors.ts',
   ModelFromWire: 'herdr/model/from-wire.ts',
 } as const;
 
@@ -62,11 +63,12 @@ export const PackageName = {
 export const ALLOWED_IMPORTS: Readonly<Record<Layer, readonly Layer[]>> = {
   [Layer.Generated]: [Layer.Generated],
   [Layer.Constants]: [Layer.Constants, Layer.Generated],
-  [Layer.Wire]: [Layer.Wire, Layer.Constants, Layer.Generated],
-  [Layer.Client]: [Layer.Client, Layer.Wire, Layer.Constants, Layer.Generated],
-  [Layer.Effect]: [Layer.Effect, Layer.Client, Layer.Wire, Layer.Constants, Layer.Generated],
-  [Layer.Drift]: [Layer.Drift, Layer.Constants, Layer.Generated],
-  [Layer.TestKit]: [Layer.TestKit, Layer.Wire, Layer.Constants, Layer.Generated],
+  [Layer.Errors]: [Layer.Errors, Layer.Constants, Layer.Generated],
+  [Layer.Wire]: [Layer.Wire, Layer.Errors, Layer.Constants, Layer.Generated],
+  [Layer.Client]: [Layer.Client, Layer.Errors, Layer.Wire, Layer.Constants, Layer.Generated],
+  [Layer.Effect]: [Layer.Effect, Layer.Errors, Layer.Client, Layer.Wire, Layer.Constants, Layer.Generated],
+  [Layer.Drift]: [Layer.Drift, Layer.Errors, Layer.Constants, Layer.Generated],
+  [Layer.TestKit]: [Layer.TestKit, Layer.Errors, Layer.Wire, Layer.Constants, Layer.Generated],
   [Layer.Model]: [Layer.Model],
   [Layer.ModelFromWire]: [Layer.Model, Layer.Generated],
   // HERDR-ADR-0020: the herdr-core client stands alone; its test kit sees only it.
@@ -94,6 +96,7 @@ export const PACKAGE_ALLOWED: Readonly<Record<Layer, readonly string[]>> = {
   [Layer.ModelFromWire]: [],
   [Layer.Core]: [],
   [Layer.CoreTestKit]: [],
+  [Layer.Errors]: [],
   [Layer.Entry]: [],
 };
 

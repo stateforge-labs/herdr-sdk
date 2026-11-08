@@ -3,9 +3,9 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ENTRY_METHODS } from '../../../../src/herdr/generated/index.ts';
-import { allowedMethods } from '../../../../src/herdr/client/scoped/allowed-methods.ts';
-import { buildNamespaceTree } from '../../../../src/herdr/client/scoped/namespace-tree.ts';
-import { createHold } from '../../../../src/herdr/client/held/hold.ts';
+import { allowedMethods } from '../../../../src/herdr/client/scoped.ts';
+import { buildNamespaceTree } from '../../../../src/herdr/client/scoped.ts';
+import { createHold } from '../../../../src/herdr/client/held.ts';
 import { DEFAULT_CAPABILITIES } from '../../../../src/constants.ts';
 import { memoryDedicated } from './support/memory-dedicated.ts';
 

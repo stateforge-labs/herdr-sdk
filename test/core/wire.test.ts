@@ -2,10 +2,10 @@
 // Informs HERDR-ADR-0020 (the herdr-core client); ported from the desktop work in herdr-plugins.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { must } from '../../src/core/kernel/result.ts';
-import { parseCount } from '../../src/core/kernel/count.ts';
-import { duration } from '../../src/core/kernel/time.ts';
-import { parseNonEmptyText } from '../../src/core/kernel/text.ts';
+import { must } from '../../src/core/kernel.ts';
+import { parseCount } from '../../src/core/kernel.ts';
+import { duration } from '../../src/core/kernel.ts';
+import { parseNonEmptyText } from '../../src/core/kernel.ts';
 import type { WireChunk } from '../../src/core/wire.ts';
 import { HcCoreLines, encodeHcCoreRequest, hcCoreSocketPath, nextBackoff, parseHcCallId, parseHcCoreHello, parseHcCoreMessage, parseHcParams, parseHcSnapshot, parseWireChunk } from '../../src/core/wire.ts';
 import { frame } from '../../src/core/test-kit/fake-core.ts';

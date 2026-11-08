@@ -2,9 +2,9 @@
 // Informs HERDR-ADR-0020 (the herdr-core client); ported from the desktop work in herdr-plugins.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { must } from '../../src/core/kernel/result.ts';
+import { must } from '../../src/core/kernel.ts';
 import { parseHcParams } from '../../src/core/wire.ts';
-import { duration } from '../../src/core/kernel/time.ts';
+import { duration } from '../../src/core/kernel.ts';
 import { CoreEvents } from '../../src/core/events.ts';
 import type { CoreEventsTiming, HcCoreFeed } from '../../src/core/events.ts';
 import { FakeFault, FakeHcCore, agentTerminal, later, nextWithin } from '../../src/core/test-kit/fake-core.ts';

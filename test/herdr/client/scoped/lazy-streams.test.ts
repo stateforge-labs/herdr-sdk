@@ -3,10 +3,10 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EventKind, SubscriptionType, type PushFrame } from '../../../../src/index.ts';
-import { connectCore } from '../../../../src/herdr/client/connect-core.ts';
-import { createStreamMembers } from '../../../../src/herdr/client/scoped/streams.ts';
-import { lazyStreams } from '../../../../src/herdr/client/scoped/lazy-streams.ts';
-import type { WatchOptions } from '../../../../src/herdr/client/watch/types.ts';
+import { connectCore } from '../../../../src/herdr/client/connect.ts';
+import { createStreamMembers } from '../../../../src/herdr/client/streams.ts';
+import { lazyStreams } from '../../../../src/herdr/client/scoped.ts';
+import type { WatchOptions } from '../../../../src/herdr/client/watch.ts';
 import { withFake } from '../../../support/fake.ts';
 import { waitUntil } from '../../../support/wait.ts';
 import { stubCore } from './support/stub-core.ts';

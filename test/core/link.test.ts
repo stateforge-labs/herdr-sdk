@@ -2,9 +2,9 @@
 // Informs HERDR-ADR-0020 (the herdr-core client); ported from the desktop work in herdr-plugins.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { must } from '../../src/core/kernel/result.ts';
-import { duration } from '../../src/core/kernel/time.ts';
-import { parseNonEmptyText, type NonEmptyText } from '../../src/core/kernel/text.ts';
+import { must } from '../../src/core/kernel.ts';
+import { duration } from '../../src/core/kernel.ts';
+import { parseNonEmptyText, type NonEmptyText } from '../../src/core/kernel.ts';
 import { parseHcParams } from '../../src/core/wire.ts';
 import { CoreLink } from '../../src/core/link.ts';
 import type { HcParams } from '../../src/core/wire.ts';

@@ -2,7 +2,7 @@
 // Informs HERDR-ADR-0016 (W3 error envelope) and plan 3.1; ported-and-extended from atalaya src/protocol/envelope.ts.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { isErrorEnvelope, isObject, encodeRequest } from '../../../src/herdr/wire/envelope.ts';
+import { isErrorEnvelope, isObject, encodeRequest } from '../../../src/herdr/wire/codec.ts';
 
 describe('isErrorEnvelope', () => {
   test('is true for an envelope with an error field', () => {

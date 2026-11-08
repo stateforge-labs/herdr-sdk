@@ -2,7 +2,7 @@
 // Informs HERDR-ADR-0016 (W2 pushes carry no id, P3 unknown kinds surfaced, P4 envelope-only validation), HERDR-ADR-0007 and plan 3.6; contract in wire/types.ts (DecodePush).
 import { UNKNOWN_EVENT, WireField } from '../../constants.ts';
 import { EventKind, SubscriptionEventKind, type PushFrame } from '../generated/index.ts';
-import { isObject } from './envelope.ts';
+import { isObject } from './codec.ts';
 import type { DecodePush, UnknownFrame } from './types.ts';
 
 // Field names and JSON type names this decoder reads (the push envelope has no other fields).

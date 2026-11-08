@@ -1,8 +1,8 @@
 // Role: an in-memory OpenDedicated stub: one scripted DedicatedConnection that the test drives (ack, reject the ack, push lines, close from the server, fail) and that records what the code asked of it.
 // Informs HERDR-ADR-0008 (fakes only) and HERDR-ADR-0017 (unit tests run against the contract, not a socket); lane test helper for createSubscribe.
-import { HerdrTransportError } from '../../../../../src/herdr/wire/errors.ts';
+import { HerdrTransportError } from '../../../../../src/herdr/errors.ts';
 import type { DedicatedConnection, DedicatedEnd, DedicatedOptions, DedicatedRequestOptions, OpenDedicated } from '../../../../../src/herdr/wire/types.ts';
-import type { ParamsOf, ResultOf } from '../../../../../src/herdr/wire/typed.ts';
+import type { ParamsOf, ResultOf } from '../../../../../src/herdr/wire/codec.ts';
 import type { Method } from '../../../../../src/herdr/generated/index.ts';
 
 export interface SentRequest {

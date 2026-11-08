@@ -10,7 +10,7 @@ import {
   ProtocolMismatchError,
   SubscriptionEnded,
   UnsupportedByServerError,
-} from '../../../src/herdr/wire/errors.ts';
+} from '../../../src/herdr/errors.ts';
 import { Method, ServerCapability } from '../../../src/herdr/generated/index.ts';
 
 // Fails the test unless the value has the wanted tag, and narrows its type for the field checks that follow.

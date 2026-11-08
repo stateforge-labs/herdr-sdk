@@ -5,7 +5,7 @@ import { createServer, type Server, type Socket } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { LINE_SEPARATOR, TEXT_ENCODING } from '../../../../../src/constants.ts';
-import { LineSplitter } from '../../../../../src/herdr/wire/line-splitter.ts';
+import { LineSplitter } from '../../../../../src/herdr/wire/codec.ts';
 
 export interface ReceivedRequest {
   readonly id: string;

@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ErrorText, Fake } from '../../../src/constants.ts';
 import { Connection, type ConnectionHandlers } from '../../../src/herdr/wire/connection.ts';
-import { HerdrTransportError } from '../../../src/herdr/wire/errors.ts';
+import { HerdrTransportError } from '../../../src/herdr/errors.ts';
 import { rejectionOf } from '../../support/rejection.ts';
 import { waitUntil } from '../../support/wait.ts';
 import { startRawServer, type RawServer } from './support/raw-server.ts';

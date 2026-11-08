@@ -2,7 +2,7 @@
 // Informs HERDR-ADR-0009 (exit 2 is misuse); new test for lane P5c.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseArgs } from '../../src/drift/args.ts';
+import { parseArgs } from '../../src/drift/cli.ts';
 import { ArgsKind } from '../../src/drift/constants.ts';
 
 describe('parseArgs', () => {

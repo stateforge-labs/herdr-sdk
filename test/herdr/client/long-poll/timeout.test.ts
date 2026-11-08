@@ -4,7 +4,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Timeout } from '../../../../src/constants.ts';
 import { LONG_POLL, Method } from '../../../../src/herdr/generated/index.ts';
-import { requestTimeoutMs } from '../../../../src/herdr/client/long-poll/timeout.ts';
+import { requestTimeoutMs } from '../../../../src/herdr/client/long-poll.ts';
 
 const FALLBACK_MS = 10_000;
 const TIMEOUT_MS = 7_000;

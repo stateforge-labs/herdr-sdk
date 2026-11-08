@@ -2,7 +2,7 @@
 // Informs HERDR-ADR-0016 (W2: the ack and the pushes after it arrive on one open connection) and plan 5; new test helper for test/test-kit.
 import { createConnection, type Socket } from 'node:net';
 import { LINE_SEPARATOR, TEXT_ENCODING } from '../../../../src/constants.ts';
-import { LineSplitter } from '../../../../src/herdr/wire/line-splitter.ts';
+import { LineSplitter } from '../../../../src/herdr/wire/codec.ts';
 import { waitUntil } from '../../../support/wait.ts';
 
 const WAIT_MS = 1000;

@@ -1,5 +1,5 @@
 // Role: checks the wire error classes: their names, their fields, HerdrError.from and the default of isTimeout.
-// Informs HERDR-ADR-0016 and plan 3.1 (error list); new test for the four classes of src/herdr/wire/errors.ts.
+// Informs HERDR-ADR-0016 and plan 3.1 (error list); new test for the four classes of src/herdr/errors.ts.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -7,7 +7,7 @@ import {
   HerdrTransportError,
   ProtocolMismatchError,
   UnsupportedByServerError,
-} from '../../../src/herdr/wire/errors.ts';
+} from '../../../src/herdr/errors.ts';
 import { Method, ServerCapability } from '../../../src/herdr/generated/index.ts';
 
 describe('HerdrError', () => {

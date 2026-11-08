@@ -1,6 +1,6 @@
 // Role: a scripted EventSubscription: the test pushes frames, ends it normally, or fails it; close() ends it normally and records the close.
 // Informs HERDR-ADR-0008 (fakes only, no socket) and plan 5; lane P4b test helper (the contract stub of watch's Subscribe).
-import type { EventSubscription } from '../../../../../src/herdr/client/subscribe/types.ts';
+import type { EventSubscription } from '../../../../../src/herdr/client/subscribe.ts';
 import type { DecodedFrame } from '../../../../../src/herdr/wire/types.ts';
 
 interface Ending {

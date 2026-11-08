@@ -13,7 +13,7 @@ export {
 } from './herdr/generated/index.ts';
 export type { ErrorBody, PushFrame, ResultByTag, Subscription } from './herdr/generated/index.ts';
 export { connect } from './herdr/client/connect.ts';
-export { watchPaneSet } from './herdr/client/watch/watch-pane-set.ts';
+export { watchPaneSet } from './herdr/client/watch-pane-set.ts';
 export type {
   CallOptions,
   Client,
@@ -21,7 +21,7 @@ export type {
   ConnectOptions,
   ServerInfo,
 } from './herdr/client/types.ts';
-export type { EventSubscription, QueueOptions, Subscribe, SubscribeOptions } from './herdr/client/subscribe/types.ts';
+export type { EventSubscription, QueueOptions, Subscribe, SubscribeOptions } from './herdr/client/subscribe.ts';
 export type {
   BackoffPolicy,
   PaneSetChange,
@@ -33,13 +33,13 @@ export type {
   WatchFn,
   WatchOptions,
   WatchPaneSetOptions,
-} from './herdr/client/watch/types.ts';
-export type { Hold, HeldConnection, HoldOptions } from './herdr/client/held/types.ts';
+} from './herdr/client/watch.ts';
+export type { Hold, HeldConnection, HoldOptions } from './herdr/client/held.ts';
 export {
   HerdrError,
   HerdrTransportError,
   ProtocolMismatchError,
   SubscriptionEnded,
   UnsupportedByServerError,
-} from './herdr/wire/errors.ts';
+} from './herdr/errors.ts';
 export type { CallEvent, DecodedFrame, OnCall, UnknownFrame } from './herdr/wire/types.ts';

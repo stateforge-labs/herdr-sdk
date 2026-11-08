@@ -6,7 +6,7 @@ import { existsSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { EMPTY_REPLY_ID, Fake, FakeErrorCode, FakeText } from '../../../src/constants.ts';
 import { EventKind, Method, ResultTag, SubscriptionType } from '../../../src/herdr/generated/index.ts';
-import { encodeRequest } from '../../../src/herdr/wire/envelope.ts';
+import { encodeRequest } from '../../../src/herdr/wire/codec.ts';
 import { createFakeHerdr } from '../../../src/test-kit.ts';
 import { withFake } from '../../support/fake.ts';
 import { waitUntil } from '../../support/wait.ts';

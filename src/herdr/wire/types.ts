@@ -2,9 +2,9 @@
 // Informs HERDR-ADR-0017 (locked seam; read-only for every lane), HERDR-ADR-0016 (W1 one request per connection, W2 ack then stream, events carry no id, W3 id "" then EOF is an answer, P3 unknown kinds), HERDR-ADR-0007 and plan 3.1.
 import type { CallOutcome, UNKNOWN_EVENT } from '../../constants.ts';
 import type { Method, PushFrame } from '../generated/index.ts';
-import type { ParamsOf, ResultOf } from './typed.ts';
+import type { ParamsOf, ResultOf } from './codec.ts';
 
-export type { ParamsOf, ResultOf } from './typed.ts';
+export type { ParamsOf, ResultOf } from './codec.ts';
 
 /** One finished call, reported to the onCall hook (plan 3.3; atalaya RpcObserver). */
 export interface CallEvent {

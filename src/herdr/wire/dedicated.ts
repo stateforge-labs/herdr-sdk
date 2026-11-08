@@ -2,11 +2,11 @@
 // Informs HERDR-ADR-0016 (W1 one request per connection, W2 ack then a held stream of id-less pushes, W3 an id "" reply then EOF is an answer), HERDR-ADR-0007 and plan 3.6; contract in wire/types.ts (OpenDedicated, DedicatedConnection).
 import { CallOutcome, EMPTY_REPLY_ID, ErrorText, WireField } from '../../constants.ts';
 import type { Method } from '../generated/index.ts';
-import { outcomeOf, reportCall } from './call-hook.ts';
+import { outcomeOf, reportCall } from './codec.ts';
 import { Connection, type ConnectionHandlers } from './connection.ts';
-import { HerdrError, HerdrTransportError } from './errors.ts';
-import { encodeRequest, isErrorEnvelope, isObject } from './envelope.ts';
-import { nextId } from './id.ts';
+import { HerdrError, HerdrTransportError } from '../errors.ts';
+import { encodeRequest, isErrorEnvelope, isObject } from './codec.ts';
+import { nextId } from './codec.ts';
 import type {
   DedicatedConnection,
   DedicatedEnd,
@@ -15,7 +15,7 @@ import type {
   OnCall,
   OpenDedicated,
 } from './types.ts';
-import type { ParamsOf, ResultOf } from './typed.ts';
+import type { ParamsOf, ResultOf } from './codec.ts';
 
 // Texts only this layer words (the shared constants file is read-only for lane P4a).
 const DedicatedText = {

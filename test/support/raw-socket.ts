@@ -2,7 +2,7 @@
 // Informs HERDR-ADR-0016 (W1 and W3 are checked on the wire, not through rpc) and plan 5 (raw socket tests); new test helper.
 import { createConnection, type Socket } from 'node:net';
 import { LINE_SEPARATOR, TEXT_ENCODING } from '../../src/constants.ts';
-import { LineSplitter } from '../../src/herdr/wire/line-splitter.ts';
+import { LineSplitter } from '../../src/herdr/wire/codec.ts';
 
 export interface RawSocket {
   write(line: string): void;

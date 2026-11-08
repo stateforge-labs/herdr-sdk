@@ -1,7 +1,7 @@
 // Role: setupTest and openWorld: a fake core plus links and event streams that close with the test.
 // Informs HERDR-ADR-0020 (the herdr-core client); ported from the desktop work in herdr-plugins.
 import type { TestContext } from 'node:test';
-import { duration } from '../kernel/time.ts';
+import { duration } from '../kernel.ts';
 import { CoreEvents } from '../events.ts';
 import type { CoreEventsTiming } from '../events.ts';
 import { CoreLink } from '../link.ts';

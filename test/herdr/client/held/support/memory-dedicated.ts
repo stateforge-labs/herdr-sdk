@@ -1,7 +1,7 @@
 // Role: an in-memory OpenDedicated and DedicatedConnection for the held tests: records every request, answers from a test function, and lets the test close it from the server side.
 // Informs HERDR-ADR-0008 (fakes only, no socket) and HERDR-ADR-0016 (W1 one request per connection; the held stream); lane P4b test helper.
 import type { Method } from '../../../../../src/herdr/generated/index.ts';
-import type { ParamsOf, ResultOf } from '../../../../../src/herdr/wire/typed.ts';
+import type { ParamsOf, ResultOf } from '../../../../../src/herdr/wire/codec.ts';
 import type { DedicatedConnection, DedicatedEnd, DedicatedOptions, DedicatedRequestOptions, OpenDedicated } from '../../../../../src/herdr/wire/types.ts';
 
 export interface RecordedRequest {

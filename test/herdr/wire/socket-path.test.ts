@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Fake, HerdrEnv, SocketPathPart } from '../../../src/constants.ts';
 import { assertSocketExists, defaultSocketPath, resolveSocketPath } from '../../../src/herdr/wire/socket-path.ts';
-import { HerdrTransportError } from '../../../src/herdr/wire/errors.ts';
+import { HerdrTransportError } from '../../../src/herdr/errors.ts';
 
 const HOME_DIR = '/home/tester';
 
