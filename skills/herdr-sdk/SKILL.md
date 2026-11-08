@@ -1,30 +1,32 @@
 ---
 name: herdr-sdk
-description: Write TypeScript or JavaScript that talks to a running herdr server (spaces/workspaces, tabs, panes, coding agents) through the typed @homelab/herdr client over herdr's unix socket. Use when code imports @homelab/herdr, or the task is to list, watch, prompt, wait on or read herdr panes and agents from a script, plugin, daemon or test, or to fake herdr in tests. Not for driving the herdr CLI by hand (hc skill) or the GUI window (herdr-app skill).
+description: Write TypeScript or JavaScript that talks to a running herdr server (spaces/workspaces, tabs, panes, coding agents) through the typed @stateforge-labs/herdr client over herdr's unix socket. Use when code imports @stateforge-labs/herdr, or the task is to list, watch, prompt, wait on or read herdr panes and agents from a script, plugin, daemon or test, or to fake herdr in tests, or to talk to herdr-core (hc) over its socket. Not for driving the herdr CLI by hand (hc skill) or the GUI window (herdr-app skill).
 ---
 
-# @homelab/herdr
+# @stateforge-labs/herdr
 
-Typed client for herdr's socket API. Zero runtime dependencies, Bun and Node 22.18+. Targets **@homelab/herdr 0.2.0 = herdr protocol 22 (herdr 0.9.5)**.
+Typed client for herdr's socket API. Zero runtime dependencies, Bun and Node 22.18+. Targets **@stateforge-labs/herdr 0.3.0 = herdr protocol 22 (herdr 0.9.5)**.
 
 ## First: check the version
 
 Do not trust memory of this API. Before writing code:
 
-1. Read `node_modules/@homelab/herdr/package.json`: `version` and `herdr.protocol` must match the line above. If they differ, this skill may be stale; read the package's `docs/api/methods.md` and `docs/api/events.md` (generated from the schema, always current) before trusting any name here.
+1. Read `node_modules/@stateforge-labs/herdr/package.json`: `version` and `herdr.protocol` must match the line above. If they differ, this skill may be stale; read the package's `docs/api/methods.md` and `docs/api/events.md` (generated from the schema, always current) before trusting any name here.
 2. After editing, run the type checker. Param and result types are generated, so a wrong field name fails at compile time.
 
 ## Pick the entry point (least power that works)
 
 | Import | Function | Can do | Cannot |
 |---|---|---|---|
-| `@homelab/herdr/read-only` | `connectReadOnly()` | structure reads (`*.list`, `*.get`, `session.snapshot`), long-poll waits, `events.subscribe`, `watch` | terminal content (opt in with `{ content: true }`), any write, generic `call()` |
-| `@homelab/herdr/read-only` | `connectPrompt()` | structure reads + `agent.prompt` | everything else |
-| `@homelab/herdr` | `connect()` | reads, content, UI changes, input, hooks, long-poll, `hold()` | destructive, server control, spawn/execute |
-| `@homelab/herdr/admin` | `connectAdmin()` | all 102 methods | nothing |
-| `@homelab/herdr/effect` | `Herdr` service + Layers | same as above as Effect (needs peer `effect` 4.1.2) | |
-| `@homelab/herdr/test-kit` | `createFakeHerdr()` | in-process fake server for tests | production use |
-| `@homelab/herdr/schema` | method table, param shapes | tooling that reflects on the API | |
+| `@stateforge-labs/herdr/read-only` | `connectReadOnly()` | structure reads (`*.list`, `*.get`, `session.snapshot`), long-poll waits, `events.subscribe`, `watch` | terminal content (opt in with `{ content: true }`), any write, generic `call()` |
+| `@stateforge-labs/herdr/read-only` | `connectPrompt()` | structure reads + `agent.prompt` | everything else |
+| `@stateforge-labs/herdr` | `connect()` | reads, content, UI changes, input, hooks, long-poll, `hold()` | destructive, server control, spawn/execute |
+| `@stateforge-labs/herdr/admin` | `connectAdmin()` | all 102 methods | nothing |
+| `@stateforge-labs/herdr/effect` | `Herdr` service + Layers | same as above as Effect (needs peer `effect` 4.1.2) | |
+| `@stateforge-labs/herdr/test-kit` | `createFakeHerdr()` | in-process fake server for tests | production use |
+| `@stateforge-labs/herdr/schema` | method table, param shapes | tooling that reflects on the API | |
+| `@stateforge-labs/herdr/core` | `CoreLink`, `CoreEvents`, wire parsers, `hcCoreSocketPath()` | a client of the herdr-core (`hc`) socket: calls, the event feed with heartbeats, failures as `Unknown` values | the protocol-22 herdr socket |
+| `@stateforge-labs/herdr/core/test-kit` | `FakeHcCore`, `setupTest(t)`, `openWorld()` | a scripted fake herdr-core for tests | production use |
 
 Start with `connectReadOnly()`. Use `connectAdmin()` only for `*.close`, `server.*`, `agent.start`, `plugin.*`: say why in a comment.
 
@@ -32,7 +34,7 @@ Start with `connectReadOnly()`. Use `connectAdmin()` only for `*.close`, `server
 
 ```ts run
 // fake: agent.list {"type":"agent_list","agents":[{"agent_status":"idle","focused":false,"pane_id":"p_1","revision":1,"tab_id":"t_1","terminal_id":"term_1","workspace_id":"w_1","name":"reviewer"}]}
-import { connect, HerdrError } from "@homelab/herdr"
+import { connect, HerdrError } from "@stateforge-labs/herdr"
 
 const herdr = await connect() // HERDR_SOCKET, else ~/.config/herdr/herdr.sock; pings; checks protocol 22
 try {

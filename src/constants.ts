@@ -5,14 +5,14 @@ import type { ServerCapabilities } from './herdr/generated/results.ts';
 
 export { TOKEN_NAME_PATTERN } from './herdr/generated/names/token-name-pattern.ts';
 
-// Environment variable names and the default socket location (hub constants.ts:59; atalaya socket-path.ts).
+// Environment variable names and the default socket location.
 export const HerdrEnv = {
   Socket: 'HERDR_SOCKET',
   Home: 'HOME',
   Live: 'HERDR_LIVE',
 } as const;
 
-// Path parts of the default herdr socket, ~/.config/herdr/herdr.sock (hub constants.ts:61-63).
+// Path parts of the default herdr socket, ~/.config/herdr/herdr.sock.
 export const SocketPathPart = {
   ConfigDir: '.config',
   HerdrDir: 'herdr',
@@ -25,16 +25,16 @@ export const Timeout = {
   LongPollMarginMs: 5_000,
 } as const;
 
-// Reconnect backoff for held and subscription connections (plan 3.6; hub ADR-0022).
+// Reconnect backoff for held and subscription connections.
 export const Backoff = {
   InitialMs: 1_000,
   MaxMs: 30_000,
   Factor: 2,
-  // A connection that stayed up this long resets the backoff to InitialMs (hub ADR-0022 "reset after a stable period"; the owner may tune it).
+  // A connection that stayed up this long resets the backoff to InitialMs.
   StableResetMs: 60_000,
 } as const;
 
-// Protocol compatibility policy: exact match by default, minimum is optional (plan 3.1; hub infra/herdr/protocol-policy.ts).
+// Protocol compatibility policy: exact match by default, minimum is optional.
 export const ProtocolPolicy = {
   Exact: 'exact',
   Minimum: 'minimum',
@@ -61,10 +61,10 @@ export const Presets = {
 } as const;
 export type Preset = (typeof Presets)[keyof typeof Presets];
 
-// Prefix of subscription request ids (hub wire.ts:68).
+// Prefix of subscription request ids.
 export const SUBSCRIBE_ID_PREFIX = 'sub';
 
-// Error message builders, texts from hub wire.ts:70-80 and atalaya rpc.ts (kept as functions so the wording lives in one place).
+// Error message builders; functions, so the wording lives in one place.
 export const ErrorText = {
   NoAck: (ms: number): string => `no ack within ${ms}ms`,
   Unavailable: (method: string, what: string): string => `${method}: ${what}`,
@@ -97,7 +97,7 @@ export const ErrorName = {
   UnsupportedWatch: 'UnsupportedWatchError',
 } as const;
 
-// JSON field names of the NDJSON wire envelopes (hub wire.ts HerdrWireField).
+// JSON field names of the NDJSON wire envelopes.
 export const WireField = {
   Id: 'id',
   Method: 'method',
@@ -113,7 +113,7 @@ export const WireField = {
   Event: 'event',
 } as const;
 
-// Prefix of request ids (atalaya protocol/id.ts). The id is an echo, not a correlation key (HERDR-ADR-0016 W1).
+// Prefix of request ids The id is an echo, not a correlation key (HERDR-ADR-0016 W1).
 export const REQUEST_ID_PREFIX = 'sdk';
 
 // Id herdr returns for an unparseable request, followed by a close (HERDR-ADR-0016 W3).
@@ -125,7 +125,7 @@ export const LINE_SEPARATOR = '\n';
 // Socket text encoding.
 export const TEXT_ENCODING = 'utf8' as const;
 
-// Outcome of one call, reported to the onCall hook (atalaya RpcOutcome kinds; plan 3.3).
+// Outcome of one call, reported to the onCall hook.
 export const CallOutcome = {
   Answered: 'answered',
   Refused: 'refused',
@@ -188,7 +188,7 @@ export type ServedState = (typeof ServedState)[keyof typeof ServedState];
 // ---------------------------------------------------------------------------------------------
 
 // The `event` of a push frame whose kind this library does not know (HERDR-ADR-0016 P3). Not a herdr value, so it cannot collide.
-export const UNKNOWN_EVENT = '@homelab/herdr:unknown-event' as const;
+export const UNKNOWN_EVENT = '@stateforge-labs/herdr:unknown-event' as const;
 
 // Kinds of change watchPaneSet emits (plan 3.6, HERDR-ADR-0016 W6).
 export const PaneSetKind = {
@@ -236,7 +236,7 @@ export const DriftOutcomeKind = {
 } as const;
 export type DriftOutcomeKind = (typeof DriftOutcomeKind)[keyof typeof DriftOutcomeKind];
 
-// _tag of each Effect error (plan 3.7; same tags as hub kernel/herdr-errors.ts).
+// _tag of each Effect error.
 export const EffectErrorTag = {
   Refused: 'HerdrRefused',
   Unavailable: 'HerdrUnavailable',

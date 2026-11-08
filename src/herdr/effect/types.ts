@@ -20,7 +20,7 @@ export interface HerdrLayerOptions {
 }
 
 /**
- * Fields of each tagged error (same `_tag`s and fields as hub kernel/herdr-errors.ts; plan 3.7 table). Every shape has
+ * Fields of each tagged error (plan 3.7 table). Every shape has
  * `message` (Data.TaggedError provides it; it is the Promise error's message), so toolResult reads it without a cast.
  */
 export interface HerdrRefusedShape {

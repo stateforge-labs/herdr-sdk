@@ -6,7 +6,7 @@ import type { ParamsOf, ResultOf } from './codec.ts';
 
 export type { ParamsOf, ResultOf } from './codec.ts';
 
-/** One finished call, reported to the onCall hook (plan 3.3; atalaya RpcObserver). */
+/** One finished call, reported to the onCall hook (plan 3.3). */
 export interface CallEvent {
   readonly method: Method;
   readonly durationMs: number;

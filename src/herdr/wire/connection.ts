@@ -1,5 +1,5 @@
 // Role: one Unix-socket connection to herdr: opens it, writes NDJSON lines, reads lines through the LineSplitter and reports close and error.
-// Informs HERDR-ADR-0016 (W1 one connection per request) and plan 3.1 (connection); the hub vendor copy is the base (plan appendix A.1 "take the hub copy").
+// Informs HERDR-ADR-0016 (W1 one connection per request) and plan 3.1 (connection).
 import { createConnection, type Socket } from 'node:net';
 import { ErrorText, LINE_SEPARATOR, TEXT_ENCODING } from '../../constants.ts';
 import { HerdrTransportError } from '../errors.ts';

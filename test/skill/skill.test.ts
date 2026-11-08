@@ -53,7 +53,7 @@ describe('skill frontmatter', () => {
 
 describe('skill content stays true', () => {
   test('the version line equals package.json (version and protocol)', () => {
-    assert.ok(skill.includes(`@homelab/herdr ${pkg.version} = herdr protocol ${pkg.herdr.protocol}`), 'update the "Targets" line in SKILL.md');
+    assert.ok(skill.includes(`@stateforge-labs/herdr ${pkg.version} = herdr protocol ${pkg.herdr.protocol}`), 'update the "Targets" line in SKILL.md');
   });
   test('every relative link resolves to a file', () => {
     for (const file of markdownFiles) {

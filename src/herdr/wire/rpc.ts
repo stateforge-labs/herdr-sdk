@@ -1,6 +1,6 @@
 // Role: one request, one answer: opens a fresh connection per call, writes the request line, takes the first matching reply and destroys the socket on every exit.
 // Informs HERDR-ADR-0016 (W1 close after every response, W3 id "" accepted, W2 events carry no id), HERDR-ADR-0004 (Promise core), plan 3.1 and 3.3;
-// ported from the hub vendor client/rpc.ts (settle-once, destroy on every exit, late-open destroyed, AbortSignal) with atalaya's timing hook.
+// settle-once, destroy on every exit, late-open destroyed, AbortSignal, and a per-call timing hook.
 import { CallOutcome, EMPTY_REPLY_ID, ErrorText } from '../../constants.ts';
 import type { Method } from '../generated/index.ts';
 import { outcomeOf, reportCall } from './codec.ts';

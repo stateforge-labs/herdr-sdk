@@ -1,5 +1,5 @@
 // Role: finds the herdr socket: an explicit option, then HERDR_SOCKET, then ~/.config/herdr/herdr.sock; checks that the path is a socket.
-// Informs HERDR-ADR-0003 (layers) and plan 3.3 (socketPath option); ported from atalaya src/transport/socket-path.ts and hub infra/herdr/socket-path.ts (explicit option and existence check added).
+// Informs HERDR-ADR-0003 (layers) and plan 3.3 (socketPath option); explicit option and an existence check.
 import { statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';

@@ -1,16 +1,33 @@
 {
-  "name": "@homelab/herdr",
+  "name": "@stateforge-labs/herdr",
   "version": "0.3.0",
   "type": "module",
   "sideEffects": false,
   "description": "Typed client for the herdr socket API (protocol 22), generated from herdr's published schema.",
   "license": "MIT",
+  "keywords": [
+    "herdr",
+    "herdr-core",
+    "terminal-multiplexer",
+    "coding-agents",
+    "unix-socket",
+    "json-rpc",
+    "sdk",
+    "typescript"
+  ],
+  "author": "stateforge-labs",
+  "homepage": "https://github.com/stateforge-labs/herdr-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/stateforge-labs/herdr-sdk/issues"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.example.internal/homelab/herdr-sdk.git"
+    "url": "git+https://github.com/stateforge-labs/herdr-sdk.git"
   },
   "publishConfig": {
-    "@homelab:registry": "https://gitlab.example.internal/api/v4/projects/518/packages/npm/"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
   },
   "herdr": {
     "protocol": 22,
@@ -79,7 +96,7 @@
     "typecheck": "tsc --noEmit -p . && tsc --noEmit -p tsconfig.test.json",
     "typecheck:types": "tsc -p test/types",
     "build:test": "tsc -p tsconfig.dist-test.json",
-    "test:node": "bun run build:test && node --test \"dist-test/test/wire/**/*.test.js\" \"dist-test/test/connect/**/*.test.js\"",
+    "test:node": "bun run build:test && node --test --test-reporter=tap \"dist-test/test/herdr/wire/**/*.test.js\" \"dist-test/test/herdr/client/connect/**/*.test.js\" > dist-test/node-tap.txt; status=$?; cat dist-test/node-tap.txt; [ $status -eq 0 ] && grep -Eq \"^# tests [1-9]\" dist-test/node-tap.txt",
     "test:wire": "bun test test/herdr/wire test/herdr/client/connect",
     "build": "rm -rf dist && tsc -p tsconfig.build.json && tsc -p tsconfig.build-test-kit.json && bun tools/scripts/rewrite-dts.ts",
     "prepack": "bun run build",

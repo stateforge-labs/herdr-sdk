@@ -14,7 +14,7 @@ export type WatchChange<S> =
   | { readonly kind: typeof WatchKind.Live; readonly snapshot: S }
   | { readonly kind: typeof WatchKind.Frame; readonly frame: DecodedFrame };
 
-/** Resubscribe backoff: InitialMs doubling (Factor) to MaxMs, reset after StableResetMs up (constants Backoff; hub ADR-0022). */
+/** Resubscribe backoff: InitialMs doubling (Factor) to MaxMs, reset after StableResetMs up (constants Backoff). */
 export interface BackoffPolicy {
   readonly initialMs: number;
   readonly maxMs: number;

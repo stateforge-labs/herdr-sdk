@@ -1,6 +1,6 @@
 # Errors
 
-Five Promise error classes, all exported from `@homelab/herdr`. Check with `instanceof`.
+Five Promise error classes, all exported from `@stateforge-labs/herdr`. Check with `instanceof`.
 
 | Class | Meaning | Fields | Retry? |
 |---|---|---|---|

@@ -1,7 +1,7 @@
 ---
 id: HERDR-ADR-0020
 title: "A typed client of the herdr-core socket, as the ./core entry"
-status: proposed
+status: accepted
 date: 2026-11-08
 decision-makers: owner
 summary: "herdr-core (hc) has its own socket, NDJSON JSON-RPC 2.0 with an event stream. The SDK gets a standalone ./core entry for it (CoreLink, CoreEvents, wire parsers, the socket path rule) and a ./core/test-kit with a scripted fake core. It imports nothing from the protocol-22 layers."
