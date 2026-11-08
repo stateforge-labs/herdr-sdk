@@ -2,7 +2,7 @@
 
 A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22, herdr 0.9.5: 102 methods, 26 event kinds, 27 subscription types), for Bun and Node.
 
-> **Status: 0.3.0 on npm.** ESM only, Node 22.18+ and Bun. The Promise API, the herdr-core client (`/core`, `/core/test-kit`), the three capability-scoped clients, the fake herdr (`/test-kit`), the schema and drift tools and the agent skill are built and tested against the fake herdr. The `/effect` entry exposes only the effect-free part (`toTaggedError`, the layer option and error types): the `Herdr` service and Layers wait for amendment A1 (the `effect` pin, due 2026-11-16). Every snippet marked "runs" is executed in CI; section 4 shows the planned Effect surface, not code you can import today.
+> **Version 0.3.0.** ESM only, Node 22.18+ and Bun. The Promise API, the herdr-core client (`/core`, `/core/test-kit`), the three capability-scoped clients, the fake herdr (`/test-kit`), the schema and drift tools, the tagged errors of `/effect` and the agent skill, all tested against the fake herdr. Every snippet marked "runs" is executed in CI.
 
 ## Entry points
 
@@ -11,7 +11,7 @@ A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22,
 | `@stateforge-labs/herdr` | `connect()`: reads, writes, input, hooks, long-poll, `hold()`; errors; generated types and constants | none |
 | `@stateforge-labs/herdr/read-only` | `connectReadOnly()`: structure reads only; terminal content on opt-in | none |
 | `@stateforge-labs/herdr/admin` | `connectAdmin()`: adds destructive, server-control and spawn/execute methods | none |
-| `@stateforge-labs/herdr/effect` | `toTaggedError` and the Effect layer types now; the `Herdr` service, Layers and Streams after amendment A1 | none now (peer `effect` 4.1.2 after A1) |
+| `@stateforge-labs/herdr/effect` | `toTaggedError`, `EffectErrorTag` and the tagged error types, for mapping the Promise errors into an Effect program | none |
 | `@stateforge-labs/herdr/test-kit` | `createFakeHerdr()` (tests only) | none |
 | `@stateforge-labs/herdr/schema` | method table and parameter shapes of the generated API (what a generator, such as an MCP server, builds its tools from) | none |
 | `@stateforge-labs/herdr/core` | `CoreLink`, `CoreEvents`, the wire parsers and the socket path rule: a client of the herdr-core (`hc`) socket, standalone from the protocol-22 client | none |
@@ -19,8 +19,6 @@ A typed client for the whole [herdr](https://herdr.dev) socket API (protocol 22,
 | `@stateforge-labs/herdr/drift` | `driftBetween`, `inventoryOf`, `exitCodeFor`: the library behind `herdr-drift`, for your own tooling | none |
 | `herdr-drift` (bin) | compare the committed schema with the installed herdr | none |
 | `herdr-skill` (bin) | print or install the agent skill that ships in `skills/herdr-sdk` | none |
-
-`@stateforge-labs/herdr/model` (domain entities) arrives later.
 
 Wire types are `export type` only. Raw strings are accepted by the types, but these docs always use the generated constants (`Method`, `EventKind`, `SubscriptionType`, `AgentStatus`, `WatchKind`).
 
@@ -32,8 +30,8 @@ npm install @stateforge-labs/herdr
 bun add @stateforge-labs/herdr
 ```
 
-Releases are published from GitHub Actions with npm trusted publishing, so every version carries a provenance attestation
-(`npm audit signatures` checks it). The release tag equals the `package.json` version.
+Versions published from GitHub Actions with npm trusted publishing carry a provenance attestation
+(`npm audit signatures` checks it); 0.3.0 was published by hand and has none. The release tag equals the `package.json` version.
 
 ## Footprint
 
@@ -131,23 +129,10 @@ await herdr.agent.prompt({ target: "x", text: "y" })
 
 Without options it allows structure reads and long-poll; terminal content (`pane.read`, `agent.read`) needs `{ content: true }`. `{ methods: [Method.AgentList, ...] }` narrows at runtime. `connectPrompt()` adds exactly `agent.prompt`.
 
-## 4. Effect: planned, not in 0.3.0
+## 4. Effect: tagged errors
 
-The error table below is built (`toTaggedError`). The service and layers in the snippet need amendment A1 and are not importable yet.
-
-```ts
-import { Effect, Stream } from "effect"
-import { Herdr, HerdrReadOnly, watchPaneSet } from "@stateforge-labs/herdr/effect"
-
-const program = Effect.gen(function* () {
-  const herdr = yield* Herdr
-  return yield* herdr.session.snapshot({})
-})
-
-const fleet = Stream.unwrap(Effect.map(HerdrReadOnly, (herdr) => watchPaneSet(herdr)))
-
-const HerdrLive = Herdr.layer({ timeoutMs: 5_000 }) // no default timeout: the composition root decides
-```
+`toTaggedError(error)` turns an error thrown by the Promise API into a plain object with an Effect-style `_tag`, so an Effect
+program can fail with it (`Effect.tryPromise({ try, catch: toTaggedError })`). The package does not depend on `effect`.
 
 | Promise error | Effect `_tag` | Fields |
 |---|---|---|
@@ -157,8 +142,6 @@ const HerdrLive = Herdr.layer({ timeoutMs: 5_000 }) // no default timeout: the c
 | `UnsupportedByServerError` | `HerdrUnsupported` | `method`, `capability` |
 
 Every tagged error also has `message` (the Promise error's message).
-
-Layers: `Herdr.layer`, `Herdr.layerReadOnly`, `Herdr.layerPrompt`, `Herdr.layerAdmin`.
 
 ## 5. Tests (no live herdr) — runs
 
@@ -180,7 +163,7 @@ test("lists agents", async () => {
 })
 ```
 
-The fake runs on `node:net`, answers `ping` and every method you script with `reply`, answers an unscripted method with an `unknown_method` error envelope, and supports `fail`, `silent`, `replySequence`, `push(frame)`, `closeSubscribers()`, `subscriberCount()`, `connectionCount()` and `capabilities`. No test talks to a real herdr: contract tests against a live server are planned (HERDR-ADR-0008) and will need the owner's OK.
+The fake runs on `node:net`, answers `ping` and every method you script with `reply`, answers an unscripted method with an `unknown_method` error envelope, and supports `fail`, `silent`, `replySequence`, `push(frame)`, `closeSubscribers()`, `subscriberCount()`, `connectionCount()` and `capabilities`. No test talks to a real herdr.
 
 ## Drift
 
