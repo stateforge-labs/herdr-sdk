@@ -10,6 +10,8 @@ include:
   - project: 'homelab/ci-templates'
     ref: 'v0.11.0'
     file: '/templates/security.yml'
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
 
 workflow:
   auto_cancel:
@@ -40,6 +42,17 @@ default:
     when:
       - runner_system_failure
       - stuck_or_timeout_failure
+
+# GitLab's SAST and Secret Detection templates default to a 'test' stage and no runner tag; this pipeline scans in 'security', on the kubernetes runner.
+sast:
+  stage: security
+  tags:
+    - kubernetes
+
+secret_detection:
+  stage: security
+  tags:
+    - kubernetes
 
 .bun:
   image: ${IMAGE_PROXY}/oven/bun:1.4.4
