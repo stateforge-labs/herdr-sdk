@@ -45,7 +45,7 @@ jobs:
       - if: steps.seen.outputs.published != 'true'
         run: bun run lint:layers
       - if: steps.seen.outputs.published != 'true'
-        run: bun test
+        run: bun run test
       - if: steps.seen.outputs.published != 'true'
         run: bun run test:node
       - if: steps.seen.outputs.published != 'true'

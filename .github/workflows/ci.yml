@@ -24,7 +24,7 @@ jobs:
       - run: bun run typecheck
       - run: bun run typecheck:types
       - run: bun run lint:layers
-      - run: bun test
+      - run: bun run test
       - run: bun run test:node
       - run: bun run check:size
       - run: bash ci/build.sh
