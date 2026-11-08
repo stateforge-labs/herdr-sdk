@@ -115,12 +115,33 @@ export const FORBIDDEN_TARGET_DIRS: readonly string[] = ['tools', 'test', 'examp
 export const METHOD_VALUE_LAYERS: readonly Layer[] = [Layer.Client, Layer.Wire, Layer.Effect];
 
 // A text rule applies to every src/ file, or only to the files of `layers` when it is given.
-export const FORBIDDEN_TEXT: readonly { readonly id: string; readonly pattern: RegExp; readonly reason: string; readonly layers?: readonly Layer[] }[] = [
+// A text rule: `layers` limits it to those layers, `exempt` names files (under src/) it skips, `ignore` is text removed from a line before the test.
+export interface TextRule {
+  readonly id: string;
+  readonly pattern: RegExp;
+  readonly reason: string;
+  readonly layers?: readonly Layer[];
+  readonly exempt?: readonly string[];
+  readonly ignore?: RegExp;
+}
+
+// HERDR-ADR-0021: the core client's strings live in its two constants files; the recorded frames are data.
+export const CORE_STRING_FILES: readonly string[] = ['core/constants.ts', 'core/test-kit/constants.ts', 'core/test-kit/frames.ts'];
+
+export const FORBIDDEN_TEXT: readonly TextRule[] = [
   { id: 'no-bun-global', pattern: /\bBun\./, reason: 'plan 2: no Bun.* in src/' },
   {
     id: 'no-literal-compare',
     pattern: /[!=]==\s*'[^']*'|'[^']*'\s*[!=]==|\bcase\s+'/,
     reason: 'HERDR-ADR-0021: compare with an as-const object (or dispatch through a KindMap), never with a string literal',
+  },
+  {
+    id: 'core-strings-centralized',
+    pattern: /['"`]/,
+    reason: 'HERDR-ADR-0021: a string of the core client lives in core/constants.ts (or core/test-kit/constants.ts), not inline',
+    layers: [Layer.Core, Layer.CoreTestKit],
+    exempt: CORE_STRING_FILES,
+    ignore: /^\s*(?:import|export)\b.*\bfrom\s+'[^']*';?\s*$|^\s*\}\s*from\s+'[^']*';\s*$|\b[Bb]rand<[^>]*>|\bBrand<[^>]*>/g,
   },
   {
     id: 'method-value-use',

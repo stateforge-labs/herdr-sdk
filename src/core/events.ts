@@ -6,7 +6,7 @@ import { byKind, isErr, isOk, must, type KindMap } from './kernel.ts';
 import { AsyncQueue } from './kernel.ts';
 import { duration, type Duration } from './kernel.ts';
 import { Backoff } from './backoff.ts';
-import { HC_BACKOFF_BASE, HC_BACKOFF_CAP, HC_HEARTBEAT_EVERY, HC_HEARTBEAT_MISSES, HC_SUBSCRIBE_METHOD, EventsPhase, HcKind, Life, RetryPhase, SocketEvent, TimerHold } from './constants.ts';
+import { FIRST_CALL_ID, HC_BACKOFF_BASE, HC_BACKOFF_CAP, HC_HEARTBEAT_EVERY, HC_HEARTBEAT_MISSES, HC_SUBSCRIBE_METHOD, EventsPhase, HcKind, Life, RetryPhase, SocketEvent, TimerHold } from './constants.ts';
 import { HcCoreLines, encodeHcCoreRequest, parseHcCallId, parseHcCoreMessage, parseHcParams, parseHcSnapshot, parseWireChunk } from './wire.ts';
 import type { HcCoreMessage, HcEvent, HcHeartbeat, HcMissed, HcParams, HcPayload, HcSnapshot, SocketPath } from './wire.ts';
 
@@ -29,7 +29,7 @@ export interface CoreEventsParts {
   readonly timing?: CoreEventsTiming;
 }
 
-const SUBSCRIBE_ID = must(parseHcCallId(1));
+const SUBSCRIBE_ID = must(parseHcCallId(FIRST_CALL_ID));
 const NO_FILTER: HcParams = must(parseHcParams({}));
 const DEFAULT_TIMING: CoreEventsTiming = {
   backoffBase: HC_BACKOFF_BASE,

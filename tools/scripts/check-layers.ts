@@ -11,6 +11,7 @@ import {
   FOLDER_LAYERS,
   FORBIDDEN_TARGET_DIRS,
   FORBIDDEN_TEXT,
+  type TextRule,
   Layer,
   NODE_FORBIDDEN_LAYERS,
   PACKAGE_ALLOWED,
@@ -163,15 +164,16 @@ function importViolation(rootDir: string, srcDir: string, file: SourceFile, item
 }
 
 // A text rule with `layers` checks only the files of those layers.
-function appliesTo(rule: { readonly layers?: readonly Layer[] }, file: SourceFile): boolean {
-  return rule.layers === undefined || (file.layer !== undefined && rule.layers.includes(file.layer));
+function appliesTo(rule: TextRule, file: SourceFile): boolean {
+  const inLayer = rule.layers === undefined || (file.layer !== undefined && rule.layers.includes(file.layer));
+  return inLayer && !(rule.exempt ?? []).includes(file.rel);
 }
 
 function textViolations(file: SourceFile, code: string): readonly Violation[] {
   const lines = code.split(TEXT.newline);
   return FORBIDDEN_TEXT.filter((rule) => appliesTo(rule, file)).flatMap((rule) =>
     lines.flatMap((text, index) =>
-      rule.pattern.test(text)
+      rule.pattern.test(rule.ignore === undefined ? text : text.replace(rule.ignore, ''))
         ? [makeViolation(file, index + FIRST_LINE, RuleId.text, rule.id, rule.reason)]
         : [],
     ),

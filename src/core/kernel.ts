@@ -1,6 +1,7 @@
 // Role: the small value types of the core layer: brand, fields, Result (with isOk/isErr), byKind dispatch, Count, Text, time and an async queue.
 // Informs HERDR-ADR-0020; merged by HERDR-ADR-0021 from brand.ts, fields.ts, result.ts, count.ts, text.ts, time.ts, async-queue.ts.
-import { CoreInvariantError, ParseFailureKind } from './errors.ts';
+import { JsType, ParseFailureKind, ResultKind } from './constants.ts';
+import { CoreInvariantError } from './errors.ts';
 import type { ParseFailure } from './errors.ts';
 
 declare const marker: unique symbol;
@@ -10,8 +11,6 @@ export type Brand<Carrier, Name> = Carrier & { readonly [marker]: Name };
 export function brand<Carrier, Name>(carrier: Carrier): Brand<Carrier, Name> {
   return carrier as Brand<Carrier, Name>;
 }
-
-export const JsType = { Object: 'object', Number: 'number', String: 'string' } as const;
 
 export type Fields = Readonly<Record<string, unknown>>;
 
@@ -26,10 +25,6 @@ export function isString(input: unknown): input is string {
 export function isFields(input: unknown): input is Fields {
   return typeof input === JsType.Object && input !== null;
 }
-
-export const ResultKind = { Ok: 'ok', Err: 'err' } as const;
-
-export type ResultKind = (typeof ResultKind)[keyof typeof ResultKind];
 
 export type Ok<T> = { readonly kind: typeof ResultKind.Ok; readonly value: T };
 export type Err<E> = { readonly kind: typeof ResultKind.Err; readonly error: E };
@@ -48,12 +43,14 @@ export function isErr<T, E>(result: Result<T, E>): result is Err<E> {
 }
 
 // One handler per kind of a tagged union, so a dispatch is a lookup instead of a chain of comparisons.
+export type KindOf<U> = U extends { readonly kind: infer K extends string } ? K : never;
+
 export type KindMap<U extends { readonly kind: string }, R, C = undefined> = {
-  readonly [K in U['kind']]: (value: Extract<U, { readonly kind: K }>, context: C) => R;
+  readonly [K in KindOf<U>]: (value: Extract<U, { readonly kind: K }>, context: C) => R;
 };
 
 export function byKind<U extends { readonly kind: string }, R, C = undefined>(map: KindMap<U, R, C>, value: U, context: C): R {
-  const handle = map[value.kind as U['kind']] as (value: U, context: C) => R;
+  const handle = map[value.kind as KindOf<U>] as (value: U, context: C) => R;
   return handle(value, context);
 }
 

@@ -1,40 +1,83 @@
-// Role: the names, environment variables, timings, messages, wire fields, message kinds and states of the herdr-core client, as objects.
-// Informs HERDR-ADR-0020 (the herdr-core client); ported from the desktop work in herdr-plugins.
-import { must } from './kernel.ts';
-import { parseCount, type Count } from './kernel.ts';
-import { parseNonEmptyText, parseText, type NonEmptyText, type Text } from './kernel.ts';
-import { duration, type Duration } from './kernel.ts';
+// Role: every string and number of the herdr-core client in one place: names, environment variables, timings, wire fields, kinds, states and messages.
+// Informs HERDR-ADR-0020 (the herdr-core client) and HERDR-ADR-0021 (strings centralized, kinds as objects). Plain data: it imports types only, so the kernel and the errors can import it.
+import type { Count, Duration, NonEmptyText, Text } from './kernel.ts';
 
-export const HC_SOCKET_ENV: NonEmptyText = must(parseNonEmptyText('HC_SOCKET'));
-export const HC_RUNTIME_ENV: NonEmptyText = must(parseNonEmptyText('XDG_RUNTIME_DIR'));
-export const HC_SESSION_ENV: NonEmptyText = must(parseNonEmptyText('HC_SESSION'));
-export const HC_DEFAULT_SESSION: NonEmptyText = must(parseNonEmptyText('default'));
-export const HC_SOCKET_FOLDER: NonEmptyText = must(parseNonEmptyText('herdr-core'));
-export const HC_RUN_ROOT: NonEmptyText = must(parseNonEmptyText('/run/user'));
-export const HC_SOCKET_SUFFIX: NonEmptyText = must(parseNonEmptyText('.sock'));
-export const HC_GENERATION: Count = must(parseCount(1));
-export const HC_HELLO_METHOD: NonEmptyText = must(parseNonEmptyText('hello'));
-export const HC_SUBSCRIBE_METHOD: NonEmptyText = must(parseNonEmptyText('events.subscribe'));
-export const HC_HELLO_TIMEOUT: Duration = duration(5000);
-export const HC_BACKOFF_BASE: Duration = duration(500);
-export const HC_BACKOFF_CAP: Duration = duration(15_000);
-export const HC_HEARTBEAT_EVERY: Duration = duration(15_000);
-export const HC_HEARTBEAT_MISSES: Count = must(parseCount(2));
-export const HC_CALL_TIMEOUT: Duration = duration(10_000);
-export const HC_NO_CONNECTION: Text = must(parseText('no connection'));
-export const HC_CLOSED: Text = must(parseText('link closed'));
-export const HC_DROPPED: Text = must(parseText('connection dropped'));
-export const HC_DOWN: Text = must(parseText('the core is down; reconnecting'));
-export const HC_CONNECTING: Text = must(parseText('connecting'));
-export const HC_HELLO_UNREADABLE: Text = must(parseText('hello reply'));
-export const HC_ODD_RESULT: Text = must(parseText('a result that is not an object'));
-export const HC_LINE_CAP: Count = must(parseCount(33_554_432));
-export const HC_LIST_METHOD: NonEmptyText = must(parseNonEmptyText('terminal.list'));
-export const HC_READ_METHOD: NonEmptyText = must(parseNonEmptyText('terminal.read'));
-export const HC_GET_METHOD: NonEmptyText = must(parseNonEmptyText('terminal.get'));
+export const HC_SOCKET_ENV = 'HC_SOCKET' as NonEmptyText;
+export const HC_RUNTIME_ENV = 'XDG_RUNTIME_DIR' as NonEmptyText;
+export const HC_SESSION_ENV = 'HC_SESSION' as NonEmptyText;
+export const HC_DEFAULT_SESSION = 'default' as NonEmptyText;
+export const HC_SOCKET_FOLDER = 'herdr-core' as NonEmptyText;
+export const HC_RUN_ROOT = '/run/user' as NonEmptyText;
+export const HC_SOCKET_SUFFIX = '.sock' as NonEmptyText;
+export const HC_GENERATION = 1 as Count;
+export const HC_HELLO_METHOD = 'hello' as NonEmptyText;
+export const HC_SUBSCRIBE_METHOD = 'events.subscribe' as NonEmptyText;
+export const HC_LIST_METHOD = 'terminal.list' as NonEmptyText;
+export const HC_GET_METHOD = 'terminal.get' as NonEmptyText;
+export const HC_READ_METHOD = 'terminal.read' as NonEmptyText;
+export const HC_HELLO_TIMEOUT = 5000 as Duration;
+export const HC_BACKOFF_BASE = 500 as Duration;
+export const HC_BACKOFF_CAP = 15_000 as Duration;
+export const HC_BACKOFF_MAX_DOUBLINGS = 20;
+export const HC_HEARTBEAT_EVERY = 15_000 as Duration;
+export const HC_HEARTBEAT_MISSES = 2 as Count;
+export const HC_CALL_TIMEOUT = 10_000 as Duration;
+export const HC_LINE_CAP = 33_554_432 as Count;
 export const HC_JSONRPC_VERSION = '2.0';
+export const HC_LINE_SEPARATOR = '\n';
+export const EMPTY_TEXT = '' as Text;
+export const UTF8 = 'utf8';
+export const FIRST_CALL_ID = 1;
 
-// The kinds of a parsed message and of a feed item (HERDR-ADR-0020).
+// The messages the core client puts in an Unknown or an error.
+export const CoreText = {
+  NoConnection: 'no connection' as Text,
+  Closed: 'link closed' as Text,
+  Dropped: 'connection dropped' as Text,
+  Down: 'the core is down; reconnecting' as Text,
+  Connecting: 'connecting' as Text,
+  HelloUnreadable: 'hello reply' as Text,
+  OddResult: 'a result that is not an object' as Text,
+  Generation: (generation: Count): Text => `generation ${generation}` as Text,
+  Fault: (reason: Text, message: Text): Text => `${reason}: ${message}` as Text,
+  Invariant: (detail: string): string => `a load-time constant was refused: ${detail}`,
+} as const;
+
+export const JsType = { Object: 'object', Number: 'number', String: 'string' } as const;
+
+export const ResultKind = { Ok: 'ok', Err: 'err' } as const;
+
+export type ResultKind = (typeof ResultKind)[keyof typeof ResultKind];
+
+export const ParseFailureKind = {
+  NotAString: 'not-a-string',
+  NotANumber: 'not-a-number',
+  Empty: 'empty',
+  NotAnInteger: 'not-an-integer',
+  NotARow: 'not-a-row',
+  OutOfRange: 'out-of-range',
+} as const;
+
+export type ParseFailureKind = (typeof ParseFailureKind)[keyof typeof ParseFailureKind];
+
+export const CoreErrorName = { Invariant: 'CoreInvariantError' } as const;
+
+export const UnknownWhy = {
+  Timeout: 'timeout',
+  Unreadable: 'unreadable',
+  Unreachable: 'unreachable',
+  NotFound: 'not-found',
+  Failed: 'failed',
+} as const;
+
+export type UnknownWhy = (typeof UnknownWhy)[keyof typeof UnknownWhy];
+
+// What a call settled as: an answer from the core, or Unknown.
+export const OutcomeKind = { Answer: 'answer', Unknown: 'unknown' } as const;
+
+export type OutcomeKind = (typeof OutcomeKind)[keyof typeof OutcomeKind];
+
+// The kinds of a parsed message and of a feed item.
 export const HcKind = {
   Reply: 'reply',
   Odd: 'odd',
@@ -95,6 +138,3 @@ export const TimerHold = { HoldsProcess: 'holds-process', LetsProcessEnd: 'lets-
 export type TimerHold = (typeof TimerHold)[keyof typeof TimerHold];
 
 export const SocketEvent = { Data: 'data', Error: 'error', Close: 'close', Connect: 'connect' } as const;
-
-export const UTF8 = 'utf8';
-export const HC_LINE_SEPARATOR = '\n';

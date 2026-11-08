@@ -66,6 +66,10 @@ Tests keep one file per concern; their folders name the module they test (`test/
 - A choice over a tagged union is a lookup, not a chain of comparisons: a `KindMap<U, R, C>` has one handler per kind (the compiler
   refuses a missing one), and `byKind(map, value, context)` runs it. Results and failures are tested with `isOk`, `isErr` and `isUnknown`.
 - The layer gate's `no-literal-compare` rule refuses a comparison with a string literal anywhere in `src/`.
+- Every string and number of the core client lives in `src/core/constants.ts` (plain data that imports types only, so the kernel and the
+  errors can import it; messages are functions in `CoreText`), and those of its fake in `src/core/test-kit/constants.ts`. The gate's
+  `core-strings-centralized` rule refuses any other string in the core layers; import paths and brand names are not counted, and the
+  recorded frames (`test-kit/frames.ts`) are data.
 
 ## Consequences
 

@@ -8,9 +8,8 @@ import { parseCount, type Count } from './kernel.ts';
 import { duration, type Duration } from './kernel.ts';
 import { parseNonEmptyText, parseText, type NonEmptyText, type Text } from './kernel.ts';
 import { isFields, isNumber, isString } from './kernel.ts';
-import { ParseFailureKind } from './errors.ts';
 import type { ParseFailure } from './errors.ts';
-import { HC_JSONRPC_VERSION, HC_LINE_SEPARATOR, HcField, HcKind, HcNotificationMethod, UTF8 } from './constants.ts';
+import { EMPTY_TEXT, HC_BACKOFF_MAX_DOUBLINGS, HC_JSONRPC_VERSION, HC_LINE_SEPARATOR, ParseFailureKind, HcField, HcKind, HcNotificationMethod, UTF8 } from './constants.ts';
 import { HC_LINE_CAP, HC_DEFAULT_SESSION, HC_RUNTIME_ENV, HC_RUN_ROOT, HC_SESSION_ENV, HC_SOCKET_ENV, HC_SOCKET_FOLDER, HC_SOCKET_SUFFIX } from './constants.ts';
 
 export type HcCallId = Brand<number, 'HcCallId'>;
@@ -44,7 +43,6 @@ export type HcNotification = HcEvent | HcHeartbeat | HcMissed;
 export type HcCoreMessage = HcReply | HcOdd | HcFault | HcNotification;
 
 const NOT_A_ROW: ParseFailure = { kind: ParseFailureKind.NotARow };
-const EMPTY = must(parseText(''));
 const NO_DATA: HcPayload = must(parseHcPayload({}));
 
 export function parseHcPayload(input: unknown): Result<HcPayload, ParseFailure> {
@@ -87,14 +85,14 @@ export function parseRpcCode(input: unknown): Result<RpcCode, ParseFailure> {
 }
 
 export function encodeHcCoreRequest(id: HcCallId, method: NonEmptyText, params: HcParams): WireLine {
-  return must(parseWireLine(`${JSON.stringify({ [HcField.JsonRpc]: HC_JSONRPC_VERSION, [HcField.Id]: id, [HcField.Method]: method, [HcField.Params]: params })}${HC_LINE_SEPARATOR}`));
+  return must(parseWireLine(JSON.stringify({ [HcField.JsonRpc]: HC_JSONRPC_VERSION, [HcField.Id]: id, [HcField.Method]: method, [HcField.Params]: params }) + HC_LINE_SEPARATOR));
 }
 
 export class HcCoreLines {
   private readonly decoder = new StringDecoder(UTF8);
   private readonly overrun: () => void;
   private readonly cap: Count;
-  private rest: Text = EMPTY;
+  private rest: Text = EMPTY_TEXT;
 
   constructor(overrun: () => void = (): void => undefined, cap: Count = HC_LINE_CAP) {
     this.overrun = overrun;
@@ -106,7 +104,7 @@ export class HcCoreLines {
     const cut = fresh.lastIndexOf(HC_LINE_SEPARATOR);
     const text = this.rest + (cut < 0 ? fresh : fresh.slice(0, cut));
     if (text.length > this.cap) {
-      this.rest = EMPTY;
+      this.rest = EMPTY_TEXT;
       this.overrun();
       return [];
     }
@@ -139,11 +137,11 @@ export function hcCoreSocketPath(): SocketPath {
   const root = isOk(runtime) ? runtime.value : join(HC_RUN_ROOT, String(process.getuid?.() ?? 0));
   const session = parseNonEmptyText(process.env[HC_SESSION_ENV]);
   const name = isOk(session) ? session.value : HC_DEFAULT_SESSION;
-  return must(parseSocketPath(join(root, HC_SOCKET_FOLDER, `${name}${HC_SOCKET_SUFFIX}`)));
+  return must(parseSocketPath(join(root, HC_SOCKET_FOLDER, name + HC_SOCKET_SUFFIX)));
 }
 
 export function nextBackoff(failures: Count, base: Duration, cap: Duration): Duration {
-  return duration(Math.min(cap, base * 2 ** Math.min(failures, 20)));
+  return duration(Math.min(cap, base * 2 ** Math.min(failures, HC_BACKOFF_MAX_DOUBLINGS)));
 }
 
 export function parseHcSnapshot(input: unknown): Result<HcSnapshot, ParseFailure> {
@@ -186,7 +184,7 @@ export function parseHcFault(id: HcCallId, error: unknown): Result<HcFault, Pars
   const code = parseRpcCode(error[HcField.Code]);
   const message = parseText(error[HcField.Message]);
   const data = error[HcField.Data];
-  const reason = parseText(isFields(data) ? data[HcField.Kind] : '');
+  const reason = parseText(isFields(data) ? data[HcField.Kind] : EMPTY_TEXT);
   if (isErr(code) || isErr(message) || isErr(reason)) {
     return err(NOT_A_ROW);
   }

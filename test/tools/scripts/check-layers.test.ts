@@ -29,6 +29,7 @@ const FIXTURE_RULES = [
   { name: 'method-value-in-client', rules: [RuleId.text, RuleId.text] },
   { name: 'method-type-only', rules: [] },
   { name: 'literal-compare', rules: [RuleId.text] },
+  { name: 'core-inline-string', rules: [RuleId.text] },
 ] as const;
 
 function rulesOf(name: string): readonly string[] {
