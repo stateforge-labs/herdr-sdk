@@ -159,3 +159,47 @@ export const HcTerminalField = {
 export const HcTerminalState = { Live: 'live', Finished: 'finished' } as const;
 
 export type HcTerminalState = (typeof HcTerminalState)[keyof typeof HcTerminalState];
+
+// The types of the core's terminal events. Created, restarted and removed add or drop a row; the others patch one.
+export const HcEventType = {
+  Created: 'created',
+  Restarted: 'restarted',
+  Removed: 'removed',
+  Foreground: 'foreground',
+  Labels: 'labels',
+  Title: 'title',
+  Status: 'status',
+  Keep: 'keep',
+  Size: 'size',
+  Finished: 'finished',
+  Lost: 'lost',
+  Turn: 'turn',
+  Doc: 'doc',
+} as const;
+
+export type HcEventType = (typeof HcEventType)[keyof typeof HcEventType];
+
+// The fields an event's data carries and a row takes over when it is patched.
+export const HcPatchField = {
+  Foreground: 'foreground',
+  Labels: 'labels',
+  Title: 'title',
+  Status: 'status',
+  Reported: 'reported',
+  Records: 'records',
+  Keep: 'keep',
+  Cols: 'cols',
+  Rows: 'rows',
+  ExitCode: 'exit_code',
+  FinishedMs: 'finished_ms',
+  Reason: 'reason',
+  Signal: 'signal',
+  State: 'state',
+} as const;
+
+export type HcPatchField = (typeof HcPatchField)[keyof typeof HcPatchField];
+
+// How one delta of a roster step changes the table.
+export const RosterChange = { Added: 'added', Changed: 'changed', Removed: 'removed' } as const;
+
+export type RosterChange = (typeof RosterChange)[keyof typeof RosterChange];

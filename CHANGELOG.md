@@ -8,6 +8,7 @@ versions follow semver, below 1.0.0 a minor may break.
 ### Added
 
 - `./core`: `HcTerminal` and `parseHcTerminal`, the typed row of a live terminal that reports an agent under a labelled tab, with its field parsers (`parseHcAddress`, `parseHcPlacement`, `parseHcReport`, `parseHcForeground`), `hcAddressOf` and `hcTerminalEqual`; `parsePositiveCount` is re-exported. Hand-written reference in `docs/api/core.md`.
+- `./core`: `CoreRoster` folds the core feed (snapshot, events, missed) into a table of `HcTerminal` with typed added/changed/removed deltas and a revision; `HcEventType`, `HcPatchField`, `RosterChange` and `isHcEventType` describe the event vocabulary.
 
 ## 0.3.1 - 2026-11-08
 
