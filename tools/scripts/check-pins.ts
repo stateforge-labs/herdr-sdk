@@ -1,4 +1,4 @@
-// Role: gate script `bun run check:pins`; every dependency pin is an exact version released at least MIN_AGE_DAYS ago.
+// Role: gate script `bun run check:pins`; every dependency pin is an exact version; each is released at least MIN_AGE_DAYS ago unless it is in our own scope (EXEMPT_SCOPE), which is exempt from the age only.
 // Informs HERDR-ADR-0015 (exact pins, 14-day age rule) and plan section 2 (dependency policy).
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -6,6 +6,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const MIN_AGE_DAYS = 14;
+export const EXEMPT_SCOPE = '@stateforge-labs/';
 
 const MS_PER_DAY = 86_400_000;
 const NOT_FOUND = -1;
@@ -79,6 +80,10 @@ function isPrerelease(text: string): boolean {
   return text.length > 0 && [...text].every((char) => CHARSET.prerelease.includes(char));
 }
 
+export function isExemptFromAge(name: string): boolean {
+  return name.startsWith(EXEMPT_SCOPE);
+}
+
 // True only for MAJOR.MINOR.PATCH with an optional -prerelease; ranges, tags and URLs are refused.
 export function isExactVersion(spec: string): boolean {
   const dash = spec.indexOf(SEPARATOR.prerelease);
@@ -115,7 +120,7 @@ export function checkPin(pin: Pin, now: Date, lookup: Lookup): PinVerdict {
     return { ok: false, reason: PIN_REASON.unpublished };
   }
   const ageDays = ageInDays(published, now);
-  if (ageDays < MIN_AGE_DAYS) {
+  if (ageDays < MIN_AGE_DAYS && !isExemptFromAge(pin.name)) {
     return { ok: false, reason: PIN_REASON.tooNew };
   }
   return { ok: true, published, ageDays };

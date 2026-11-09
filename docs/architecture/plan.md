@@ -64,7 +64,7 @@ atalaya-bridge's design intent (measured wire facts W1-W6, client principles P1-
 
 **Versioning (protocol-tied semver).** `package.json` carries `"herdr": { "protocol": 22, "schemaVersion": 1, "testedWith": "0.9.5" }`, exported as `PROTOCOL`, `SCHEMA_VERSION`, `TESTED_HERDR`. Protocol change or removed/renamed/narrowed API = major; added methods/events = minor; else patch. `CHANGELOG.md` names the herdr version. → [HERDR-ADR-0009](../decisions/HERDR-ADR-0009-schema-drift-and-protocol-tied-versioning.md)
 
-**Dependency policy.** Exact pins only, each released at least 14 days before it is adopted; `scripts/check-pins.ts` (gate) rejects ranges and too-new versions using `npm view <pkg> time`. → [HERDR-ADR-0015](../decisions/HERDR-ADR-0015-dependency-policy-and-size-budget.md)
+**Dependency policy.** Exact pins only, each released at least 14 days before it is adopted; `scripts/check-pins.ts` (gate) rejects ranges and too-new versions using `npm view <pkg> time`. Our own `@stateforge-labs` packages are exempt from the 14-day age (exact pins still required). → [HERDR-ADR-0015](../decisions/HERDR-ADR-0015-dependency-policy-and-size-budget.md)
 
 | Entry / role | Package | Pin | Released | 14 days old on |
 |---|---|---|---|---|

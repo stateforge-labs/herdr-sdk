@@ -10,7 +10,9 @@ import {
   checkPin,
   collectPins,
   DEPENDENCY_FIELDS,
+  EXEMPT_SCOPE,
   isExactVersion,
+  isExemptFromAge,
   MIN_AGE_DAYS,
   PIN_REASON,
   reportLine,
@@ -49,6 +51,23 @@ describe('isExactVersion', () => {
   test.each(REJECTED_SPECS)('rejects the non-exact spec %p', (spec) => {
     expect(isExactVersion(spec)).toBe(false);
   });
+});
+
+describe('isExemptFromAge', () => {
+  test.each([
+    `${EXEMPT_SCOPE}herdr-sdk`,
+    `${EXEMPT_SCOPE}harness-hooks`,
+    `${EXEMPT_SCOPE}herdr-mcp`,
+  ])('exempts our own package %s', (name) => {
+    expect(isExemptFromAge(name)).toBe(true);
+  });
+
+  test.each(['@types/node', 'typescript', 'stateforge-labs/x', '@stateforge-labs-evil/x', '@stateforge/herdr-sdk'])(
+    'does not exempt %s',
+    (name) => {
+      expect(isExemptFromAge(name)).toBe(false);
+    },
+  );
 });
 
 describe('collectPins', () => {
@@ -98,6 +117,35 @@ describe('checkPin', () => {
     const published = daysBefore(MIN_AGE_DAYS);
     const verdict = checkPin(pinOf(VERSIONS.typescript), NOW, () => published);
     expect(verdict).toEqual({ ok: true, published, ageDays: MIN_AGE_DAYS });
+  });
+
+  test('a non-scope pin 13 days old is still too new', () => {
+    const lookup: Lookup = () => daysBefore(MIN_AGE_DAYS - 1);
+    expect(checkPin(pinOf(VERSIONS.typesNode), NOW, lookup)).toEqual({ ok: false, reason: PIN_REASON.tooNew });
+  });
+
+  test.each(['@stateforge-labs-evil/x', 'stateforge-labs/x'])('a look-alike %s is not exempt', (name) => {
+    const lookup: Lookup = () => daysBefore(MIN_AGE_DAYS - 1);
+    expect(checkPin({ name, spec: VERSIONS.typescript, field: DEPENDENCY_FIELDS[1] }, NOW, lookup)).toEqual({
+      ok: false,
+      reason: PIN_REASON.tooNew,
+    });
+  });
+
+  test('an own-scope exact pin published 1 day ago is accepted', () => {
+    const published = daysBefore(1);
+    const pin: Pin = { name: `${EXEMPT_SCOPE}herdr-sdk`, spec: '0.4.0', field: DEPENDENCY_FIELDS[0] };
+    expect(checkPin(pin, NOW, () => published)).toEqual({ ok: true, published, ageDays: 1 });
+  });
+
+  test('an own-scope range is still refused without consulting the registry', () => {
+    const pin: Pin = { name: `${EXEMPT_SCOPE}herdr-sdk`, spec: '^0.4.0', field: DEPENDENCY_FIELDS[0] };
+    expect(checkPin(pin, NOW, neverCalled)).toEqual({ ok: false, reason: PIN_REASON.range });
+  });
+
+  test('an own-scope version missing from the registry is still unpublished', () => {
+    const pin: Pin = { name: `${EXEMPT_SCOPE}herdr-sdk`, spec: '0.4.1', field: DEPENDENCY_FIELDS[0] };
+    expect(checkPin(pin, NOW, () => undefined)).toEqual({ ok: false, reason: PIN_REASON.unpublished });
   });
 
   test('a version missing from the registry is unpublished', () => {

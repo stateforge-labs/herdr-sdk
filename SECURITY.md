@@ -29,4 +29,4 @@ Out of scope: herdr itself (report to its maintainers), and issues that need a l
 
 ## Project checks
 
-Static analysis (GitLab SAST) and secret detection run in the merge request pipelines of the project. Dependency versions are pinned exactly and updated through Renovate, with a 14-day release age.
+Static analysis (GitLab SAST) and secret detection run in the merge request pipelines of the project. Dependency versions are pinned exactly and updated through Renovate, with a 14-day release age (our own `@stateforge-labs` packages are exempt from the age; exact pins still apply).

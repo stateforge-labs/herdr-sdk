@@ -5,6 +5,10 @@ versions follow semver, below 1.0.0 a minor may break.
 
 ## Unreleased
 
+### Changed
+
+- Dependency gate: our own `@stateforge-labs` packages are exempt from the 14-day release age; their exact pins are still required. `tools/scripts/check-pins.ts` and `renovate.json` follow.
+
 ## 0.4.0 - 2026-11-08
 
 ### Added

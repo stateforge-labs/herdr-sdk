@@ -21,7 +21,7 @@ The GitHub repository (`stateforge-labs/herdr-sdk`) is a mirror of the GitLab pr
 bun install --frozen-lockfile
 ```
 
-Install from the lockfile. Do not add a dependency at runtime: the package has none, and [HERDR-ADR-0015](docs/decisions/HERDR-ADR-0015-dependency-policy-and-size-budget.md) sets the policy for dev dependencies (exact pins, at least 14 days old, checked by `bun run check:pins`).
+Install from the lockfile. Do not add a dependency at runtime: the package has none, and [HERDR-ADR-0015](docs/decisions/HERDR-ADR-0015-dependency-policy-and-size-budget.md) sets the policy for dev dependencies (exact pins, at least 14 days old, checked by `bun run check:pins`). Our own `@stateforge-labs` packages are exempt from the 14-day age; their exact pins are still required.
 
 ## Checks
 
@@ -37,7 +37,7 @@ Run what CI runs before you open a merge request. CI is `.github/workflows/ci.ym
 | `bun run build` | compiles `dist/` (unbundled ESM and declarations) |
 | `bun run check:size` | builds, then enforces the size budget of each entry and the no-leak rule |
 | `bash ci/build.sh` | builds the tarball listing and fails if the skill, the API docs or the bins are missing, or if sources or tests are in it |
-| `bun run check:pins` | exact pins, at least 14 days old (runs `npm view`, so it needs the public registry) |
+| `bun run check:pins` | exact pins, at least 14 days old except our own `@stateforge-labs` packages, which are exempt from the age only (runs `npm view`, so it needs the public registry) |
 
 No test talks to a real herdr. Tests use `createFakeHerdr()` and `FakeHcCore`.
 
@@ -89,7 +89,7 @@ Packages on npmjs.org published before trusted publishing have no provenance att
 
 ## Dependency updates
 
-Renovate runs on the project's GitLab only, with `renovate.json`. Its release age is 14 days, the same rule as the pins. Do not add a GitHub dependency bot to the mirror.
+Renovate runs on the project's GitLab only, with `renovate.json`. Its release age is 14 days, the same rule as the pins, except that our own `@stateforge-labs` packages are exempt from the age (`packageRules` in `renovate.json`); their exact pins are still required. Do not add a GitHub dependency bot to the mirror.
 
 ## Security checks
 

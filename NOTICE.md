@@ -46,6 +46,6 @@ From the NOTICE of an earlier private copy of the client. These landed in the ru
 | `tools/gen/index.ts` | Writes its modules into `src/herdr/generated/` (nested `names/`, `entries/`, `presets/`, `test-data/` since the 2026-11-02 build split), keyed by `renderOutputs()`. The port wrote five into `generated/`, with the index text inline. Bodies come from `renderOutputs()`; `runGenerator({ schemaPath, outDir })` takes paths; the CLI runs under `import.meta.main`. |
 | `package.json` | First version; `herdr` block (protocol 22, schemaVersion 1, testedWith 0.9.5); scripts `capture`, `test:gen`, `check:pins`, `typecheck`; dev pins `@types/node` 22.20.5 and `typescript` 7.0.2 (exact, released at least 14 days before adoption, see HERDR-ADR-0015). |
 | `tsconfig.json` | New. Strict set from the port, `nodenext`, `erasableSyntaxOnly`; includes `gen`, `scripts`, `src`; `test/` excluded until `@types/bun` is adopted. |
-| `tools/scripts/check-pins.ts` | New. Pin gate (exact version, released at least 14 days ago, via `npm view <pkg> time`). |
+| `tools/scripts/check-pins.ts` | New. Pin gate (exact version, released at least 14 days ago, via `npm view <pkg> time`) (own @stateforge-labs scope exempt from the age check). |
 | `tools/scripts/capture-schema.ts` | New. Captures `herdr api schema --json` and `herdr --version` into `schema/`. |
 | `LICENSE`, `NOTICE.md`, `.gitignore` | New. MIT licence, this provenance, ignores `node_modules/` and `dist/`. |
