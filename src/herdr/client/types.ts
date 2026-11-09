@@ -110,7 +110,7 @@ export type Client = WithSubscribe<ClientNamespaces> & ClientBase & Caller<Entry
 /** `connectPlugin()` (`.`): the `connect()` methods plus plugin.pane.open, focus and close. Not a sandbox: herdr does not limit the plugin ids a caller names. */
 export type PluginClient = WithSubscribe<PluginNamespaces> & ClientBase & Caller<EntryMethod<'plugin'>> & Streaming & Holding;
 
-/** `connectAdmin()` (`/admin`): all methods. */
+/** `connectAdmin()` (`/admin`): all methods except the 4 connection-scoped ones, which hold() carries. */
 export type AdminClient = WithSubscribe<AdminNamespaces> & ClientBase & Caller<Method> & Streaming & Holding;
 
 /** `connectReadOnly()`: R-meta + L. No call(), no writes. */

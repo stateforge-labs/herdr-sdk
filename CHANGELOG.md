@@ -22,6 +22,7 @@ versions follow semver, below 1.0.0 a minor may break.
 ### Fixed
 
 - `connect*()` honours `HERDR_SOCKET_PATH`, the variable herdr sets for plugins (before `HERDR_SOCKET`, which is kept). An empty variable counts as unset.
+- Skill: the `./effect` row lists what the entry ships; `connectAdmin()` is 98 of the 102 methods (the four connection-scoped ones are on `hold()`).
 
 ## 0.3.1 - 2026-11-08
 

@@ -23,8 +23,8 @@ Do not trust memory of this API. Before writing code:
 | `@stateforge-labs/herdr-sdk` | `connect()` | reads, content, UI changes, input, hooks, long-poll, `hold()` | destructive, server control, spawn/execute |
 | `@stateforge-labs/herdr-sdk` | `connectPlugin()` | the `connect()` methods plus `plugin.pane.open`, `plugin.pane.focus`, `plugin.pane.close` (typed results), for plugin authors; see `docs/api/client.md` | destructive, server control, spawn/execute, `plugin.link/unlink/enable` |
 | `@stateforge-labs/herdr-sdk` | `ErrorCode`, `SubscriptionEventKind`, `UnsupportedWatchError` | the agent error codes of a `HerdrError`, the per-pane event names, the `watchPaneSet` refusal; see `references/errors.md` and `docs/api/client.md` | |
-| `@stateforge-labs/herdr-sdk/admin` | `connectAdmin()` | all 102 methods | nothing |
-| `@stateforge-labs/herdr-sdk/effect` | `Herdr` service + Layers | same as above as Effect (needs peer `effect` 4.1.2) | |
+| `@stateforge-labs/herdr-sdk/admin` | `connectAdmin()` | 98 of the 102 methods (the 4 connection-scoped ones are on `hold()`) | nothing |
+| `@stateforge-labs/herdr-sdk/effect` | `toTaggedError()`, `EffectErrorTag`, `HerdrLayerOptions` and the tagged-error types | mapping herdr errors into Effect tagged errors | the Effect `Herdr` service and Layers (not shipped yet) |
 | `@stateforge-labs/herdr-sdk/test-kit` | `createFakeHerdr()` | in-process fake server for tests | production use |
 | `@stateforge-labs/herdr-sdk/schema` | method table, param shapes | tooling that reflects on the API | |
 | `@stateforge-labs/herdr-sdk/core` | `CoreLink`, `CoreEvents`, `CoreRoster` (folds the feed into a table with added/changed/removed deltas), `CoreTerminals` (typed `terminal.list`, `terminal.get`, `terminal.read`), wire parsers, `hcCoreSocketPath()`, `HcTerminal`, `parseHcTerminal`, `HcEventType`, `Brand`, `brand`, `ok`, `err` | a client of the herdr-core (`hc`) socket: calls, the event feed with heartbeats, failures as `Unknown` values | the protocol-22 herdr socket |

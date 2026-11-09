@@ -150,7 +150,7 @@ The namespace tree is built **once, eagerly, from the allow-list** by a small lo
 | `connectReadOnly({ preset: Presets.SessionsReader })` | `session.snapshot`, `agent.list`, `agent.get`, `pane.get`, `pane.list` | named preset with its own small generated type (sessions allow-list, `src/contexts/sessions/adapters/driven/constants.ts`, hub ADR-0026) |
 | `connectPrompt()` | R-meta + `agent.prompt` | hub voice path |
 | `connect()` (`.`) | R-meta, R-content, W, I, H, L, C | the README zero-config entry; **no** D, S, X |
-| `connectAdmin()` (`/admin`) | all 102 | D (close/remove/unlink/uninstall), S (server control), X (spawn/execute) |
+| `connectAdmin()` (`/admin`) | 98 of 102 (the 4 connection-scoped on `hold()`) | D (close/remove/unlink/uninstall), S (server control), X (spawn/execute) |
 
 Enforcement: the type has no members outside its classes (flat generated types, no tuple-narrowing machinery); a runtime allow-list check before sending; a test asserting `fake.receivedMethods()` ⊆ allowed set; negative type fixtures in `test/types/*.ts` compiled by `tsc --noEmit` in the gate (`// @ts-expect-error` must hold); ast-grep template `herdr-writes-only-in-adapter`.
 

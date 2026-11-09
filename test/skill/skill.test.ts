@@ -8,6 +8,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { HerdrEnv } from '../../src/constants.ts';
 import { METHODS } from '../../src/schema.ts';
+import { ADMIN_METHODS } from '../../src/herdr/generated/entries/admin.ts';
+import { HELD_METHODS } from '../../src/herdr/generated/entries/held.ts';
 import type { Method } from '../../src/herdr/generated/index.ts';
 import { createFakeHerdr } from '../../src/test-kit.ts';
 import { FENCE_TS, IMPORT_REWRITES, NAME_PATTERN, SkillLimit, SkillPath } from './constants.ts';
@@ -55,6 +57,11 @@ describe('skill frontmatter', () => {
 describe('skill content stays true', () => {
   test('the version line equals package.json (version and protocol)', () => {
     assert.ok(skill.includes(`@stateforge-labs/herdr-sdk ${pkg.version} = herdr protocol ${pkg.herdr.protocol}`), 'update the "Targets" line in SKILL.md');
+  });
+  test('connectAdmin() count: admin and held methods partition the method table, and SKILL.md states the split', () => {
+    assert.equal(ADMIN_METHODS.length + HELD_METHODS.length, METHODS.length);
+    assert.equal(new Set([...ADMIN_METHODS, ...HELD_METHODS]).size, METHODS.length);
+    assert.ok(skill.includes(`${ADMIN_METHODS.length} of the ${METHODS.length} methods`), `SKILL.md should say "${ADMIN_METHODS.length} of the ${METHODS.length} methods"`);
   });
   test('every relative link resolves to a file', () => {
     for (const file of markdownFiles) {
