@@ -18,6 +18,10 @@ Typed client for the herdr socket API (protocol 22), generated from herdr's publ
 - [3. Read-only and prompt-only clients](#3-read-only-and-prompt-only-clients)
 - [4. Effect: tagged errors](#4-effect-tagged-errors)
 - [5. Tests without a live herdr](#5-tests-without-a-live-herdr)
+- [6. Plugin authors](#6-plugin-authors)
+- [7. The herdr-core roster](#7-the-herdr-core-roster)
+- [Socket discovery](#socket-discovery)
+- [Error codes](#error-codes)
 - [Command-line tools](#command-line-tools)
 - [API reference](#api-reference)
 - [For coding agents (the skill)](#for-coding-agents-the-skill)
@@ -35,13 +39,13 @@ The package covers the whole herdr socket API (protocol 22, herdr 0.9.5: 102 met
 
 | Import | What | Runtime deps |
 |---|---|---|
-| `@stateforge-labs/herdr-sdk` | `connect()`: reads, writes, input, hooks, long-poll, `hold()`; errors; generated types and constants | none |
+| `@stateforge-labs/herdr-sdk` | `connect()`: reads, writes, input, hooks, long-poll, `hold()`; `connectPlugin()` for plugin authors; errors (`HerdrError`, `UnsupportedWatchError`...); `ErrorCode`, `SubscriptionEventKind`; generated types and constants | none |
 | `@stateforge-labs/herdr-sdk/read-only` | `connectReadOnly()`: structure reads only; terminal content on opt-in | none |
 | `@stateforge-labs/herdr-sdk/admin` | `connectAdmin()`: adds destructive, server-control and spawn/execute methods | none |
 | `@stateforge-labs/herdr-sdk/effect` | `toTaggedError`, `EffectErrorTag` and the tagged error types, for mapping the Promise errors into an Effect program | none |
 | `@stateforge-labs/herdr-sdk/test-kit` | `createFakeHerdr()` (tests only) | none |
 | `@stateforge-labs/herdr-sdk/schema` | method table and parameter shapes of the generated API (what a generator, such as an MCP server, builds its tools from) | none |
-| `@stateforge-labs/herdr-sdk/core` | `CoreLink`, `CoreEvents`, the wire parsers and the socket path rule: a client of the herdr-core (`hc`) socket, standalone from the protocol-22 client | none |
+| `@stateforge-labs/herdr-sdk/core` | `CoreLink`, `CoreEvents`, `CoreRoster` (the live terminal table with typed deltas), `CoreTerminals` (typed `list`, `get`, `read`), `HcTerminal` and `parseHcTerminal`, the wire parsers and the socket path rule: a client of the herdr-core (`hc`) socket, standalone from the protocol-22 client | none |
 | `@stateforge-labs/herdr-sdk/core/test-kit` | `FakeHcCore`, `setupTest(t)`, `openWorld()` (tests only) | none |
 | `@stateforge-labs/herdr-sdk/drift` | `driftBetween`, `inventoryOf`, `exitCodeFor`: the library behind `herdr-drift`, for your own tooling | none |
 | `herdr-drift` (bin) | compare the committed schema with the installed herdr | none |
@@ -135,6 +139,7 @@ for await (const change of herdr.watch({ snapshot: () => herdr.session.snapshot(
   if (change.kind === WatchKind.Live) render(change.snapshot)
   else apply(change.frame)
 }
+// Watch.update(subscriptions) changes the set while it runs; the option idleMs resubscribes after that long without a frame.
 
 // Connection-bound methods run on a held connection; closing it ends the title, lease or registration.
 await using held = await herdr.hold()
@@ -191,6 +196,60 @@ test("lists agents", async () => {
 
 The fake runs on `node:net`, answers `ping` and every method you script with `reply`, answers an unscripted method with an `unknown_method` error envelope, and supports `fail`, `silent`, `replySequence`, `push(frame)`, `closeSubscribers()`, `subscriberCount()`, `connectionCount()` and `capabilities`. No test in the package talks to a real herdr.
 
+## 6. Plugin authors
+
+`connectPlugin()` is `connect()` plus `plugin.pane.open` and `plugin.pane.close`; the three `plugin.pane.*` methods return typed results. herdr gives plugin processes the socket path in `HERDR_SOCKET_PATH`, so no options are needed.
+
+```ts
+import { connectPlugin } from "@stateforge-labs/herdr-sdk"
+
+const herdr = await connectPlugin()
+const opened = await herdr.plugin.pane.open({ plugin_id: "example-plugin", entrypoint: "panel", placement: "split", direction: "right" })
+await herdr.plugin.pane.close({ pane_id: opened.plugin_pane.pane.pane_id })
+herdr.close()
+```
+
+The method list limits what the client sends; it is not a sandbox. Detail: [docs/api/client.md](https://github.com/stateforge-labs/herdr-sdk/blob/main/docs/api/client.md).
+
+## 7. The herdr-core roster
+
+`@stateforge-labs/herdr-sdk/core` talks to the herdr-core (`hc`) socket, not the protocol-22 socket. `CoreRoster` folds the core feed into a table of `HcTerminal` (the live terminals that report an agent) and returns the typed deltas of each fold; `CoreTerminals` gives typed `list`, `get` and `read`, each settling as an answer or an `Unknown`.
+
+```ts
+import { CoreEvents, CoreLink, CoreRoster, CoreTerminals, RosterChange, hcCoreSocketPath, isUnknown } from "@stateforge-labs/herdr-sdk/core"
+
+const path = hcCoreSocketPath()
+const listing = await new CoreTerminals(new CoreLink({ path })).list()
+const roster = new CoreRoster()
+if (!isUnknown(listing)) roster.load(listing.terminals)
+
+const events = new CoreEvents({ path })
+events.start()
+for await (const feed of events.feed) {
+  for (const delta of roster.fold(feed).deltas) {
+    if (delta.kind === RosterChange.Removed) console.log("gone", delta.terminal.address)
+    else console.log(delta.kind, delta.terminal.tab, delta.terminal.status)
+  }
+}
+```
+
+Reference, including the `terminal.read` line semantics: [docs/api/core.md](https://github.com/stateforge-labs/herdr-sdk/blob/main/docs/api/core.md).
+
+## Socket discovery
+
+`connect()`, `connectReadOnly()`, `connectAdmin()` and `connectPlugin()` pick the herdr socket in this order; an empty variable counts as unset:
+
+1. the `socketPath` option;
+2. `HERDR_SOCKET_PATH` (herdr sets it for plugins and pane processes);
+3. `HERDR_SOCKET` (older name, kept);
+4. `~/.config/herdr/herdr.sock`.
+
+The herdr-core client (`/core`) uses `HC_SOCKET`, else the runtime directory (`XDG_RUNTIME_DIR`) and session (`HC_SESSION`); `hcCoreSocketPath()` returns the result.
+
+## Error codes
+
+`HerdrError.code` is a `string`, because herdr may send codes this version does not know. `ErrorCode` names the known agent codes: `agent_blocked`, `agent_not_found` and `agent_prompt_stalled`. Compare after an `instanceof HerdrError` check: `error.code === ErrorCode.AgentBlocked`. `UnsupportedWatchError` (a `TypeError`) is thrown by `watchPaneSet()` for `pane.output_matched`, which needs a single pane's subscription. Meanings: `skills/herdr-sdk/references/errors.md`.
+
 ## Command-line tools
 
 Both bins are plain Node scripts, installed with the package. Run them from a project that depends on the package, or without installing:
@@ -238,6 +297,8 @@ Exit codes: 0 on success, 2 on a usage error.
 
 - [Methods](https://github.com/stateforge-labs/herdr-sdk/blob/main/docs/api/methods.md): every method, its parameters and its result.
 - [Events](https://github.com/stateforge-labs/herdr-sdk/blob/main/docs/api/events.md): every event kind and subscription type, and the shape of each frame.
+- [Client](https://github.com/stateforge-labs/herdr-sdk/blob/main/docs/api/client.md): socket discovery, `connectPlugin()`, `ErrorCode`, `Watch.update` and `idleMs`.
+- [herdr-core](https://github.com/stateforge-labs/herdr-sdk/blob/main/docs/api/core.md): `HcTerminal`, `CoreRoster`, `CoreTerminals` and the helpers exported from `/core`.
 
 The generated types are in the package itself (`dist/**/*.d.ts`), and your editor shows them on hover.
 
