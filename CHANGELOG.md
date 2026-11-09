@@ -5,6 +5,10 @@ versions follow semver, below 1.0.0 a minor may break.
 
 ## Unreleased
 
+### Added
+
+- `./core`: `HcTerminal` and `parseHcTerminal`, the typed row of a live terminal that reports an agent under a labelled tab, with its field parsers (`parseHcAddress`, `parseHcPlacement`, `parseHcReport`, `parseHcForeground`), `hcAddressOf` and `hcTerminalEqual`; `parsePositiveCount` is re-exported. Hand-written reference in `docs/api/core.md`.
+
 ## 0.3.1 - 2026-11-08
 
 ### Added

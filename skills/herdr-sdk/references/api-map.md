@@ -26,3 +26,7 @@ If a method you need is not on your client, it is deliberately out of that entry
 ## Ids
 
 Panes, tabs and workspaces are addressed by their ids (`p_1`-style strings from `*.list` or the snapshot). `agent.*` methods take a `target` (agent name or id).
+
+## herdr-core (`./core`)
+
+The reference for the herdr-core client is hand-written in `docs/api/core.md`.

@@ -138,3 +138,24 @@ export const TimerHold = { HoldsProcess: 'holds-process', LetsProcessEnd: 'lets-
 export type TimerHold = (typeof TimerHold)[keyof typeof TimerHold];
 
 export const SocketEvent = { Data: 'data', Error: 'error', Close: 'close', Connect: 'connect' } as const;
+
+// The labels herdr puts on a terminal: the tab and the workspace it belongs to.
+export const HcLabel = { Tab: 'herdr.tab', Workspace: 'herdr.space' } as const;
+
+// The fields of a terminal row. The status object reuses State for the agent's own state, as the wire does.
+export const HcTerminalField = {
+  Address: 'address',
+  Labels: 'labels',
+  State: 'state',
+  Status: 'status',
+  App: 'app',
+  Foreground: 'foreground',
+  Pid: 'pid',
+  Cwd: 'cwd',
+  Title: 'title',
+} as const;
+
+// The live state of a terminal row: a finished terminal keeps its row but is no longer live.
+export const HcTerminalState = { Live: 'live', Finished: 'finished' } as const;
+
+export type HcTerminalState = (typeof HcTerminalState)[keyof typeof HcTerminalState];
