@@ -5,12 +5,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as core from '../../src/core.ts';
 
-const DOCUMENTED = ['HcTerminal', 'parseHcTerminal', 'HcAddress', 'parseHcAddress', 'hcAddressOf', 'hcTerminalEqual', 'parseHcPlacement', 'parseHcReport', 'parseHcForeground', 'parsePositiveCount', 'HcLabel', 'HcTerminalField', 'HcTerminalState', 'CoreRoster', 'RosterDelta', 'RosterStep', 'HcEventType', 'HcPatchField', 'RosterChange', 'isHcEventType', 'CoreTerminals', 'HcListing', 'HcFetched', 'HcScreen', 'HcReadOptions', 'parseHcListing', 'parseHcScreen', 'lastLines', 'HcReadField', 'HcReadHow', 'HcReadWhy', 'HC_RPC_NOT_FOUND'];
+const DOCUMENTED = ['HcTerminal', 'parseHcTerminal', 'HcAddress', 'parseHcAddress', 'hcAddressOf', 'hcTerminalEqual', 'parseHcPlacement', 'parseHcReport', 'parseHcForeground', 'parsePositiveCount', 'HcLabel', 'HcTerminalField', 'HcTerminalState', 'CoreRoster', 'RosterDelta', 'RosterStep', 'HcEventType', 'HcPatchField', 'RosterChange', 'isHcEventType', 'CoreTerminals', 'HcListing', 'HcFetched', 'HcScreen', 'HcReadOptions', 'parseHcListing', 'parseHcScreen', 'lastLines', 'HcReadField', 'HcReadHow', 'HcReadWhy', 'HC_RPC_NOT_FOUND', 'Brand', 'Fields', 'brand', 'ok', 'err', 'isFields'];
 const SKILL_ROWS = ['HcTerminal', 'parseHcTerminal', 'CoreRoster', 'CoreTerminals'];
 const CORE_DOC = new URL('../../docs/api/core.md', import.meta.url);
 const SKILL = new URL('../../skills/herdr-sdk/SKILL.md', import.meta.url);
 
-const VALUES = ['parseHcTerminal', 'parseHcAddress', 'hcAddressOf', 'hcTerminalEqual', 'parseHcPlacement', 'parseHcReport', 'parseHcForeground', 'parsePositiveCount', 'HcLabel', 'HcTerminalField', 'HcTerminalState', 'CoreRoster', 'isHcEventType', 'HcEventType', 'RosterChange', 'HcPatchField', 'CoreTerminals', 'parseHcListing', 'parseHcScreen', 'lastLines', 'HcReadField', 'HcReadHow', 'HcReadWhy', 'HC_RPC_NOT_FOUND'];
+const VALUES = ['parseHcTerminal', 'parseHcAddress', 'hcAddressOf', 'hcTerminalEqual', 'parseHcPlacement', 'parseHcReport', 'parseHcForeground', 'parsePositiveCount', 'HcLabel', 'HcTerminalField', 'HcTerminalState', 'CoreRoster', 'isHcEventType', 'HcEventType', 'RosterChange', 'HcPatchField', 'CoreTerminals', 'parseHcListing', 'parseHcScreen', 'lastLines', 'HcReadField', 'HcReadHow', 'HcReadWhy', 'HC_RPC_NOT_FOUND', 'brand', 'ok', 'err', 'isFields'];
 
 test('every documented value is an export of ./core (types are erased, the docs test names them)', () => {
   const exported = new Set(Object.keys(core));

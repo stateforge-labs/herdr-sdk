@@ -10,6 +10,7 @@ versions follow semver, below 1.0.0 a minor may break.
 - `./core`: `HcTerminal` and `parseHcTerminal`, the typed row of a live terminal that reports an agent under a labelled tab, with its field parsers (`parseHcAddress`, `parseHcPlacement`, `parseHcReport`, `parseHcForeground`), `hcAddressOf` and `hcTerminalEqual`; `parsePositiveCount` is re-exported. Hand-written reference in `docs/api/core.md`.
 - `./core`: `CoreTerminals` makes the herdr-core reads typed (`list`, `get`, `read`) and settles each as an answer or an `Unknown`; `parseHcListing`, `parseHcScreen` and `lastLines` check the replies and trim a screen. The `lines` parameter of `terminal.read` is the history above the screen, and 0 is the visible screen only. `HcReadField`, `HcReadHow`, `HcReadWhy` and `HC_RPC_NOT_FOUND` describe the reply. Hand-written reference in `docs/api/core.md`.
 - `./core`: `CoreRoster` folds the core feed (snapshot, events, missed) into a table of `HcTerminal` with typed added/changed/removed deltas and a revision; `HcEventType`, `HcPatchField`, `RosterChange` and `isHcEventType` describe the event vocabulary.
+- `./core` exports `Brand`, `brand`, `ok`, `err`, `isFields` so a consumer's branded values share the SDK's brand marker.
 
 ## 0.3.1 - 2026-11-08
 

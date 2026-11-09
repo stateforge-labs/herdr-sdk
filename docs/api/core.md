@@ -198,3 +198,36 @@ The field names a patch writes into a row: `Foreground`, `Labels`, `Title`, `Sta
 ### `RosterChange`
 
 The three delta kinds: `Added` (`added`), `Changed` (`changed`) and `Removed` (`removed`).
+
+## Branded values
+
+`Brand<Carrier, Name>` is the one brand marker of the SDK. A consumer names its own values with it and never declares a marker of its own:
+
+```ts
+import { brand, err, isOk, ok } from '@stateforge-labs/herdr-sdk/core';
+import type { Brand, HcAddress, ParseFailure, Result } from '@stateforge-labs/herdr-sdk/core';
+
+type PaneId = Brand<string, 'PaneId'>;
+
+function parsePane(text: string, failure: ParseFailure): Result<PaneId, ParseFailure> {
+  return text.length > 0 ? ok(brand<string, 'PaneId'>(text)) : err(failure);
+}
+```
+
+A `PaneId` is not an `HcAddress`, and an `HcAddress` is not a `PaneId`, because the names differ. A plain `string` is neither. Because every consumer imports the same `Brand`, a value branded by a consumer and a value branded by the SDK are the same type family and can pass through one shared helper.
+
+### `Brand<Carrier, Name>`
+
+The type of a branded value: `Carrier` with a marker that carries `Name`. Import it from `@stateforge-labs/herdr-sdk/core`. Never redeclare the marker (`declare const marker: unique symbol`) in consumer code: a second marker makes a second, incompatible type.
+
+### `brand<Carrier, Name>(value)`
+
+An identity cast. Call it only inside a parser that has checked the value. Calling it on an unchecked value gives the type without the check.
+
+### `ok(value)`, `err(error)`
+
+Build a `Result`: `ok(v)` is `{ kind: 'ok', value: v }` and `err(e)` is `{ kind: 'err', error: e }`. Narrow with `isOk` and `isErr`. There is no behavior beyond the shape.
+
+### `isFields(input)`
+
+Narrows an `unknown` to `Fields` (a non-null object). `Fields` is `Readonly<Record<string, unknown>>`, the type of a wire object before it is parsed.

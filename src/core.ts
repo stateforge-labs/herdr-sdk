@@ -12,6 +12,8 @@ export type { Count } from './core/kernel.ts';
 export { parseNonEmptyText, parseText } from './core/kernel.ts';
 export type { NonEmptyText, Text } from './core/kernel.ts';
 export { byKind, isErr, isOk, must } from './core/kernel.ts';
+export { brand, err, isFields, ok } from './core/kernel.ts';
+export type { Brand, Fields } from './core/kernel.ts';
 export type { Err, KindMap, KindOf, Ok, Result } from './core/kernel.ts';
 export { CoreInvariantError, isUnknown, unknown } from './core/errors.ts';
 export type { ParseFailure, Unknowable, Unknown } from './core/errors.ts';
