@@ -182,10 +182,11 @@ const FULL_MEMBERS: Members = { call: true, streams: true, hold: true };
 const STREAM_MEMBERS: Members = { call: false, streams: true, hold: false };
 const NO_MEMBERS: Members = { call: false, streams: false, hold: false };
 
-/** connect() and connectAdmin() have everything; the read-only entries stream; prompt has no streams and no call(). */
+/** connect(), connectPlugin() and connectAdmin() have everything; the read-only entries stream; prompt has no streams and no call(). */
 export const ENTRY_MEMBERS = {
   [EntryKey.client]: FULL_MEMBERS,
   [EntryKey.admin]: FULL_MEMBERS,
+  [EntryKey.plugin]: FULL_MEMBERS,
   [EntryKey.prompt]: NO_MEMBERS,
   [EntryKey.readOnly]: STREAM_MEMBERS,
   [EntryKey.readOnlyContent]: STREAM_MEMBERS,

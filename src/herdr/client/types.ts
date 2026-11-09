@@ -9,6 +9,7 @@ import type {
   ClientNamespaces,
   ENTRY_METHODS,
   Method,
+  PluginNamespaces,
   PromptNamespaces,
   ReadOnlyContentNamespaces,
   ReadOnlyNamespaces,
@@ -106,6 +107,9 @@ export type CoreClient = ClientBase & Caller<Method> & { readonly transport: Cli
 /** `connect()` (`.`): R-meta, R-content, W, I, H, L, C; no D, S, X. */
 export type Client = WithSubscribe<ClientNamespaces> & ClientBase & Caller<EntryMethod<'client'>> & Streaming & Holding;
 
+/** `connectPlugin()` (`.`): the `connect()` methods plus plugin.pane.open, focus and close. Not a sandbox: herdr does not limit the plugin ids a caller names. */
+export type PluginClient = WithSubscribe<PluginNamespaces> & ClientBase & Caller<EntryMethod<'plugin'>> & Streaming & Holding;
+
 /** `connectAdmin()` (`/admin`): all methods. */
 export type AdminClient = WithSubscribe<AdminNamespaces> & ClientBase & Caller<Method> & Streaming & Holding;
 
@@ -139,6 +143,9 @@ export type Connect = (options?: ConnectOptions) => Promise<Client>;
 
 /** P2b. Implemented by client/scoped/connect-admin.ts. */
 export type ConnectAdmin = (options?: ConnectOptions) => Promise<AdminClient>;
+
+/** Implemented by client/connect.ts. */
+export type ConnectPlugin = (options?: ConnectOptions) => Promise<PluginClient>;
 
 /** P2b. Implemented by client/scoped/connect-prompt.ts. */
 export type ConnectPrompt = (options?: ConnectOptions) => Promise<PromptClient>;

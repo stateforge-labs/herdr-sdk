@@ -7,6 +7,7 @@ import { PROMPT_METHODS } from './entries/prompt.ts';
 import { CLIENT_METHODS } from './entries/client.ts';
 import { ADMIN_METHODS } from './entries/admin.ts';
 import { HELD_METHODS } from './entries/held.ts';
+import { PLUGIN_METHODS } from './entries/plugin.ts';
 
 /** Method names per entry point, sorted; the class sets are in tools/gen/capabilities.ts. */
 export const ENTRY_METHODS = {
@@ -16,4 +17,5 @@ export const ENTRY_METHODS = {
   "client": CLIENT_METHODS,
   "admin": ADMIN_METHODS,
   "held": HELD_METHODS,
+  "plugin": PLUGIN_METHODS,
 } as const;

@@ -197,9 +197,9 @@
 | `plugin.action.list` | `P.PluginActionListParams` | `plugin_action_list` | name | R-meta | no | — |
 | `plugin.action.invoke` | `P.PluginActionInvokeParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | X | no | — |
 | `plugin.log.list` | `P.PluginLogListParams` | `plugin_log_list` | name | R-meta | no | — |
-| `plugin.pane.open` | `P.PluginPaneOpenParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | X | no | — |
-| `plugin.pane.focus` | `P.PluginPaneFocusParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | W | no | — |
-| `plugin.pane.close` | `P.PluginPaneCloseParams` | — | tag unverified: no herdr docs on this machine for 0.9.5; ResponseResult until phase 5b records it | D | no | — |
+| `plugin.pane.open` | `P.PluginPaneOpenParams` | `plugin_pane_opened` | docs | X | no | — |
+| `plugin.pane.focus` | `P.PluginPaneFocusParams` | `plugin_pane_focused` | docs | W | no | — |
+| `plugin.pane.close` | `P.PluginPaneCloseParams` | `plugin_pane_closed` | docs | D | no | — |
 
 ## Class counts
 
@@ -228,5 +228,6 @@ Each entry point lists the classes it carries (`ENTRY_CLASSES` in tools/gen/capa
 | `client` | yes | yes | yes | yes | yes | yes | no | no | no | no |
 | `admin` | yes | yes | yes | yes | yes | yes | no | yes | yes | yes |
 | `held` | no | no | no | no | no | no | yes | no | no | no |
+| `plugin` | yes | yes | yes | yes | yes | yes | no | no | no | no |
 
-Expanded entry methods: readOnly 28, readOnlyContent 31, prompt 25, client 77, admin 98, held 4.
+Expanded entry methods: readOnly 28, readOnlyContent 31, prompt 25, client 77, admin 98, held 4, plugin 79.

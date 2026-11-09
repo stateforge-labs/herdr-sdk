@@ -12,13 +12,15 @@ export {
   SubscriptionType,
 } from './herdr/generated/index.ts';
 export type { ErrorBody, PushFrame, ResultByTag, Subscription } from './herdr/generated/index.ts';
-export { connect } from './herdr/client/connect.ts';
+export { connect, connectPlugin } from './herdr/client/connect.ts';
 export { watchPaneSet } from './herdr/client/watch-pane-set.ts';
 export type {
   CallOptions,
   Client,
   ClientCapabilities,
   ConnectOptions,
+  ConnectPlugin,
+  PluginClient,
   ServerInfo,
 } from './herdr/client/types.ts';
 export type { EventSubscription, QueueOptions, Subscribe, SubscribeOptions } from './herdr/client/subscribe.ts';

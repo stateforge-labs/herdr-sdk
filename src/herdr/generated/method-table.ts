@@ -104,9 +104,9 @@ export const METHODS = [
   { name: "plugin.action.list", class: "R-meta", result: "plugin_action_list", ns: ["plugin","action"], longPoll: false },
   { name: "plugin.action.invoke", class: "X", result: null, ns: ["plugin","action"], longPoll: false },
   { name: "plugin.log.list", class: "R-meta", result: "plugin_log_list", ns: ["plugin","log"], longPoll: false },
-  { name: "plugin.pane.open", class: "X", result: null, ns: ["plugin","pane"], longPoll: false },
-  { name: "plugin.pane.focus", class: "W", result: null, ns: ["plugin","pane"], longPoll: false },
-  { name: "plugin.pane.close", class: "D", result: null, ns: ["plugin","pane"], longPoll: false },
+  { name: "plugin.pane.open", class: "X", result: "plugin_pane_opened", ns: ["plugin","pane"], longPoll: false },
+  { name: "plugin.pane.focus", class: "W", result: "plugin_pane_focused", ns: ["plugin","pane"], longPoll: false },
+  { name: "plugin.pane.close", class: "D", result: "plugin_pane_closed", ns: ["plugin","pane"], longPoll: false },
 ] as const satisfies readonly { name: string; class: CapabilityClass; result: ResultTag | null; ns: readonly string[]; longPoll: boolean }[];
 
 /** Every wire method name, as the METHODS table spells it. Method (names/method.ts) is this union. */

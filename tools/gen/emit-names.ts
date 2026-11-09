@@ -1,6 +1,6 @@
 // Role: emits names/, the runtime name tables (Method with one constant per method, EventKind, ResultTag, AgentStatus and the rest) as as-const objects with same-named types.
 // Informs HERDR-ADR-0002 and plan section 3.2 (emit-names.ts; wire.ts `as const satisfies` pattern). Values are checked against the schema.
-import { CapabilityClass, EntryKey, ENTRY_CLASSES, PRESETS, PROMPT_EXTRA_METHODS, classOf } from './capabilities.ts';
+import { CapabilityClass, EntryKey, ENTRY_CLASSES, PLUGIN_EXTRA_METHODS, PRESETS, PROMPT_EXTRA_METHODS, classOf } from './capabilities.ts';
 import { assertUniqueKeys, constKey } from './const-key.ts';
 import { methodNames } from './emit-method-table.ts';
 import { ServerCapability } from './overrides.ts';
@@ -117,8 +117,11 @@ function methodsOfClasses(
   return [...new Set([...picked, ...extra])].sort();
 }
 
-// The extra methods that join one entry point (agent.prompt joins the prompt entry).
+// The extra methods that join one entry point (agent.prompt joins the prompt entry; the plugin pane methods join the plugin entry).
 function extraMethodsOf(key: string): readonly string[] {
+  if (key === EntryKey.Plugin) {
+    return PLUGIN_EXTRA_METHODS;
+  }
   return key === EntryKey.Prompt ? PROMPT_EXTRA_METHODS : [];
 }
 

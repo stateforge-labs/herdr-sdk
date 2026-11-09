@@ -2,7 +2,7 @@
 // Informs HERDR-ADR-0002 and plan section 4.2. Checked by tools/gen/check-result-map.ts before any output is emitted; read by the emitters and test/coverage.test.ts.
 // Sources of a typed row: seed (ported from atalaya-bridge, herdr 0.8.2), name (method name with '.' -> '_' is a ResponseResult tag),
 // docs (herdr documentation at the pinned version; `ref` names the file and section or source path and line), recorded (a live recording on a scratch herdr, plan 4.2 step b).
-// No row uses docs or recorded yet: no herdr documentation is on this machine. Every other method is LOOSE with a reason.
+// The plugin pane rows use docs: the schema's success response and the herdr 0.9.5 binary. No row uses recorded yet. Every other method is LOOSE with a reason.
 export const RESULT_SOURCE = {
   seed: 'seed',
   name: 'name',
@@ -124,9 +124,9 @@ export const METHOD_RESULT_MAP: ResultMap = {
   'plugin.action.list': { kind: RESULT_KIND.typed, tag: 'plugin_action_list', source: RESULT_SOURCE.name },
   'plugin.action.invoke': { kind: RESULT_KIND.loose, reason: UNVERIFIED_REASON },
   'plugin.log.list': { kind: RESULT_KIND.typed, tag: 'plugin_log_list', source: RESULT_SOURCE.name },
-  'plugin.pane.open': { kind: RESULT_KIND.loose, reason: UNVERIFIED_REASON },
-  'plugin.pane.focus': { kind: RESULT_KIND.loose, reason: UNVERIFIED_REASON },
-  'plugin.pane.close': { kind: RESULT_KIND.loose, reason: UNVERIFIED_REASON },
+  'plugin.pane.open': { kind: RESULT_KIND.typed, tag: 'plugin_pane_opened', source: RESULT_SOURCE.docs, ref: 'schema/herdr-api.schema.json success_response plugin_pane_opened; herdr 0.9.5 ResponseResult::PluginPaneOpened' },
+  'plugin.pane.focus': { kind: RESULT_KIND.typed, tag: 'plugin_pane_focused', source: RESULT_SOURCE.docs, ref: 'schema/herdr-api.schema.json success_response plugin_pane_focused; herdr 0.9.5 ResponseResult::PluginPaneFocused' },
+  'plugin.pane.close': { kind: RESULT_KIND.typed, tag: 'plugin_pane_closed', source: RESULT_SOURCE.docs, ref: 'schema/herdr-api.schema.json success_response plugin_pane_closed; herdr 0.9.5 ResponseResult::PluginPaneClosed' },
 };
 
 // Method -> response tag for the typed rows only; emitted as METHOD_RESULT in results.ts.

@@ -21,6 +21,7 @@ Do not trust memory of this API. Before writing code:
 | `@stateforge-labs/herdr-sdk/read-only` | `connectReadOnly()` | structure reads (`*.list`, `*.get`, `session.snapshot`), long-poll waits, `events.subscribe`, `watch` | terminal content (opt in with `{ content: true }`), any write, generic `call()` |
 | `@stateforge-labs/herdr-sdk/read-only` | `connectPrompt()` | structure reads + `agent.prompt` | everything else |
 | `@stateforge-labs/herdr-sdk` | `connect()` | reads, content, UI changes, input, hooks, long-poll, `hold()` | destructive, server control, spawn/execute |
+| `@stateforge-labs/herdr-sdk` | `connectPlugin()` | the `connect()` methods plus `plugin.pane.open`, `plugin.pane.focus`, `plugin.pane.close` (typed results), for plugin authors; see `docs/api/client.md` | destructive, server control, spawn/execute, `plugin.link/unlink/enable` |
 | `@stateforge-labs/herdr-sdk/admin` | `connectAdmin()` | all 102 methods | nothing |
 | `@stateforge-labs/herdr-sdk/effect` | `Herdr` service + Layers | same as above as Effect (needs peer `effect` 4.1.2) | |
 | `@stateforge-labs/herdr-sdk/test-kit` | `createFakeHerdr()` | in-process fake server for tests | production use |
@@ -28,7 +29,7 @@ Do not trust memory of this API. Before writing code:
 | `@stateforge-labs/herdr-sdk/core` | `CoreLink`, `CoreEvents`, `CoreRoster` (folds the feed into a table with added/changed/removed deltas), `CoreTerminals` (typed `terminal.list`, `terminal.get`, `terminal.read`), wire parsers, `hcCoreSocketPath()`, `HcTerminal`, `parseHcTerminal`, `HcEventType`, `Brand`, `brand`, `ok`, `err` | a client of the herdr-core (`hc`) socket: calls, the event feed with heartbeats, failures as `Unknown` values | the protocol-22 herdr socket |
 | `@stateforge-labs/herdr-sdk/core/test-kit` | `FakeHcCore`, `setupTest(t)`, `openWorld()` | a scripted fake herdr-core for tests | production use |
 
-Start with `connectReadOnly()`. Use `connectAdmin()` only for `*.close`, `server.*`, `agent.start`, `plugin.*`: say why in a comment.
+Start with `connectReadOnly()`. A plugin that opens or closes its own panes uses `connectPlugin()`. Use `connectAdmin()` only for `*.close`, `server.*`, `agent.start`, `plugin.link/unlink/enable`: say why in a comment.
 
 ## Minimal use
 

@@ -14,7 +14,7 @@ import { miniSchema } from './drift/support/mini-schema.ts';
 
 const BIN = fileURLToPath(new URL('../bin/herdr-drift.js', import.meta.url));
 // The committed schema lists 102 methods and METHOD_RESULT maps 25 of them (77 unmapped). P3 regenerates the table and this pin changes with it.
-const KNOWN_UNMAPPED_METHODS = 55;
+const KNOWN_UNMAPPED_METHODS = 52;
 const UNMAPPED_LINE = 'methods without a METHOD_RESULT row: ';
 const FAKE_SCRIPT = '#!/bin/sh\nif [ "$1" = "--version" ]; then echo "herdr 0.9.5"; exit 0; fi\n/bin/cat "$FAKE_SCHEMA_FILE"\n';
 

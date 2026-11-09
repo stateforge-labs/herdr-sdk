@@ -1,6 +1,6 @@
 // Role: the capability-scoped client types hold: read-only has no writes and no call(), connect() has no admin methods, presets are narrow.
 // Informs HERDR-ADR-0005 (negative type fixtures), HERDR-ADR-0017 and plan 3.4. Compiled, never run.
-import { connect, Method } from '../../../src/index.ts';
+import { connect, connectPlugin, Method } from '../../../src/index.ts';
 import { connectAdmin } from '../../../src/admin.ts';
 import { connectPrompt, connectReadOnly, Presets } from '../../../src/read-only.ts';
 
@@ -58,4 +58,25 @@ export async function admin(): Promise<void> {
   const herdr = await connectAdmin();
   await herdr.server.stop({} as Parameters<typeof herdr.server.stop>[0]);
   await herdr.call(Method.ServerStop, {} as Parameters<typeof herdr.server.stop>[0] & object);
+}
+
+export async function plugin(): Promise<void> {
+  const herdr = await connectPlugin();
+  const opened = await herdr.plugin.pane.open({ plugin_id: 'omarchylab', entrypoint: 'main' });
+  const paneId: string = opened.plugin_pane.pane.pane_id;
+  console.log(paneId);
+  const focused = await herdr.plugin.pane.focus({ pane_id: paneId });
+  console.log(focused.type);
+  const closed = await herdr.plugin.pane.close({ pane_id: paneId });
+  const closedId: string = closed.pane_id;
+  console.log(closedId);
+  await herdr.agent.list({});
+  // @ts-expect-error plugin.link is admin-only (class X)
+  await herdr.plugin.link({});
+  // @ts-expect-error server.stop is admin-only
+  await herdr.server.stop({});
+  // @ts-expect-error pane.close is admin-only (class D)
+  await herdr.pane.close({ pane_id: 'p_1' });
+  // @ts-expect-error agent.start is admin-only (class X)
+  await herdr.agent.start({});
 }

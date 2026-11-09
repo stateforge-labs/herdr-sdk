@@ -286,6 +286,7 @@ export const EntryKey = {
   readOnly: 'readOnly',
   readOnlyContent: 'readOnlyContent',
   held: 'held',
+  plugin: 'plugin',
 } as const;
 export type EntryKey = (typeof EntryKey)[keyof typeof EntryKey];
 

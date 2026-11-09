@@ -3,7 +3,7 @@
 import { CAPABILITY_GATE, PROTOCOL } from '../generated/index.ts';
 import type { Method, ServerCapability } from '../generated/index.ts';
 import { UnsupportedByServerError, HerdrTransportError, ProtocolMismatchError } from '../errors.ts';
-import type { ClientCapabilities, CallOptions, ClientTransport, ConnectCore, ConnectOptions, CoreClient, ServerInfo, Client, Connect } from './types.ts';
+import type { ClientCapabilities, CallOptions, ClientTransport, ConnectCore, ConnectOptions, CoreClient, ServerInfo, Client, Connect, ConnectPlugin, PluginClient } from './types.ts';
 import { ErrorText, ProtocolPolicy, Timeout, EntryKey } from '../../constants.ts';
 import { MethodPing } from '../generated/names/method.ts';
 import type { Result_pong } from '../generated/results.ts';
@@ -13,6 +13,7 @@ import { rpc } from '../wire/rpc.ts';
 import type { RpcOptions } from '../wire/rpc.ts';
 import { assertSocketExists, resolveSocketPath } from '../wire/socket-path.ts';
 import { CLIENT_METHODS } from '../generated/entries/client.ts';
+import { PLUGIN_METHODS } from '../generated/entries/plugin.ts';
 import { allowedMethods, composeOrClose, ENTRY_MEMBERS, lazyStreams } from './scoped.ts';
 
 const GATES: Partial<Record<Method, ServerCapability>> = CAPABILITY_GATE;
@@ -98,6 +99,16 @@ export const connect: Connect = async function connect(options = {}) {
     core,
     allowedMethods(CLIENT_METHODS),
     ENTRY_MEMBERS[EntryKey.client],
+    lazyStreams(core),
+  );
+};
+
+export const connectPlugin: ConnectPlugin = async function connectPlugin(options = {}) {
+  const core = await connectCore(options);
+  return composeOrClose<PluginClient>(
+    core,
+    allowedMethods(PLUGIN_METHODS),
+    ENTRY_MEMBERS[EntryKey.plugin],
     lazyStreams(core),
   );
 };

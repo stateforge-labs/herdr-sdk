@@ -147,6 +147,7 @@ export const EntryKey = {
   Client: 'client',
   Admin: 'admin',
   Held: 'held',
+  Plugin: 'plugin',
 } as const;
 
 // Entry-point class sets (plan 3.4). C methods are never in a per-request tree.
@@ -160,10 +161,16 @@ export const ENTRY_CLASSES = {
     CapabilityClass.L, CapabilityClass.X, CapabilityClass.D, CapabilityClass.S,
   ],
   held: [CapabilityClass.C],
+  plugin: [
+    CapabilityClass.RMeta, CapabilityClass.RContent, CapabilityClass.W, CapabilityClass.I, CapabilityClass.H, CapabilityClass.L,
+  ],
 } as const;
 
 // Methods added to the prompt entry beyond its class set.
 export const PROMPT_EXTRA_METHODS = ['agent.prompt'] as const;
+
+// Plugin-author methods beyond the client class set: the plugin pane methods (classes X, W, D).
+export const PLUGIN_EXTRA_METHODS = ['plugin.pane.open', 'plugin.pane.focus', 'plugin.pane.close'] as const;
 
 // Named method subsets; every preset method must be in the readOnly entry (checked by the generator).
 export const PRESETS = {

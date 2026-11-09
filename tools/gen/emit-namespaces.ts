@@ -27,6 +27,7 @@ const INTERFACE_OF: Readonly<Record<string, string>> = {
   [EntryKey.Client]: 'ClientNamespaces',
   [EntryKey.Admin]: 'AdminNamespaces',
   [EntryKey.Held]: 'HeldNamespaces',
+  [EntryKey.Plugin]: 'PluginNamespaces',
 };
 
 // The interface name of an entry point; an entry without a name is a bug in this file.

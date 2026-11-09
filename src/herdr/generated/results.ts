@@ -455,5 +455,8 @@ export const METHOD_RESULT = {
   "integration.uninstall": "integration_uninstall",
   "plugin.list": "plugin_list",
   "plugin.action.list": "plugin_action_list",
-  "plugin.log.list": "plugin_log_list"
+  "plugin.log.list": "plugin_log_list",
+  "plugin.pane.open": "plugin_pane_opened",
+  "plugin.pane.focus": "plugin_pane_focused",
+  "plugin.pane.close": "plugin_pane_closed"
 } as const satisfies Partial<Record<Method, ResultTag>>;

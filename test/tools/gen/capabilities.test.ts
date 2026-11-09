@@ -61,11 +61,15 @@ describe('entry point class sets', () => {
     }
   });
 
-  test('D, S and X appear only in the admin entry', () => {
+  test('D, S and X classes appear only in the admin entry', () => {
     for (const [key, classes] of Object.entries(ENTRY_CLASSES)) {
       const dangerous = classes.some((cls) => cls === CapabilityClass.D || cls === CapabilityClass.S || cls === CapabilityClass.X);
       expect(dangerous).toBe(key === EntryKey.Admin);
     }
+  });
+
+  test('the plugin entry has the client class set and the plugin pane methods only', () => {
+    expect([...ENTRY_CLASSES.plugin]).toEqual([...ENTRY_CLASSES.client]);
   });
 
   test('the SessionsReader preset is inside the readOnly entry', () => {
