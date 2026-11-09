@@ -5,7 +5,7 @@ description: Write TypeScript or JavaScript that talks to a running herdr server
 
 # @stateforge-labs/herdr-sdk
 
-Typed client for herdr's socket API. Zero runtime dependencies, Bun and Node 22.18+. Targets **@stateforge-labs/herdr-sdk 0.3.1 = herdr protocol 22 (herdr 0.9.5)**.
+Typed client for herdr's socket API. Zero runtime dependencies, Bun and Node 22.18+. Targets **@stateforge-labs/herdr-sdk 0.4.0 = herdr protocol 22 (herdr 0.9.5)**.
 
 ## First: check the version
 

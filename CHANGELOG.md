@@ -5,6 +5,8 @@ versions follow semver, below 1.0.0 a minor may break.
 
 ## Unreleased
 
+## 0.4.0 - 2026-11-08
+
 ### Added
 
 - `./core`: `HcTerminal` and `parseHcTerminal`, the typed row of a live terminal that reports an agent under a labelled tab, with its field parsers (`parseHcAddress`, `parseHcPlacement`, `parseHcReport`, `parseHcForeground`), `hcAddressOf` and `hcTerminalEqual`; `parsePositiveCount` is re-exported. Hand-written reference in `docs/api/core.md`.
@@ -60,7 +62,8 @@ First release on the public npm registry.
 
 Private releases.
 
-[Unreleased]: https://github.com/stateforge-labs/herdr-sdk/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/stateforge-labs/herdr-sdk/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/stateforge-labs/herdr-sdk/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/stateforge-labs/herdr-sdk/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/stateforge-labs/herdr-sdk/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/stateforge-labs/herdr-sdk/tree/v0.2.0

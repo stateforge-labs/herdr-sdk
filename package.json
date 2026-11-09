@@ -1,6 +1,6 @@
 {
   "name": "@stateforge-labs/herdr-sdk",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "type": "module",
   "sideEffects": false,
   "description": "Typed client for the herdr socket API (protocol 22), generated from herdr's published schema.",
