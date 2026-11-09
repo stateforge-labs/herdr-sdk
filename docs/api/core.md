@@ -52,11 +52,67 @@ The `address` of a payload as an `HcAddress`, or `null` when the payload has non
 
 Re-exported from the value types: an integer above zero as a `PositiveCount`, otherwise an `out-of-range`, `not-an-integer` or `not-a-number` failure.
 
+## Reading a terminal
+
+`CoreTerminals` makes the three herdr-core reads typed. Build it on a `CoreLink`; the optional second argument is the per-call timeout (`HC_CALL_TIMEOUT` by default). Each method settles as an answer or as an `Unknown`; none throws.
+
+| Method | Core method | Core params | Answer |
+| --- | --- | --- | --- |
+| `list()` | `terminal.list` | none | `HcListing` |
+| `get(address)` | `terminal.get` | `terminal` | `HcFetched` |
+| `read(address, { history })` | `terminal.read` | `terminal`, `lines` | `HcScreen` |
+
+### `CoreTerminals`
+
+- `list()`: `terminals` are the object rows as `HcPayload`, so `CoreRoster.load(listing.terminals)` takes them directly; `hiddenFinished` is the core's `hidden_finished` count, or `null`.
+- `get(address)`: `terminal` is the row the core answers with.
+- `read(address, options)`: `options.history` is the `Count` of history lines to read above the screen; without it the call sends `lines: 0`.
+
+### `terminal.read` line semantics
+
+- `lines` is the number of history lines above the screen. `0` is the visible screen only. It is not "all of the output": to get the output of a screen, read `0`, and to get more, pass the history count.
+- `text` is the text read, lines joined by `\n`.
+- `how` says how the text was got: `screen` (the screen only), `history`, or `stitched` (a full-screen app read by scrolling it). `HcReadHow` lists the three known values; another value passes through as text.
+- `complete` is `false` when part of what was asked may be missing.
+- `why` says why only the screen was read: `working`, `blocked` or `error` (`HcReadWhy`), or `null`. Another value passes through as text.
+
+### `HcListing`, `HcFetched`, `HcScreen`, `HcReadOptions`
+
+- `HcListing`: `{ kind: 'answer', terminals: HcPayload[], hiddenFinished: Count | null }`.
+- `HcFetched`: `{ kind: 'answer', terminal: HcPayload }`.
+- `HcScreen`: `{ kind: 'answer', text: Text, complete: boolean, how: Text, why: Text | null }`.
+- `HcReadOptions`: `{ history?: Count }`, the history lines above the screen.
+
+### `parseHcListing(input)`
+
+Returns `ok(HcListing)` when the reply has a `terminals` array (`not-a-row` otherwise). A row that is not an object is dropped, and a `hidden_finished` that is not a count gives `null`.
+
+### `parseHcScreen(input)`
+
+Strict. Returns `ok(HcScreen)` only when `text` and `how` are text (`not-a-string` otherwise) and `complete` is a boolean (`not-a-boolean` otherwise). `why` is optional: text, or `null` for anything else.
+
+### `lastLines(text, count)`
+
+Keeps the last `count` lines of `text` (split on `\n`) and returns `{ text, truncated }`. `truncated` is `true` when a line was dropped. `count` `0` gives empty text. A trailing newline is a final empty line, so `"a\nb\n"` with count 2 gives `"b\n"`. Use it to trim a screen to the lines a view shows.
+
+### Failures
+
+| `Unknown` | When |
+| --- | --- |
+| `timeout` | the core did not reply within the timeout |
+| `unreachable` | the socket is down, dropped or closed; the link reconnects by backoff |
+| `unreadable` | the reply has the wrong shape (`OddListing` or `OddScreen`), or the hello reply names another generation |
+| `not-found` | `terminal.get` or `terminal.read` faults with `-32000` (`HC_RPC_NOT_FOUND`); `what` is the core's message |
+| `failed` | any other fault: `code` and `detail` are the core's |
+
 ## Constants
 
 - `HcLabel`: `Tab` is `herdr.tab`, `Workspace` is `herdr.space`.
 - `HcTerminalField`: the field names of a terminal row (`address`, `labels`, `state`, `status`, `app`, `foreground`, `pid`, `cwd`, `title`). `State` is used both for the row's live state and for the agent's state in `status`, as the wire does.
 - `HcTerminalState`: `Live` (`live`) and `Finished` (`finished`), the values of a row's `state`.
+- `HcReadField`: the fields of a `terminal.read` reply and its params (`terminal`, `lines`, `text`, `complete`, `how`, `why`) and the `hidden_finished` of `terminal.list`.
+- `HcReadHow`: `Screen`, `History` and `Stitched`, the values of `how`. `HcReadWhy`: `Working`, `Blocked` and `Error`, the values of `why`.
+- `HC_RPC_NOT_FOUND`: `-32000`, the JSON-RPC code of a row the core does not hold.
 
 ## What a terminal row looks like
 

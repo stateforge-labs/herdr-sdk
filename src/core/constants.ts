@@ -15,6 +15,8 @@ export const HC_SUBSCRIBE_METHOD = 'events.subscribe' as NonEmptyText;
 export const HC_LIST_METHOD = 'terminal.list' as NonEmptyText;
 export const HC_GET_METHOD = 'terminal.get' as NonEmptyText;
 export const HC_READ_METHOD = 'terminal.read' as NonEmptyText;
+// The JSON-RPC code of a fault for a row the core does not hold (the recorded frame error:-32000:not_found).
+export const HC_RPC_NOT_FOUND = -32000;
 export const HC_HELLO_TIMEOUT = 5000 as Duration;
 export const HC_BACKOFF_BASE = 500 as Duration;
 export const HC_BACKOFF_CAP = 15_000 as Duration;
@@ -38,12 +40,14 @@ export const CoreText = {
   Connecting: 'connecting' as Text,
   HelloUnreadable: 'hello reply' as Text,
   OddResult: 'a result that is not an object' as Text,
+  OddListing: 'terminal.list answered with an unexpected shape' as Text,
+  OddScreen: 'terminal.read answered with no text' as Text,
   Generation: (generation: Count): Text => `generation ${generation}` as Text,
   Fault: (reason: Text, message: Text): Text => `${reason}: ${message}` as Text,
   Invariant: (detail: string): string => `a load-time constant was refused: ${detail}`,
 } as const;
 
-export const JsType = { Object: 'object', Number: 'number', String: 'string' } as const;
+export const JsType = { Object: 'object', Number: 'number', String: 'string', Boolean: 'boolean' } as const;
 
 export const ResultKind = { Ok: 'ok', Err: 'err' } as const;
 
@@ -55,6 +59,7 @@ export const ParseFailureKind = {
   Empty: 'empty',
   NotAnInteger: 'not-an-integer',
   NotARow: 'not-a-row',
+  NotABoolean: 'not-a-boolean',
   OutOfRange: 'out-of-range',
 } as const;
 
@@ -203,3 +208,24 @@ export type HcPatchField = (typeof HcPatchField)[keyof typeof HcPatchField];
 export const RosterChange = { Added: 'added', Changed: 'changed', Removed: 'removed' } as const;
 
 export type RosterChange = (typeof RosterChange)[keyof typeof RosterChange];
+
+// The fields of a terminal.read reply and of its parameters. `lines` is the history above the screen; 0 is the visible screen only.
+export const HcReadField = {
+  Terminal: 'terminal',
+  Lines: 'lines',
+  Text: 'text',
+  Complete: 'complete',
+  How: 'how',
+  Why: 'why',
+  HiddenFinished: 'hidden_finished',
+} as const;
+
+// How terminal.read got its text: the screen, the history, or both stitched (a full-screen app read by scrolling it).
+export const HcReadHow = { Screen: 'screen', History: 'history', Stitched: 'stitched' } as const;
+
+export type HcReadHow = (typeof HcReadHow)[keyof typeof HcReadHow];
+
+// Why terminal.read gave only the screen: the agent is working or blocked, or the read failed.
+export const HcReadWhy = { Working: 'working', Blocked: 'blocked', Error: 'error' } as const;
+
+export type HcReadWhy = (typeof HcReadWhy)[keyof typeof HcReadWhy];

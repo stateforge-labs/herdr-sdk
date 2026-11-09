@@ -25,7 +25,7 @@ Do not trust memory of this API. Before writing code:
 | `@stateforge-labs/herdr-sdk/effect` | `Herdr` service + Layers | same as above as Effect (needs peer `effect` 4.1.2) | |
 | `@stateforge-labs/herdr-sdk/test-kit` | `createFakeHerdr()` | in-process fake server for tests | production use |
 | `@stateforge-labs/herdr-sdk/schema` | method table, param shapes | tooling that reflects on the API | |
-| `@stateforge-labs/herdr-sdk/core` | `CoreLink`, `CoreEvents`, `CoreRoster` (folds the feed into a table with added/changed/removed deltas), wire parsers, `hcCoreSocketPath()`, `HcTerminal`, `parseHcTerminal`, `HcEventType` | a client of the herdr-core (`hc`) socket: calls, the event feed with heartbeats, failures as `Unknown` values | the protocol-22 herdr socket |
+| `@stateforge-labs/herdr-sdk/core` | `CoreLink`, `CoreEvents`, `CoreRoster` (folds the feed into a table with added/changed/removed deltas), `CoreTerminals` (typed `terminal.list`, `terminal.get`, `terminal.read`), wire parsers, `hcCoreSocketPath()`, `HcTerminal`, `parseHcTerminal`, `HcEventType` | a client of the herdr-core (`hc`) socket: calls, the event feed with heartbeats, failures as `Unknown` values | the protocol-22 herdr socket |
 | `@stateforge-labs/herdr-sdk/core/test-kit` | `FakeHcCore`, `setupTest(t)`, `openWorld()` | a scripted fake herdr-core for tests | production use |
 
 Start with `connectReadOnly()`. Use `connectAdmin()` only for `*.close`, `server.*`, `agent.start`, `plugin.*`: say why in a comment.

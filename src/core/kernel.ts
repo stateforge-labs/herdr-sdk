@@ -22,6 +22,10 @@ export function isString(input: unknown): input is string {
   return typeof input === JsType.String;
 }
 
+export function isBoolean(input: unknown): input is boolean {
+  return typeof input === JsType.Boolean;
+}
+
 export function isFields(input: unknown): input is Fields {
   return typeof input === JsType.Object && input !== null;
 }

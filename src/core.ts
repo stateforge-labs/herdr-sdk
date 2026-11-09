@@ -17,5 +17,6 @@ export { CoreInvariantError, isUnknown, unknown } from './core/errors.ts';
 export type { ParseFailure, Unknowable, Unknown } from './core/errors.ts';
 export * from './core/terminal.ts';
 export * from './core/roster.ts';
+export * from './core/terminals.ts';
 export { parsePositiveCount } from './core/kernel.ts';
 export type { PositiveCount } from './core/kernel.ts';
