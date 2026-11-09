@@ -11,6 +11,7 @@ versions follow semver, below 1.0.0 a minor may break.
 - `./core`: `CoreTerminals` makes the herdr-core reads typed (`list`, `get`, `read`) and settles each as an answer or an `Unknown`; `parseHcListing`, `parseHcScreen` and `lastLines` check the replies and trim a screen. The `lines` parameter of `terminal.read` is the history above the screen, and 0 is the visible screen only. `HcReadField`, `HcReadHow`, `HcReadWhy` and `HC_RPC_NOT_FOUND` describe the reply. Hand-written reference in `docs/api/core.md`.
 - `./core`: `CoreRoster` folds the core feed (snapshot, events, missed) into a table of `HcTerminal` with typed added/changed/removed deltas and a revision; `HcEventType`, `HcPatchField`, `RosterChange` and `isHcEventType` describe the event vocabulary.
 - `./core` exports `Brand`, `brand`, `ok`, `err`, `isFields` so a consumer's branded values share the SDK's brand marker.
+- Main entry exports `UnsupportedWatchError`, `SubscriptionEventKind` and `ErrorCode` (`agent_blocked`, `agent_not_found`, `agent_prompt_stalled`).
 - `connectPlugin()` (main entry): the `connect()` surface plus `plugin.pane.open`, `plugin.pane.focus` and `plugin.pane.close`, for plugin authors. `PluginClient` and `ConnectPlugin` are its types. Reference in `docs/api/client.md`.
 
 ### Changed

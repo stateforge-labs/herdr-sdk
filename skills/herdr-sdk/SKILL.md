@@ -22,6 +22,7 @@ Do not trust memory of this API. Before writing code:
 | `@stateforge-labs/herdr-sdk/read-only` | `connectPrompt()` | structure reads + `agent.prompt` | everything else |
 | `@stateforge-labs/herdr-sdk` | `connect()` | reads, content, UI changes, input, hooks, long-poll, `hold()` | destructive, server control, spawn/execute |
 | `@stateforge-labs/herdr-sdk` | `connectPlugin()` | the `connect()` methods plus `plugin.pane.open`, `plugin.pane.focus`, `plugin.pane.close` (typed results), for plugin authors; see `docs/api/client.md` | destructive, server control, spawn/execute, `plugin.link/unlink/enable` |
+| `@stateforge-labs/herdr-sdk` | `ErrorCode`, `SubscriptionEventKind`, `UnsupportedWatchError` | the agent error codes of a `HerdrError`, the per-pane event names, the `watchPaneSet` refusal; see `references/errors.md` and `docs/api/client.md` | |
 | `@stateforge-labs/herdr-sdk/admin` | `connectAdmin()` | all 102 methods | nothing |
 | `@stateforge-labs/herdr-sdk/effect` | `Herdr` service + Layers | same as above as Effect (needs peer `effect` 4.1.2) | |
 | `@stateforge-labs/herdr-sdk/test-kit` | `createFakeHerdr()` | in-process fake server for tests | production use |

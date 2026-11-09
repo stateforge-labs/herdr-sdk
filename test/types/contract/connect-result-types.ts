@@ -1,6 +1,6 @@
 // Role: each connect function resolves to exactly the client type of its entry (connect, connectAdmin, the three connectReadOnly overloads, connectPrompt).
 // Informs HERDR-ADR-0005 (capability-scoped clients), HERDR-ADR-0017 (locked signatures) and plan 10.1 step 7 (the public types do not change with the build). Compiled, never run.
-import { connect, type Client } from '../../../src/index.ts';
+import { connect, ErrorCode, type Client } from '../../../src/index.ts';
 import { connectAdmin, type AdminClient } from '../../../src/admin.ts';
 import {
   connectPrompt,
@@ -31,3 +31,7 @@ export async function connectResults(): Promise<void> {
   const promptIsPrompt: Equal<typeof prompt, PromptClient> = true;
   void [clientIsClient, adminIsAdmin, presetIsSessionsReader, contentIsReadOnlyContent, readOnlyIsReadOnly, promptIsPrompt];
 }
+
+// ErrorCode members are the literal wire codes, so a comparison with HerdrError.code type-checks.
+const agentBlockedIsLiteral: Equal<typeof ErrorCode.AgentBlocked, 'agent_blocked'> = true;
+void agentBlockedIsLiteral;

@@ -1,6 +1,6 @@
 // Role: the package entry ("."): connect(), errors, generated constants and types, the client and stream types.
 // Informs plan 3.1, 3.3 and 3.6, HERDR-ADR-0003 (entry points) and HERDR-ADR-0017 (contracts); edited only by the integration step.
-export { CallOutcome, Overflow, ProtocolPolicy, UNKNOWN_EVENT, WatchKind, PaneSetKind } from './constants.ts';
+export { CallOutcome, ErrorCode, Overflow, ProtocolPolicy, UNKNOWN_EVENT, WatchKind, PaneSetKind } from './constants.ts';
 export {
   AgentStatus,
   EventKind,
@@ -9,6 +9,7 @@ export {
   ResultTag,
   SCHEMA_VERSION,
   ServerCapability,
+  SubscriptionEventKind,
   SubscriptionType,
 } from './herdr/generated/index.ts';
 export type { ErrorBody, PushFrame, ResultByTag, Subscription } from './herdr/generated/index.ts';
@@ -43,5 +44,6 @@ export {
   ProtocolMismatchError,
   SubscriptionEnded,
   UnsupportedByServerError,
+  UnsupportedWatchError,
 } from './herdr/errors.ts';
 export type { CallEvent, DecodedFrame, OnCall, UnknownFrame } from './herdr/wire/types.ts';

@@ -97,6 +97,14 @@ export const ErrorName = {
   UnsupportedWatch: 'UnsupportedWatchError',
 } as const;
 
+// Codes of a HerdrError (error.code), as herdr sends them. The schema types ErrorBody.code as a bare string, so these are hand-kept; unknown codes stay strings.
+export const ErrorCode = {
+  AgentBlocked: 'agent_blocked',
+  AgentNotFound: 'agent_not_found',
+  AgentPromptStalled: 'agent_prompt_stalled',
+} as const;
+export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
+
 // JSON field names of the NDJSON wire envelopes.
 export const WireField = {
   Id: 'id',

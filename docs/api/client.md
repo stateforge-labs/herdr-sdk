@@ -94,3 +94,44 @@ herdr.close();
 ```
 
 `env` values are strings. `focus` defaults to `false`. `direction` is `"right"` or `"down"`.
+
+## `ErrorCode`
+
+```ts
+import { ErrorCode } from '@stateforge-labs/herdr-sdk';
+
+const ErrorCode: {
+  readonly AgentBlocked: 'agent_blocked';
+  readonly AgentNotFound: 'agent_not_found';
+  readonly AgentPromptStalled: 'agent_prompt_stalled';
+};
+type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
+```
+
+`ErrorCode` holds the codes herdr sends in `HerdrError.code` for agent calls. `HerdrError.code` stays `string`, because herdr may send codes this version does not know. Compare with `error.code === ErrorCode.AgentBlocked` after an `instanceof HerdrError` check. Meanings and what to do are in `skills/herdr-sdk/references/errors.md`.
+
+## `UnsupportedWatchError`
+
+```ts
+class UnsupportedWatchError extends TypeError {
+  readonly name: 'UnsupportedWatchError';
+}
+```
+
+`watchPaneSet()` throws it synchronously when `types` includes `pane.output_matched`. That type needs a single pane's subscription, which the per-pane set cannot follow. It is a `TypeError` because it is an argument error: no request was sent. Check it with `instanceof UnsupportedWatchError` across the package boundary.
+
+## `SubscriptionEventKind`
+
+```ts
+import { SubscriptionEventKind } from '@stateforge-labs/herdr-sdk';
+
+const SubscriptionEventKind: {
+  readonly PaneOutputMatched: 'pane.output_matched';
+  readonly PaneAgentStatusChanged: 'pane.agent_status_changed';
+  readonly PaneScrollChanged: 'pane.scroll_changed';
+};
+type SubscriptionEventKind = (typeof SubscriptionEventKind)[keyof typeof SubscriptionEventKind];
+```
+
+The event names of per-pane subscriptions. The generated `SubscriptionType` values are the subscription requests; these are the event names that come back in frames.
+
