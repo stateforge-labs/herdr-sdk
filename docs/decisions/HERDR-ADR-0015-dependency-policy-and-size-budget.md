@@ -19,7 +19,7 @@ Evidence: R-2026-11-02-04 (omarchylab repository, `docs/research/studies/2026-11
 
 ## Decision outcome
 
-- Runtime dependencies: none. Peers: `effect` (optional). Dev: exact pins listed with release dates in plan section 2; `scripts/check-pins.ts` rejects ranges and pins under 14 days old. TypeDoc dropped.
+- Runtime dependencies: none. Peers: `effect` (optional). Dev: exact pins listed with release dates in plan section 2; `scripts/check-pins.ts` rejects ranges and pins under 14 days old (our own `@stateforge-labs` scope is exempt from the age, see the amendment below). TypeDoc dropped.
 - Size: phase 0 records baselines (hub herdr code, atalaya client); phase 2b sets per-entry budgets from measurement; `scripts/check-size.ts` enforces them. Hub herdr code must be strictly smaller; installed bytes of `node_modules/@homelab/herdr` are reported; a no-leak test greps the hub bundle for test-kit strings.
 
 Amendment 2026-11-08: the 14-day minimum release age does not apply to our own libraries (npm scope `@stateforge-labs`); exact pins remain required for them. `check-pins.ts`, `bunfig.toml` and `renovate.json` follow.
