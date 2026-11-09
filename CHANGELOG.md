@@ -12,6 +12,7 @@ versions follow semver, below 1.0.0 a minor may break.
 - `./core`: `CoreRoster` folds the core feed (snapshot, events, missed) into a table of `HcTerminal` with typed added/changed/removed deltas and a revision; `HcEventType`, `HcPatchField`, `RosterChange` and `isHcEventType` describe the event vocabulary.
 - `./core` exports `Brand`, `brand`, `ok`, `err`, `isFields` so a consumer's branded values share the SDK's brand marker.
 - Main entry exports `UnsupportedWatchError`, `SubscriptionEventKind` and `ErrorCode` (`agent_blocked`, `agent_not_found`, `agent_prompt_stalled`).
+- `watch()`: `Watch.update(subscriptions)` changes the subscription set (re-subscribes and yields a new `Live`); `WatchOptions.idleMs` resubscribes after that long without a frame. Reference in `docs/api/client.md`.
 - `connectPlugin()` (main entry): the `connect()` surface plus `plugin.pane.open`, `plugin.pane.focus` and `plugin.pane.close`, for plugin authors. `PluginClient` and `ConnectPlugin` are its types. Reference in `docs/api/client.md`.
 
 ### Changed

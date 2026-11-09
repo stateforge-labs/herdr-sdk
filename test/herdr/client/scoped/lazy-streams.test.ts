@@ -2,7 +2,7 @@
 // Informs plan 10.1 step 3 (the lazy boundary), HERDR-ADR-0007 (subscriptions), HERDR-ADR-0008 (fakes only) and HERDR-ADR-0015 (the lazy row); the size gate measures the chunk itself.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { EventKind, SubscriptionType, type PushFrame } from '../../../../src/index.ts';
+import { EventKind, Method, SubscriptionType, WatchKind, type PushFrame } from '../../../../src/index.ts';
 import { connectCore } from '../../../../src/herdr/client/connect.ts';
 import { createStreamMembers } from '../../../../src/herdr/client/streams.ts';
 import { lazyStreams } from '../../../../src/herdr/client/scoped.ts';
@@ -103,5 +103,24 @@ describe('stream members over the fake', () => {
     }
     assert.deepEqual(seen, []);
     assert.deepEqual(calls, []);
+  });
+});
+
+describe('lazy watch update', () => {
+  test('an update made before the first iteration applies once the streams are loaded', async () => {
+    await withFake({}, async (fake) => {
+      const core = await connectCore({ socketPath: fake.path });
+      const watch = lazyStreams(core).watch({ snapshot: async () => 'snap', subscriptions: SPECS });
+      watch.update([{ type: SubscriptionType.WorkspaceClosed }]);
+      const iterator = watch[Symbol.asyncIterator]();
+      const first = await iterator.next();
+      assert.deepEqual(first.value, { kind: WatchKind.Live, snapshot: 'snap' });
+      const subscribes = fake.requests().filter((request) => request.method === Method.EventsSubscribe);
+      assert.equal(subscribes.length, 1);
+      assert.deepEqual(subscribes[0]?.params, { subscriptions: [{ type: SubscriptionType.WorkspaceClosed }] });
+      watch.close();
+      assert.equal((await iterator.next()).done, true);
+      core.close();
+    });
   });
 });

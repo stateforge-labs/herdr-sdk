@@ -148,6 +148,25 @@ for await (const change of view) {
 }
 ```
 
+## Change what a watch follows
+
+`update(subscriptions)` replaces the subscription set: the watch re-subscribes, takes a fresh snapshot and yields a new `Live`. `idleMs` resubscribes after that long without a frame, so a quiet server does not leave the view stale.
+
+```ts
+import { connectReadOnly } from "@stateforge-labs/herdr-sdk/read-only"
+import { SubscriptionType } from "@stateforge-labs/herdr-sdk"
+
+const herdr = await connectReadOnly()
+const view = herdr.watch({
+  snapshot: () => herdr.session.snapshot({}),
+  subscriptions: [{ type: SubscriptionType.WorkspaceCreated }],
+  idleMs: 300_000,
+})
+view.update([{ type: SubscriptionType.WorkspaceCreated }, { type: SubscriptionType.WorkspaceClosed }])
+view.close()
+herdr.close()
+```
+
 ## Test it (no real herdr)
 
 The fake answers `ping`; every other method must be scripted with `fake.reply(method, result)`, otherwise herdr-style `unknown_method` is returned. It also lets you script failures, silence and pushes.

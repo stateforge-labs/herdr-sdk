@@ -36,6 +36,8 @@ export interface WatchOptions<S> {
   readonly signal?: AbortSignal | undefined;
   /** Forwarded to subscribe as SubscribeOptions.onUnknown; watch() itself never calls it (no double count). */
   readonly onUnknown?: ((frame: UnknownFrame) => void) | undefined;
+  /** Resubscribes (fresh snapshot, new Live) after this many ms without a frame. Off when undefined, non-finite or <= 0. A quiet server restarts every idleMs, so use a large value (300000). */
+  readonly idleMs?: number | undefined;
 }
 
 /**
@@ -45,6 +47,8 @@ export interface WatchOptions<S> {
  */
 export interface Watch<S> extends AsyncIterable<WatchChange<S>> {
   close(): void;
+  /** Replaces the subscription set. A different set re-subscribes and yields a new Live; an equal one (any order) is a no-op. */
+  update(subscriptions: readonly Subscription[]): void;
 }
 
 /** `herdr.watch(options)`. Synchronous: the loop starts on the first iteration. */
@@ -180,25 +184,85 @@ export function createBackoffState(policy: BackoffPolicy, now: () => number): Ba
   };
 }
 
+export interface IdleWait {
+  readonly ms: number;
+  readonly sleep: Sleep;
+  readonly onExpire: () => void;
+}
+
 export interface CycleInput<S> {
   readonly subscribe: Subscribe;
   readonly specs: readonly Subscription[];
   readonly options: WatchOptions<S>;
   readonly signal: AbortSignal;
+  readonly idle?: IdleWait | undefined;
+}
+
+// The live subscription set, and the controller whose abort restarts the running cycle (or cuts its backoff short).
+interface WatchState {
+  specs: readonly Subscription[];
+  restart: AbortController;
+}
+
+// Replaces the controller first, so the next cycle captures the fresh one, then aborts the old one.
+function restartCycle(state: WatchState): void {
+  const previous = state.restart;
+  state.restart = new AbortController();
+  previous.abort();
+}
+
+function sameSpecs(left: readonly Subscription[], right: readonly Subscription[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+  const leftKeys = left.map((spec) => JSON.stringify(spec)).sort();
+  const rightKeys = right.map((spec) => JSON.stringify(spec)).sort();
+  return leftKeys.every((key, index) => key === rightKeys[index]);
+}
+
+// The idle wait is armed only for a finite idleMs above zero; anything else is off.
+export function idleWaitMs(idleMs: number | undefined): number | undefined {
+  return idleMs !== undefined && Number.isFinite(idleMs) && idleMs > 0 ? idleMs : undefined;
 }
 
 // Returns normally when the subscription ends without failing (close, abort, or the client closed). Throws when the cycle
 // failed (subscribe rejected, the snapshot rejected, or the subscription failed); the caller resubscribes after the backoff.
 export async function* runCycle<S>(input: CycleInput<S>): AsyncGenerator<WatchChange<S>, void, undefined> {
-  const { subscribe, specs, options, signal } = input;
+  const { subscribe, specs, options, signal, idle } = input;
   const subscription = await subscribe(specs, { signal, queue: options.queue, onUnknown: options.onUnknown });
   const buffer = createReplayBuffer<DecodedFrame>(options.queue);
-  const endOnAbort = (): void => buffer.end();
+  let idleWait: AbortController | undefined;
+  // Each frame (and the cycle start) replaces the pending wait; only the last one can expire.
+  const armIdle = (): void => {
+    idleWait?.abort();
+    if (idle === undefined) {
+      return;
+    }
+    const wait = new AbortController();
+    idleWait = wait;
+    const expire = (): void => {
+      if (!wait.signal.aborted) {
+        idle.onExpire();
+      }
+    };
+    void sleepOrAbort(idle.sleep, idle.ms, wait.signal).then(expire, expire);
+  };
+  const endOnAbort = (): void => {
+    buffer.end();
+    idleWait?.abort();
+  };
   signal.addEventListener('abort', endOnAbort, { once: true });
-  void forwardFrames(subscription, (frame) => buffer.push(frame)).then(
+  void forwardFrames(subscription, (frame) => {
+    if (signal.aborted) {
+      return false;
+    }
+    armIdle();
+    return buffer.push(frame);
+  }).then(
     () => buffer.end(),
     (error: unknown) => buffer.fail(error),
   );
+  armIdle();
   try {
     const snapshot = await options.snapshot(signal);
     if (signal.aborted) {
@@ -214,6 +278,7 @@ export async function* runCycle<S>(input: CycleInput<S>): AsyncGenerator<WatchCh
     }
   } finally {
     signal.removeEventListener('abort', endOnAbort);
+    idleWait?.abort();
     subscription.close();
   }
 }
@@ -227,37 +292,59 @@ export function createWatchWithClock(subscribe: Subscribe, now: () => number): W
   return function watch<S>(options: WatchOptions<S>): Watch<S> {
     const controller = new AbortController();
     const signal = linkSignal(controller.signal, options.signal);
+    const state: WatchState = { specs: options.subscriptions ?? DEFAULT_SPECS, restart: new AbortController() };
     return {
       close(): void {
         controller.abort();
       },
+      update(subscriptions: readonly Subscription[]): void {
+        if (signal.aborted || sameSpecs(subscriptions, state.specs)) {
+          return;
+        }
+        state.specs = [...subscriptions];
+        restartCycle(state);
+      },
       [Symbol.asyncIterator](): AsyncIterator<WatchChange<S>> {
-        return watchLoop(subscribe, options, signal, now);
+        return watchLoop(subscribe, options, state, signal, now);
       },
     };
   };
 }
 
-// Repeats cycles until one ends normally. A failure sleeps the backoff delay (unless the signal already aborted) and tries again.
+// Repeats cycles until one ends normally. A failure sleeps the backoff delay and tries again. A restart (update or idle expiry)
+// goes again at once, with no delay and no change to the attempt count.
 async function* watchLoop<S>(
   subscribe: Subscribe,
   options: WatchOptions<S>,
+  state: WatchState,
   signal: AbortSignal,
   now: () => number,
 ): AsyncGenerator<WatchChange<S>, void, undefined> {
   const backoff = createBackoffState(resolveBackoff(options.backoff), now);
   const sleep = options.sleep ?? defaultSleep;
-  const specs = options.subscriptions ?? DEFAULT_SPECS;
+  const idleMs = idleWaitMs(options.idleMs);
   while (!signal.aborted) {
+    const restart = state.restart;
+    const cycleSignal = linkSignal(restart.signal, signal);
     backoff.startCycle();
     try {
-      yield* runCycle({ subscribe, specs, options, signal });
-      return;
+      yield* runCycle({
+        subscribe,
+        specs: state.specs,
+        options,
+        signal: cycleSignal,
+        idle: idleMs === undefined ? undefined : { ms: idleMs, sleep, onExpire: () => restartCycle(state) },
+      });
+      if (!restart.signal.aborted) {
+        return;
+      }
     } catch {
       if (signal.aborted) {
         return;
       }
-      await sleepOrAbort(sleep, backoff.delayAfterFailure(), signal);
+      if (!restart.signal.aborted) {
+        await sleepOrAbort(sleep, backoff.delayAfterFailure(), cycleSignal);
+      }
     }
   }
 }

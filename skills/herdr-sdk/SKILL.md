@@ -56,7 +56,7 @@ Methods are nested by their dotted wire name: `herdr.pane.list({})`, `herdr.agen
 
 - **Always** use the generated constants (`Method`, `EventKind`, `SubscriptionType`, `AgentStatus`, `WatchKind`, `ResultTag`), not raw strings: the types accept strings, but constants fail when herdr renames something.
 - **Always** `close()` the client (or `await using` a held connection); a leaked client keeps the socket open.
-- **Always** snapshot before you subscribe: a subscription delivers changes, not the present. `herdr.watch({ snapshot })` does snapshot, subscribe, replay and resubscribe for you.
+- **Always** snapshot before you subscribe: a subscription delivers changes, not the present. `herdr.watch({ snapshot })` does snapshot, subscribe, replay and resubscribe for you. `update()` changes the subscription set (it re-subscribes and yields a new `Live`).
 - **Always** pass `timeout_ms` to long-poll methods (`agent.wait`, `events.wait`, `pane.wait_for_output`): herdr would wait forever, and the types require it on `agent.wait`.
 - **Never** resend `agent.prompt` after a timeout: a timeout is not proof the prompt was not delivered.
 - **Never** assume `uint64` fields above 2^53 survive; they are JSON numbers.

@@ -1,7 +1,7 @@
 // Role: the capability-scoped clients (read-only, prompt, admin): allowed methods, the namespace tree, invoke and the stream members.
 // Informs HERDR-ADR-0005, HERDR-ADR-0017, plan 3.4, plan 3.3, HERDR-ADR-0007, plan 3.6, plan 10.1, HERDR-ADR-0015; merged by HERDR-ADR-0021 from allowed-methods.ts, namespace-tree.ts, invoke.ts, lazy-streams.ts, compose.ts, connect-admin.ts, connect-prompt.ts, connect-read-only.ts.
 import { LONG_POLL } from '../generated/index.ts';
-import type { Method } from '../generated/index.ts';
+import type { Method, Subscription } from '../generated/index.ts';
 import type { AllowedMethods, BuildNamespaceTree, CallOptions, Invoke, NamespaceTree, CoreClient, StreamMembers, ClientTransport, Caller, AdminClient, ConnectAdmin, ConnectPrompt, PromptClient, ConnectReadOnly, ReadOnlyClient, ReadOnlyContentClient, ReadOnlyOptions, SessionsReaderClient } from './types.ts';
 import { METHOD_SEPARATOR, TypeofKind, ErrorText, EntryKey, TreeKey, Presets } from '../../constants.ts';
 import type { Preset } from '../../constants.ts';
@@ -153,18 +153,32 @@ function lazyWatch(load: () => Promise<StreamMembers>): WatchFn {
   return function watch<S>(options: WatchOptions<S>): Watch<S> {
     let stopped = false;
     let inner: Watch<S> | undefined;
+    let pending: readonly Subscription[] | undefined;
     async function* changes(): AsyncGenerator<WatchChange<S>> {
       const members = await load();
       if (stopped) {
         return;
       }
       inner = members.watch(options);
+      if (pending !== undefined) {
+        inner.update(pending);
+      }
       yield* inner;
     }
     return {
       close(): void {
         stopped = true;
         inner?.close();
+      },
+      update(subscriptions: readonly Subscription[]): void {
+        if (stopped) {
+          return;
+        }
+        if (inner === undefined) {
+          pending = subscriptions;
+        } else {
+          inner.update(subscriptions);
+        }
       },
       [Symbol.asyncIterator]: changes,
     };

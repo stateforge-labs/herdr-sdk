@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as main from '../../src/index.ts';
 
-const DOCUMENTED = ['connectPlugin', 'PluginClient', 'ConnectPlugin', 'plugin.pane.open', 'plugin.pane.focus', 'plugin.pane.close', 'plugin_pane_opened', 'plugin_pane_focused', 'plugin_pane_closed', 'HerdrTransportError', 'ErrorCode', 'UnsupportedWatchError', 'SubscriptionEventKind'];
+const DOCUMENTED = ['connectPlugin', 'PluginClient', 'ConnectPlugin', 'plugin.pane.open', 'plugin.pane.focus', 'plugin.pane.close', 'plugin_pane_opened', 'plugin_pane_focused', 'plugin_pane_closed', 'HerdrTransportError', 'ErrorCode', 'UnsupportedWatchError', 'SubscriptionEventKind', 'Watch.update', 'WatchOptions.idleMs'];
 const CLIENT_DOC = new URL('../../docs/api/client.md', import.meta.url);
 const SKILL = new URL('../../skills/herdr-sdk/SKILL.md', import.meta.url);
 

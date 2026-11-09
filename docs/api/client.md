@@ -135,3 +135,43 @@ type SubscriptionEventKind = (typeof SubscriptionEventKind)[keyof typeof Subscri
 
 The event names of per-pane subscriptions. The generated `SubscriptionType` values are the subscription requests; these are the event names that come back in frames.
 
+## `Watch.update`
+
+```ts
+interface Watch<S> extends AsyncIterable<WatchChange<S>> {
+  close(): void;
+  update(subscriptions: readonly Subscription[]): void;
+}
+```
+
+Replaces the subscription set of a `watch()`. A different set (order does not count) closes the current subscription, re-subscribes with the new specs, takes a fresh snapshot and yields a new `Live`. The consumer's rule does not change: a `Live` replaces its state, and frames after it are the new set's. An equal set is a no-op.
+
+| Call made | Effect |
+| --- | --- |
+| before iteration | only changes the initial set |
+| during a backoff sleep | cuts the sleep short; the new set subscribes at once, and no further backoff is requested |
+| while the snapshot is pending | aborts the snapshot (its signal is aborted); the new snapshot is used |
+| after `close()` | no-op |
+
+An update restart is not a failure: it applies no backoff and does not change the attempt count. `update` never throws. The Effect twin (`watch` from `./effect`) does not expose `update`; use the client's `watch()` for a changing set.
+
+## `WatchOptions.idleMs`
+
+```ts
+interface WatchOptions<S> {
+  idleMs?: number | undefined;
+}
+```
+
+Resubscribes after `idleMs` without a frame. After each frame, and at the start of each cycle, an idle wait is armed; a frame replaces it. If the wait expires, the watch resubscribes with a fresh snapshot and yields a new `Live`, as `Watch.update` does, with no backoff and no change to the attempt count. `close()` aborts the pending wait.
+
+herdr sends no heartbeats on a subscription, so a quiet server restarts every `idleMs`. Use a large value, for example `300000` (five minutes).
+
+| Value | Effect |
+| --- | --- |
+| `undefined` (default) | off |
+| finite and above 0 | an idle wait of that many ms |
+| `0`, negative, `NaN` or `Infinity` | off, no error |
+
+The wait uses the injectable `sleep` option, so tests never wait for real time.
+
