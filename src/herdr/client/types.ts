@@ -26,7 +26,7 @@ export type { CallOptions } from '../generated/index.ts';
 
 /** Options of every connect function. */
 export interface ConnectOptions {
-  /** Explicit path; else HERDR_SOCKET; else ~/.config/herdr/herdr.sock. */
+  /** Explicit path; else HERDR_SOCKET_PATH (set by herdr for plugins); else HERDR_SOCKET; else ~/.config/herdr/herdr.sock. */
   readonly socketPath?: string | undefined;
   /** Per-request timeout; default Timeout.DefaultMs (10 s). Long-poll calls add their own timeout_ms (plan 3.6). */
   readonly timeoutMs?: number | undefined;

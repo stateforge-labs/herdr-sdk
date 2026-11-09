@@ -1,6 +1,6 @@
 # Recipes
 
-Every `ts` block below is type-checked against the package by `test/skill/skill.test.ts`, and blocks marked `ts run` are executed against the fake herdr. Lines starting `// fake:` are the harness script (what the server answers); they are not part of your code. Copy them as written; `HERDR_SOCKET` or the default socket path picks the server.
+Every `ts` block below is type-checked against the package by `test/skill/skill.test.ts`, and blocks marked `ts run` are executed against the fake herdr. Lines starting `// fake:` are the harness script (what the server answers); they are not part of your code. Copy them as written; `HERDR_SOCKET_PATH`, `HERDR_SOCKET` or the default socket path picks the server.
 
 ## List agents and what they are doing
 

@@ -7,6 +7,7 @@ export { TOKEN_NAME_PATTERN } from './herdr/generated/names/token-name-pattern.t
 
 // Environment variable names and the default socket location.
 export const HerdrEnv = {
+  SocketPath: 'HERDR_SOCKET_PATH',
   Socket: 'HERDR_SOCKET',
   Home: 'HOME',
   Live: 'HERDR_LIVE',

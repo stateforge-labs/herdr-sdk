@@ -70,7 +70,7 @@ The declarations use `AbortSignal` and `AsyncDisposable`. Consumers need `@types
 ```ts
 import { connect, HerdrError } from "@stateforge-labs/herdr-sdk"
 
-const herdr = await connect() // finds the socket (HERDR_SOCKET, else ~/.config/herdr/herdr.sock), pings, checks protocol 22
+const herdr = await connect() // finds the socket (HERDR_SOCKET_PATH, else HERDR_SOCKET, else ~/.config/herdr/herdr.sock), pings, checks protocol 22
 
 const { agents } = await herdr.agent.list({})
 for (const agent of agents) console.log(agent.name, agent.agent_status)
@@ -94,7 +94,7 @@ builder working
 
 The `prompt` call prints nothing when it succeeds. If the target is refused, the catch block prints the herdr error code and message to stderr.
 
-Without a running herdr, `connect()` rejects before any call is made. The snippet above does not catch that error, so Node prints the uncaught error and exits with a non-zero status. The error is a `HerdrTransportError` whose message is `no herdr socket at <path>`, where `<path>` is `HERDR_SOCKET` or the default socket path. Catch it when your script must run without herdr.
+Without a running herdr, `connect()` rejects before any call is made. The snippet above does not catch that error, so Node prints the uncaught error and exits with a non-zero status. The error is a `HerdrTransportError` whose message is `no herdr socket at <path>`, where `<path>` is the socket path from `HERDR_SOCKET_PATH`, `HERDR_SOCKET` or the default. Catch it when your script must run without herdr.
 
 Methods are nested by their dotted name: `herdr.pane.list({})`, `herdr.agent.view.set({...})`. `connect()` has no destructive or server-control methods (`*.close`, `server.stop`, `plugin.link`...); those need `connectAdmin()` from `@stateforge-labs/herdr-sdk/admin`.
 

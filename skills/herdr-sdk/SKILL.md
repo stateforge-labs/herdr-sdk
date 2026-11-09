@@ -38,7 +38,7 @@ Start with `connectReadOnly()`. A plugin that opens or closes its own panes uses
 // fake: agent.list {"type":"agent_list","agents":[{"agent_status":"idle","focused":false,"pane_id":"p_1","revision":1,"tab_id":"t_1","terminal_id":"term_1","workspace_id":"w_1","name":"reviewer"}]}
 import { connect, HerdrError } from "@stateforge-labs/herdr-sdk"
 
-const herdr = await connect() // HERDR_SOCKET, else ~/.config/herdr/herdr.sock; pings; checks protocol 22
+const herdr = await connect() // HERDR_SOCKET_PATH, else HERDR_SOCKET, else ~/.config/herdr/herdr.sock; pings; checks protocol 22
 try {
   const { agents } = await herdr.agent.list({})
   for (const agent of agents) console.log(agent.name, agent.agent_status)

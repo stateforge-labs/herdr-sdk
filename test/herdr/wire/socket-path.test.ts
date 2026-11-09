@@ -1,5 +1,5 @@
-// Role: checks socket discovery: explicit option, then HERDR_SOCKET, then HOME/.config/herdr/herdr.sock; and the existence check.
-// Informs HERDR-ADR-0003 (layers) and plan 3.3 (socketPath option); new test. The env is passed in, never process.env.
+// Role: checks socket discovery: explicit option, then HERDR_SOCKET_PATH, then HERDR_SOCKET, then HOME/.config/herdr/herdr.sock; and the existence check.
+// Informs HERDR-ADR-0003 (layers), plan 3.3 (socketPath option) and plan G9 (HERDR_SOCKET_PATH). The env is passed in, never process.env.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -37,6 +37,32 @@ describe('resolveSocketPath', () => {
     const expected = join(HOME_DIR, SocketPathPart.ConfigDir, SocketPathPart.HerdrDir, SocketPathPart.SocketFile);
     assert.equal(resolveSocketPath({ env }), expected);
     assert.equal(defaultSocketPath(env), expected);
+  });
+
+  test('HERDR_SOCKET_PATH wins over HERDR_SOCKET', () => {
+    const env = { [HerdrEnv.SocketPath]: '/plugin.sock', [HerdrEnv.Socket]: '/old.sock', [HerdrEnv.Home]: HOME_DIR };
+    assert.equal(resolveSocketPath({ env }), '/plugin.sock');
+  });
+
+  test('HERDR_SOCKET still works alone', () => {
+    const env = { [HerdrEnv.Socket]: '/old.sock' };
+    assert.equal(defaultSocketPath(env), '/old.sock');
+  });
+
+  test('the explicit option beats HERDR_SOCKET_PATH and HERDR_SOCKET', () => {
+    const env = { [HerdrEnv.SocketPath]: '/plugin.sock', [HerdrEnv.Socket]: '/old.sock' };
+    assert.equal(resolveSocketPath({ socketPath: '/explicit.sock', env }), '/explicit.sock');
+  });
+
+  test('empty HERDR_SOCKET_PATH and HERDR_SOCKET fall through to the HOME default', () => {
+    const env = { [HerdrEnv.SocketPath]: '', [HerdrEnv.Socket]: '', [HerdrEnv.Home]: HOME_DIR };
+    const expected = join(HOME_DIR, SocketPathPart.ConfigDir, SocketPathPart.HerdrDir, SocketPathPart.SocketFile);
+    assert.equal(resolveSocketPath({ env }), expected);
+  });
+
+  test('an empty HERDR_SOCKET_PATH falls through to HERDR_SOCKET', () => {
+    const env = { [HerdrEnv.SocketPath]: '', [HerdrEnv.Socket]: '/old.sock' };
+    assert.equal(defaultSocketPath(env), '/old.sock');
   });
 });
 

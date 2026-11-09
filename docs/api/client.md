@@ -2,6 +2,17 @@
 
 This reference is written by hand. The generated references are `methods.md` and `events.md` in this folder.
 
+## Socket discovery
+
+`connect()`, `connectAdmin()` and `connectPlugin()` pick the socket in this order. An empty variable counts as unset.
+
+1. The `socketPath` option.
+2. `HERDR_SOCKET_PATH`, the variable herdr sets for plugins and pane processes.
+3. `HERDR_SOCKET`, the SDK's older name. It is kept for compatibility; herdr itself does not set it.
+4. `~/.config/herdr/herdr.sock`.
+
+The herdr 0.9.5 binary sets `HERDR_SOCKET_PATH` next to `HERDR_PLUGIN_ROOT` and `HERDR_PANE_ID` in the environment it gives plugin and pane processes. It never sets a bare `HERDR_SOCKET`. `HERDR_CLIENT_SOCKET_PATH` is the GUI client's own socket (`herdr-client.sock`), not the API socket, so the SDK does not read it.
+
 ## `connectPlugin(options?)`
 
 ```ts
@@ -44,10 +55,10 @@ The method list limits what the SDK client sends. It is not a security boundary.
 
 ### Environment
 
-`connectPlugin()` reads the socket path the same way as `connect()`: an explicit `socketPath`, else `HERDR_SOCKET`, else `~/.config/herdr/herdr.sock`.
+`connectPlugin()` reads the socket path the same way as `connect()` (see Socket discovery): an explicit `socketPath`, else `HERDR_SOCKET_PATH`, else `HERDR_SOCKET`, else `~/.config/herdr/herdr.sock`.
 
 ```bash
-HERDR_SOCKET=/run/user/1000/herdr/herdr.sock bun run plugin.ts
+HERDR_SOCKET_PATH=/run/user/1000/herdr/herdr.sock bun run plugin.ts
 ```
 
 ## `PluginClient`

@@ -19,6 +19,10 @@ versions follow semver, below 1.0.0 a minor may break.
 
 - `plugin.pane.open`, `plugin.pane.focus` and `plugin.pane.close` return typed results (`plugin_pane_opened`, `plugin_pane_focused`, `plugin_pane_closed`) instead of `unknown`.
 
+### Fixed
+
+- `connect*()` honours `HERDR_SOCKET_PATH`, the variable herdr sets for plugins (before `HERDR_SOCKET`, which is kept). An empty variable counts as unset.
+
 ## 0.3.1 - 2026-11-08
 
 ### Added

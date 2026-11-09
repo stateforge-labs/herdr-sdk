@@ -6,6 +6,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { HerdrEnv } from '../../src/constants.ts';
 import { METHODS } from '../../src/schema.ts';
 import type { Method } from '../../src/herdr/generated/index.ts';
 import { createFakeHerdr } from '../../src/test-kit.ts';
@@ -121,13 +122,16 @@ describe('skill code blocks', () => {
       for (const line of block.code.matchAll(/^\/\/ fake: ([a-z_.]+) (.+)$/gm)) {
         fake.reply(line[1] as Method, JSON.parse(line[2] ?? '{}') as never);
       }
-      const before = process.env.HERDR_SOCKET;
-      process.env.HERDR_SOCKET = fake.path;
+      const saved = [HerdrEnv.SocketPath, HerdrEnv.Socket].map((key) => [key, process.env[key]] as const);
+      process.env[HerdrEnv.SocketPath] = fake.path;
+      delete process.env[HerdrEnv.Socket];
       try {
         await import(`../../${generated(block.id)}`);
       } finally {
-        if (before === undefined) delete process.env.HERDR_SOCKET;
-        else process.env.HERDR_SOCKET = before;
+        for (const [key, value] of saved) {
+          if (value === undefined) delete process.env[key];
+          else process.env[key] = value;
+        }
         await fake.stop();
       }
     });

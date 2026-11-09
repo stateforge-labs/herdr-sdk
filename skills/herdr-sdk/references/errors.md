@@ -13,7 +13,7 @@ Six error classes, all exported from `@stateforge-labs/herdr-sdk`. Check with `i
 
 Notes:
 
-- `connect()` rejects when there is no socket; the message names the path. Check that herdr is running and that `HERDR_SOCKET` points at the server you mean.
+- `connect()` rejects when there is no socket; the message names the path. Check that herdr is running and that `HERDR_SOCKET_PATH` (or `HERDR_SOCKET`) points at the server you mean.
 - A closed client rejects later calls with `HerdrTransportError` without contacting herdr; `close()` also ends its subscriptions, watch loops and held connections.
 - The default per-request timeout is 10 s (`timeoutMs` option). Long-poll methods add their own `timeout_ms`.
 - `onCall({ method, durationMs, outcome })` on `connect()` options is the metrics hook; `onUnknown(frame)` receives push frames of kinds this version does not know (herdr may add some): log and ignore them.

@@ -1,5 +1,5 @@
-// Role: finds the herdr socket: an explicit option, then HERDR_SOCKET, then ~/.config/herdr/herdr.sock; checks that the path is a socket.
-// Informs HERDR-ADR-0003 (layers) and plan 3.3 (socketPath option); explicit option and an existence check.
+// Role: finds the herdr socket: an explicit option, then HERDR_SOCKET_PATH (set by herdr for plugins), then HERDR_SOCKET (older name, kept), then ~/.config/herdr/herdr.sock; checks that the path is a socket.
+// Informs HERDR-ADR-0003 (layers), plan 3.3 (socketPath option) and plan G9 (HERDR_SOCKET_PATH); an empty variable counts as unset.
 import { statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -14,9 +14,11 @@ export interface SocketPathOptions {
 }
 
 // The socket path when no explicit option is given. The env is passed in, so tests never read process.env.
+// An empty variable is unset (||, not ??), so HERDR_SOCKET_PATH='' falls through to HERDR_SOCKET.
 export function defaultSocketPath(env: EnvMap = process.env): string {
   return (
-    env[HerdrEnv.Socket] ??
+    env[HerdrEnv.SocketPath] ||
+    env[HerdrEnv.Socket] ||
     join(env[HerdrEnv.Home] ?? homedir(), SocketPathPart.ConfigDir, SocketPathPart.HerdrDir, SocketPathPart.SocketFile)
   );
 }
